@@ -1,0 +1,6 @@
+{
+  "name": "VantageWealth - Unified Wealth & Reinvestment OS",
+  "description": "Multi-asset portfolio tracker aggregating Mutual Funds, Demat, FD/RD, SGB, Bonds, PF, and NPS with automated maturity reinvestment across 4 risk tiers, tax harvesting audit, and interactive macroeconomic stress simulations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

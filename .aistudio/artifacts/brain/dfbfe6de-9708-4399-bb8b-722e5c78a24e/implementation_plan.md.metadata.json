@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive technical roadmap, system architecture, database schema, and product design for the Unified Wealth Management & Reinvestment Engine. Covers multi-currency portfolio tracking (Mutual Funds, Demat, FD/RD, SGB, Bonds, PF, NPS, Savings), automated maturity reinvestment recommendations across 4 risk tiers (5-8 curated solutions), tax harvesting and diversification engine, and interactive macroeconomic stress simulation with dynamic portfolio shuffling.",
+  "updatedAt": "2026-10-13T11:10:43.935596642Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
