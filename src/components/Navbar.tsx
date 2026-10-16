@@ -1,7 +1,7 @@
 import React from 'react';
 import { CurrencyCode, UserProfile } from '../types/wealth';
-import { INITIAL_PROFILES } from '../data/mockData';
-import { Plus, Upload, User, Globe } from 'lucide-react';
+import { DEMO_PROFILES } from '../data/mockData';
+import { Plus, Upload, User, RotateCcw } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'overview' | 'radar' | 'tax' | 'simulator';
@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenUploadModal: () => void;
   maturedCount: number;
+  onResetToSample: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onOpenUploadModal,
   maturedCount,
+  onResetToSample,
 }) => {
   return (
     <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40">
@@ -115,12 +117,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="Active Investor Profile"
                 value={currentProfile.id}
                 onChange={(e) => {
-                  const found = INITIAL_PROFILES.find((p) => p.id === e.target.value);
+                  const found = DEMO_PROFILES.find((p) => p.id === e.target.value);
                   if (found) setProfile(found);
                 }}
                 className="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 pr-7 appearance-none focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
-                {INITIAL_PROFILES.map((p) => (
+                {DEMO_PROFILES.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({p.personaTitle.split('&')[0].trim()})
                   </option>
@@ -135,10 +137,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenUploadModal}
               className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-slate-300 bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-1.5"
-              title="Import CAS / Brokerage Statement"
+              title="Load a sample statement into the ledger"
             >
               <Upload className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden sm:inline">Upload Statement</span>
+              <span className="hidden sm:inline">Load Statement</span>
+            </button>
+
+            {/* Reset to Sample Data */}
+            <button
+              onClick={onResetToSample}
+              className="p-1.5 text-slate-400 bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+              title="Reset ledger to the sample portfolio"
+              aria-label="Reset ledger to the sample portfolio"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
             {/* Add Investment CTA */}

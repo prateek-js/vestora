@@ -17,8 +17,8 @@ Retail and high-earning investors frequently face **idle cash drag** and **fragm
 - Macroeconomic shocks (inflation spikes, central bank rate hikes) erode purchasing power and duration-heavy bonds without real-time stress testing.
 
 **Vestora** solves this in one unified terminal:
-1. **Consolidated Net Worth Cockpit**: Instant real-time valuation across Mutual Funds, Demat equities, FDs, RDs, SGBs, Corporate Bonds, EPF, PPF, NPS, and liquid bank savings.
-2. **Multi-Currency Normalization**: Seamless conversion across **INR (₹)**, **USD ($)**, and **EUR (€)** with real-time FX normalization.
+1. **Consolidated Net Worth Cockpit**: Unified valuation across Mutual Funds, Demat equities, FDs, RDs, SGBs, Corporate Bonds, EPF, PPF, NPS, and liquid bank savings.
+2. **Multi-Currency Normalization**: Seamless conversion across **INR (₹)**, **USD ($)**, and **EUR (€)** with normalized FX benchmark rates.
 3. **Maturity Radar & 8-Solution Curated Reinvestment Matrix**: Preemptively flags instruments maturing within 30, 90, or 365 days. Proposes 5–8 vetted institutional alternatives categorized by risk appetite:
    - **Guaranteed Risk**: RBI Floating Rate Savings Bonds (FRSB), SGB Secondary EEE Bullion.
    - **Low Risk**: Corporate AAA Short-Term Debt, Equity Arbitrage Tax-Advantaged Funds (7.25% yield with 12.5% equity tax treatment).
@@ -32,10 +32,11 @@ Retail and high-earning investors frequently face **idle cash drag** and **fragm
 ## 🛠️ Tech Stack
 
 - **Framework**: React 19 + TypeScript (ES2022)
-- **Bundler & Server**: Vite 8 + Express
+- **Bundler**: Vite 8
 - **Styling**: Tailwind CSS v4 + Institutional Financial Design Constitution (DM Sans + Plus Jakarta Sans + JetBrains Mono Tabular Numerals)
 - **Icons**: Lucide React
-- **Data Architecture**: Client-side normalization engine with ready-to-deploy PostgreSQL / Drizzle ORM relational schema.
+- **Persistence**: Browser `localStorage` — fully client-side, no backend
+- **Data Architecture**: Client-side normalization engine with ready-to-deploy PostgreSQL / Drizzle ORM relational schema (hosted version).
 
 ---
 
@@ -57,6 +58,23 @@ Visit `http://localhost:3000` to view the application.
 
 ---
 
-## 🗄️ Database Schema & Architecture
+## 🔒 Privacy & Data
 
-See `.aistudio/artifacts/brain/dfbfe6de-9708-4399-bb8b-722e5c78a24e/implementation_plan.md` for the technical roadmap, full PostgreSQL relational DDL, and data models.
+Vestora runs entirely in your browser. Holdings you add (or load from the sample
+statements) are persisted to `localStorage` under the `vestora.portfolio.v1` key and
+never leave your device — there is no backend, no account, and no analytics on your
+financial data. Use the reset button in the navbar to clear the saved ledger and
+return to the sample portfolio.
+
+> **Disclaimer:** Vestora is a tracking and scenario-modeling tool. All figures are
+> self-reported or illustrative sample data, yields are indicative, and nothing in
+> the app is investment, tax, or legal advice.
+
+---
+
+## 🗄️ Architecture Notes
+
+Client-side normalization engine (`src/utils/`) with a ready-to-deploy
+PostgreSQL / Drizzle ORM relational schema planned for the hosted multi-device
+version. FX rates are currently static benchmarks (`src/utils/currency.ts`); live
+NAV/FX feeds are on the roadmap.

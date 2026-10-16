@@ -1,4 +1,5 @@
 import { Holding, ReinvestmentSolution, UserProfile } from '../types/wealth';
+import { isoFromToday } from '../utils/maturity';
 
 export const CURATED_REINVESTMENT_SOLUTIONS: ReinvestmentSolution[] = [
   // 1. GUARANTEED RISK
@@ -516,3 +517,34 @@ export const INITIAL_PROFILES: UserProfile[] = [
   PROFILE_GROWTH_BUILDER,
   PROFILE_CONSERVATIVE,
 ];
+
+/**
+ * Sample maturity dates are rebased against "today" on every load so the demo
+ * stays perpetually fresh: h-101 stays 15 days past maturity, h-102 stays 10
+ * days out, and so on. daysToMaturity/isMatured are then recomputed from the
+ * rebased dates (withDerivedMaturity) so every field stays consistent.
+ */
+function rebaseSampleMaturities(): UserProfile[] {
+  // Intended demo offsets from today, by holding id. Past = matured.
+  const OFFSETS: Record<string, number> = {
+    'h-101': -15,
+    'h-102': 10,
+    'h-103': 38,
+    'h-201': -3,
+    'h-202': 43,
+    'h-301': 5,
+    'h-302': 22,
+    'h-304': 245,
+  };
+
+  return INITIAL_PROFILES.map((profile) => ({
+    ...profile,
+    holdings: profile.holdings.map((holding) => {
+      const offset = OFFSETS[holding.id];
+      if (offset === undefined) return holding;
+      return { ...holding, maturityDate: isoFromToday(offset) };
+    }),
+  }));
+}
+
+export const DEMO_PROFILES: UserProfile[] = rebaseSampleMaturities();

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
+import { daysBetween, todayIso } from '../utils/maturity';
 import { X, Plus, AlertCircle } from 'lucide-react';
 
 interface AddHoldingModalProps {
@@ -23,7 +24,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   const [currentValue, setCurrentValue] = useState<string>('');
   const [currency, setCurrency] = useState<CurrencyCode>(baseCurrency);
   const [interestRatePct, setInterestRatePct] = useState<string>('');
-  const [purchaseDate, setPurchaseDate] = useState('2024-01-15');
+  const [purchaseDate, setPurchaseDate] = useState(todayIso());
   const [maturityDate, setMaturityDate] = useState('');
   const [taxTag, setTaxTag] = useState<TaxTag>('LTCG_EQUITY');
   const [notes, setNotes] = useState('');
@@ -56,10 +57,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
     let isMatured = false;
 
     if (maturityDate) {
-      const today = new Date('2026-10-13');
-      const mat = new Date(maturityDate);
-      const diffTime = mat.getTime() - today.getTime();
-      daysToMaturity = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      daysToMaturity = daysBetween(todayIso(), maturityDate);
       if (daysToMaturity <= 0) {
         isMatured = true;
       }

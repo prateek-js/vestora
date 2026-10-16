@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CurrencyCode, Holding, ReinvestmentSolution } from '../types/wealth';
 import { convertCurrency, formatCurrency } from '../utils/currency';
 import { X, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
@@ -20,11 +20,19 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
   baseCurrency,
   onExecuteReinvestment,
 }) => {
+  // Hooks must run unconditionally — the early return comes after them.
+  const [allocatedAmount, setAllocatedAmount] = useState<number>(0);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && holding) {
+      setAllocatedAmount(convertCurrency(holding.currentValue, holding.currency, baseCurrency));
+    }
+  }, [isOpen, holding, baseCurrency]);
+
   if (!isOpen || !holding || !solution) return null;
 
   const sourceValuation = convertCurrency(holding.currentValue, holding.currency, baseCurrency);
-  const [allocatedAmount, setAllocatedAmount] = useState<number>(sourceValuation);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleConfirm = () => {
     onExecuteReinvestment(holding, solution, allocatedAmount);
