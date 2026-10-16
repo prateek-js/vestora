@@ -2,7 +2,7 @@ import React from 'react';
 import { CurrencyCode, UserProfile } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
 import { trackEvent } from '../utils/analytics';
-import { Plus, Upload, User, RotateCcw } from 'lucide-react';
+import { Plus, Upload, User, RotateCcw, RefreshCw } from 'lucide-react';
 
 const TAB_NAMES = {
   overview: 'Overview & Ledger',
@@ -20,8 +20,12 @@ interface NavbarProps {
   setProfile: (p: UserProfile) => void;
   onOpenAddModal: () => void;
   onOpenUploadModal: () => void;
+  onOpenNavRefresh: () => void;
   maturedCount: number;
   onResetToSample: () => void;
+  /** ISO date of the loaded FX fix; null = still on benchmark rates. */
+  fxAsOf: string | null;
+  fxSource: 'live' | 'cached' | 'benchmark';
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -33,8 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   setProfile,
   onOpenAddModal,
   onOpenUploadModal,
+  onOpenNavRefresh,
   maturedCount,
   onResetToSample,
+  fxAsOf,
+  fxSource,
 }) => {
   const handleTabChange = (tab: NavbarProps['activeTab']) => {
     setActiveTab(tab);
@@ -106,22 +113,34 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Zone 3: Global Actions (Currency, Preset Profile, Fast Ingest) */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Currency Selector */}
-            <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
-              {(['INR', 'USD', 'EUR'] as CurrencyCode[]).map((curr) => (
-                <button
-                  key={curr}
-                  onClick={() => setBaseCurrency(curr)}
-                  className={`px-2 py-1 text-xs font-mono font-medium rounded transition-colors ${
-                    baseCurrency === curr
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                  title={`Switch base currency to ${curr}`}
-                >
-                  {curr}
-                </button>
-              ))}
+            {/* Currency Selector + live FX stamp */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+                {(['INR', 'USD', 'EUR'] as CurrencyCode[]).map((curr) => (
+                  <button
+                    key={curr}
+                    onClick={() => setBaseCurrency(curr)}
+                    className={`px-2 py-1 text-xs font-mono font-medium rounded transition-colors ${
+                      baseCurrency === curr
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title={`Switch base currency to ${curr}`}
+                  >
+                    {curr}
+                  </button>
+                ))}
+              </div>
+              <span
+                className="hidden xl:inline text-2xs font-mono text-slate-500 whitespace-nowrap"
+                title={
+                  fxSource === 'benchmark'
+                    ? 'Using built-in benchmark rates — live ECB fix not loaded yet'
+                    : `ECB reference rates as of ${fxAsOf}`
+                }
+              >
+                {fxSource === 'benchmark' ? 'FX: benchmark' : `FX: ECB ${fxAsOf}`}
+              </span>
             </div>
 
             {/* Profile Persona Switcher */}
@@ -154,6 +173,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Upload className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden sm:inline">Load Statement</span>
+            </button>
+
+            {/* NAV Refresh */}
+            <button
+              onClick={onOpenNavRefresh}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-slate-300 bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 hover:text-white transition-colors flex items-center gap-1.5"
+              title="Refresh mutual fund NAVs from the AMFI feed"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden lg:inline">Refresh NAVs</span>
             </button>
 
             {/* Reset to Sample Data */}

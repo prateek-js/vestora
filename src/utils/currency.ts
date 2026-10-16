@@ -1,6 +1,9 @@
 import { CurrencyCode } from '../types/wealth';
 
-// Standard normalized FX benchmark rates
+// FX rates: seeded with static benchmarks, then overwritten in place by
+// refreshFxRates() when live ECB fixes load (see liveRates.ts). Components
+// read via convertCurrency(), so they pick up live rates with no re-render
+// coupling — new valuations surface on the next interaction.
 export const FX_RATES: Record<CurrencyCode, Record<CurrencyCode, number>> = {
   INR: {
     INR: 1,

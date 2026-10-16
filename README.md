@@ -60,11 +60,18 @@ Visit `http://localhost:3000` to view the application.
 
 ## 🔒 Privacy & Data
 
-Vestora runs entirely in your browser. Holdings you add (or load from the sample
-statements) are persisted to `localStorage` under the `vestora.portfolio.v1` key and
-never leave your device — there is no backend, no account, and no analytics on your
-financial data. Use the reset button in the navbar to clear the saved ledger and
-return to the sample portfolio.
+Vestora runs entirely in your browser:
+
+- **Persistence** — holdings live in `localStorage` (`vestora.portfolio.v1`).
+  There is no backend, no account, and no analytics on your financial data.
+- **Live data** — NAVs come from the public AMFI feed (mfapi.in) and FX rates
+  from ECB reference rates (Frankfurter API), both fetched anonymously with
+  6-hour caching; benchmark fallbacks keep the app fully offline-capable.
+- **Statement import** — CAS (CAMS/KFintech), bank deposit registries, and
+  MF Central holdings exports (CSV/TSV) are parsed in-page; files never leave
+  your device.
+- **Portability** — export the ledger as JSON from *Manage Portfolio Data*
+  (reset icon in the navbar) and restore it on any other browser.
 
 > **Disclaimer:** Vestora is a tracking and scenario-modeling tool. All figures are
 > self-reported or illustrative sample data, yields are indicative, and nothing in
@@ -74,7 +81,8 @@ return to the sample portfolio.
 
 ## 🗄️ Architecture Notes
 
-Client-side normalization engine (`src/utils/`) with a ready-to-deploy
-PostgreSQL / Drizzle ORM relational schema planned for the hosted multi-device
-version. FX rates are currently static benchmarks (`src/utils/currency.ts`); live
-NAV/FX feeds are on the roadmap.
+Client-side normalization engine (`src/utils/`). Statement parsing in
+`statementImport.ts` auto-detects format from header rows; `navRefresh.ts`
+maps holdings to AMFI scheme codes (one-time, guided) for live NAVs. Direct
+MF Central / Account Aggregator integration requires a regulated FIU
+partnership and is on the post-launch roadmap.

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CurrencyCode, Holding, ReinvestmentSolution, UserProfile } from './types/wealth';
 import { DEMO_PROFILES, CURATED_REINVESTMENT_SOLUTIONS } from './data/mockData';
 import { Navbar } from './components/Navbar';
@@ -23,7 +23,10 @@ import {
 } from './utils/portfolioStorage';
 import { todayIso } from './utils/maturity';
 import { trackEvent } from './utils/analytics';
-import { Info, X, RotateCcw } from 'lucide-react';
+import { refreshFxRates } from './utils/liveRates';
+import { NavRefreshModal } from './components/NavRefreshModal';
+import { buildExport, downloadPortfolioExport, parsePortfolioExport } from './utils/backupRestore';
+import { Info, X, RotateCcw, Download, Upload } from 'lucide-react';
 
 type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
 
@@ -48,12 +51,33 @@ export default function App() {
   const [holdings, setHoldings] = useState<Holding[]>(initial.holdings);
   const [isDemoBannerDismissed, setIsDemoBannerDismissed] = useState(initial.restored);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [restoreError, setRestoreError] = useState('');
+  const restoreInputRef = useRef<HTMLInputElement>(null);
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isNavRefreshOpen, setIsNavRefreshOpen] = useState(false);
   const [reinvestHolding, setReinvestHolding] = useState<Holding | null>(null);
   const [reinvestSolution, setReinvestSolution] = useState<ReinvestmentSolution | null>(null);
+
+  // Live FX rates: seeded from static benchmarks, then overwritten once the
+  // ECB fix loads (cached for 6h in localStorage). The FX stamp feeds the
+  // navbar badge.
+  const [fxAsOf, setFxAsOf] = useState<string | null>(null);
+  const [fxSource, setFxSource] = useState<'live' | 'cached' | 'benchmark'>('benchmark');
+  useEffect(() => {
+    let cancelled = false;
+    refreshFxRates().then((state) => {
+      if (!cancelled) {
+        setFxAsOf(state.asOf);
+        setFxSource(state.source);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Every mutation persists — localStorage is the app's only database.
   useEffect(() => {
@@ -155,6 +179,34 @@ export default function App() {
     trackEvent('portfolio_reset');
   };
 
+  // Export a portable JSON backup of the current ledger
+  const handleExportPortfolio = () => {
+    downloadPortfolioExport(buildExport(currentProfileId, baseCurrency, holdings));
+    trackEvent('portfolio_exported', { holdings: holdings.length });
+  };
+
+  // Restore a previously exported backup file
+  const handleRestoreFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const result = parsePortfolioExport(String(reader.result ?? ''));
+        setHoldings(result.holdings);
+        if (result.baseCurrency) setBaseCurrency(result.baseCurrency);
+        setRestoreError('');
+        setIsResetConfirmOpen(false);
+        trackEvent('portfolio_restored', { holdings: result.holdings.length });
+      } catch (err) {
+        setRestoreError(err instanceof Error ? err.message : 'Could not restore this file.');
+      }
+    };
+    reader.onerror = () => setRestoreError('Could not read that file.');
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       {/* Top Bar Navigation */}
@@ -167,8 +219,11 @@ export default function App() {
         setProfile={handleProfileSwitch}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenNavRefresh={() => setIsNavRefreshOpen(true)}
         maturedCount={maturedCount}
         onResetToSample={() => setIsResetConfirmOpen(true)}
+        fxAsOf={fxAsOf}
+        fxSource={fxSource}
       />
 
       {/* Demo notice for first-time / sample-data visitors */}
@@ -254,8 +309,15 @@ export default function App() {
       <UploadStatementModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        baseCurrency={baseCurrency}
         onImportHoldings={handleImportHoldings}
+      />
+
+      <NavRefreshModal
+        isOpen={isNavRefreshOpen}
+        onClose={() => setIsNavRefreshOpen(false)}
+        holdings={holdings}
+        baseCurrency={baseCurrency}
+        onHoldingsRefreshed={setHoldings}
       />
 
       <ReinvestModal
@@ -270,32 +332,71 @@ export default function App() {
         onExecuteReinvestment={handleExecuteReinvestment}
       />
 
-      {/* Reset-to-sample confirmation */}
+      {/* Portfolio data management: export / restore / reset */}
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm shadow-2xl p-6">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <RotateCcw className="w-4 h-4 text-amber-400" />
-              <span>Reset to sample portfolio?</span>
+              <span>Manage Portfolio Data</span>
             </h3>
             <p className="text-xs text-slate-400 mt-3 leading-relaxed">
-              This clears your saved ledger from this browser and reloads the sample data. It cannot
-              be undone.
+              Your ledger lives only in this browser. Export it as a JSON backup to move it to
+              another device, or reset to the sample portfolio.
             </p>
-            <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+
+            <div className="mt-4 space-y-2">
               <button
                 type="button"
-                onClick={() => setIsResetConfirmOpen(false)}
-                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                onClick={handleExportPortfolio}
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                Cancel
+                <Download className="w-3.5 h-3.5 text-sky-400" />
+                Export Backup (.json)
               </button>
+
+              <button
+                type="button"
+                onClick={() => restoreInputRef.current?.click()}
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                Restore from Backup
+              </button>
+              <input
+                ref={restoreInputRef}
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleRestoreFile}
+              />
+
               <button
                 type="button"
                 onClick={handleResetToSample}
-                className="px-5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg transition-colors shadow-sm"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                Reset Portfolio
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset to Sample Portfolio
+              </button>
+            </div>
+
+            {restoreError && (
+              <p className="mt-3 text-2xs text-rose-300 bg-rose-950/30 border border-rose-500/40 rounded-lg px-3 py-2">
+                {restoreError}
+              </p>
+            )}
+
+            <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsResetConfirmOpen(false);
+                  setRestoreError('');
+                }}
+                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

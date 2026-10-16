@@ -28,6 +28,8 @@ export interface Holding {
   currency: CurrencyCode;
   interestRatePct?: number; // e.g. 7.4% for FD, 8.25% for EPF
   units?: number;
+  /** AMFI scheme code — enables live NAV refresh via mfapi.in. */
+  schemeCode?: number;
   navOrPrice?: number;
   purchaseDate: string; // YYYY-MM-DD
   maturityDate?: string; // YYYY-MM-DD (null for perpetual stocks/MF)
