@@ -1,7 +1,15 @@
 import React from 'react';
 import { CurrencyCode, UserProfile } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
+import { trackEvent } from '../utils/analytics';
 import { Plus, Upload, User, RotateCcw } from 'lucide-react';
+
+const TAB_NAMES = {
+  overview: 'Overview & Ledger',
+  radar: 'Maturity Radar',
+  tax: 'Tax & Diversification',
+  simulator: 'Macro Stress Lab',
+} as const;
 
 interface NavbarProps {
   activeTab: 'overview' | 'radar' | 'tax' | 'simulator';
@@ -28,6 +36,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   maturedCount,
   onResetToSample,
 }) => {
+  const handleTabChange = (tab: NavbarProps['activeTab']) => {
+    setActiveTab(tab);
+    trackEvent('tab_viewed', { tab: TAB_NAMES[tab] });
+  };
+
   return (
     <header className="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Zone 2: Navigation Links (single line, whitespace-nowrap) */}
           <nav className="hidden md:flex items-center gap-1 sm:gap-2">
             <button
-              onClick={() => setActiveTab('overview')}
+              onClick={() => handleTabChange('overview')}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'overview'
                   ? 'bg-slate-800 text-white'
@@ -55,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Overview & Ledger
             </button>
             <button
-              onClick={() => setActiveTab('radar')}
+              onClick={() => handleTabChange('radar')}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 relative flex items-center gap-1.5 ${
                 activeTab === 'radar'
                   ? 'bg-slate-800 text-white'
@@ -70,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
             <button
-              onClick={() => setActiveTab('tax')}
+              onClick={() => handleTabChange('tax')}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'tax'
                   ? 'bg-slate-800 text-white'
@@ -80,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Tax & Diversification
             </button>
             <button
-              onClick={() => setActiveTab('simulator')}
+              onClick={() => handleTabChange('simulator')}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'simulator'
                   ? 'bg-slate-800 text-white'
@@ -167,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Navigation Bar */}
         <div className="md:hidden flex items-center justify-around py-2 border-t border-slate-800/80 text-xs">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => handleTabChange('overview')}
             className={`py-1 px-2 rounded font-medium ${
               activeTab === 'overview' ? 'text-indigo-400' : 'text-slate-400'
             }`}
@@ -175,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             Overview
           </button>
           <button
-            onClick={() => setActiveTab('radar')}
+            onClick={() => handleTabChange('radar')}
             className={`py-1 px-2 rounded font-medium relative ${
               activeTab === 'radar' ? 'text-indigo-400' : 'text-slate-400'
             }`}
@@ -183,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             Maturity Radar {maturedCount > 0 && `(${maturedCount})`}
           </button>
           <button
-            onClick={() => setActiveTab('tax')}
+            onClick={() => handleTabChange('tax')}
             className={`py-1 px-2 rounded font-medium ${
               activeTab === 'tax' ? 'text-indigo-400' : 'text-slate-400'
             }`}
@@ -191,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             Tax & Audit
           </button>
           <button
-            onClick={() => setActiveTab('simulator')}
+            onClick={() => handleTabChange('simulator')}
             className={`py-1 px-2 rounded font-medium ${
               activeTab === 'simulator' ? 'text-indigo-400' : 'text-slate-400'
             }`}

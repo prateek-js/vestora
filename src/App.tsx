@@ -22,6 +22,7 @@ import {
   savePersistedPortfolio,
 } from './utils/portfolioStorage';
 import { todayIso } from './utils/maturity';
+import { trackEvent } from './utils/analytics';
 import { Info, X, RotateCcw } from 'lucide-react';
 
 type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
@@ -72,11 +73,13 @@ export default function App() {
     setCurrentProfileId(newProfile.id);
     setHoldings(sampleHoldingsFor(newProfile));
     setBaseCurrency(newProfile.baseCurrency);
+    trackEvent('profile_switched', { profile_id: newProfile.id });
   };
 
   // Add Holding
   const handleAddHolding = (newHolding: Holding) => {
     setHoldings((prev) => [newHolding, ...prev]);
+    trackEvent('holding_added', { category: newHolding.category, currency: newHolding.currency });
   };
 
   // Delete Holding
@@ -87,6 +90,7 @@ export default function App() {
   // Import Statement Holdings
   const handleImportHoldings = (imported: Holding[]) => {
     setHoldings((prev) => [...imported, ...prev]);
+    trackEvent('sample_statement_imported', { count: imported.length });
   };
 
   // Trigger Reinvestment Modal
@@ -132,6 +136,11 @@ export default function App() {
     };
 
     setHoldings([newReinvestedHolding, ...remainingHoldings]);
+    trackEvent('reinvestment_executed', {
+      solution_id: solution.id,
+      risk_tier: solution.riskTier,
+      amount: deployedAmount,
+    });
   };
 
   // Reset to a fresh sample portfolio
@@ -143,6 +152,7 @@ export default function App() {
     setBaseCurrency(profile.baseCurrency);
     setIsDemoBannerDismissed(false);
     setIsResetConfirmOpen(false);
+    trackEvent('portfolio_reset');
   };
 
   return (
