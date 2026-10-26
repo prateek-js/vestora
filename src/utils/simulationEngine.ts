@@ -248,3 +248,162 @@ export function runMacroSimulation(
         : ['Your current allocation maintains healthy resilience across standard economic cycles.'],
   };
 }
+
+export interface InputBasedShuffleResult {
+  allocation: PortfolioAllocation;
+  rationale: string;
+  shifts: {
+    asset: string;
+    key: keyof PortfolioAllocation;
+    from: number;
+    to: number;
+    diff: number;
+  }[];
+  keyDrivers: string[];
+}
+
+export function computeInputBasedShuffle(
+  params: MacroParameters,
+  currentAllocation: PortfolioAllocation
+): InputBasedShuffleResult {
+  // Start from baseline anchor weights
+  let eq = 40;
+  let fi = 30;
+  let gold = 10;
+  let ret = 15;
+  let cash = 5;
+
+  const keyDrivers: string[] = [];
+
+  // 1. Inflation factor (baseline: 5.0%)
+  const inflationDelta = params.inflationRatePct - 5.0;
+  if (inflationDelta > 0) {
+    const goldBoost = Math.round(inflationDelta * 2.2);
+    gold += goldBoost;
+    fi -= Math.round(inflationDelta * 1.5);
+    cash -= Math.round(inflationDelta * 0.7);
+    keyDrivers.push(`Inflation at ${params.inflationRatePct}% demands +${goldBoost}% higher Gold allocation`);
+  } else if (inflationDelta < -1) {
+    fi += 4;
+    gold -= 3;
+    keyDrivers.push(`Low inflation (${params.inflationRatePct}%) favors fixed income yields`);
+  }
+
+  // 2. Interest Rate Hikes (baseline: 0 bps)
+  const rateDeltaBps = params.interestRateHikeBps;
+  if (rateDeltaBps > 0) {
+    const rateFactor = rateDeltaBps / 100; // e.g. 1.5 for 150 bps
+    fi -= Math.round(rateFactor * 2.5); // duration capital loss
+    cash += Math.round(rateFactor * 2.0); // high money market yields
+    eq -= Math.round(rateFactor * 1.5); // multiple contraction
+    gold += Math.round(rateFactor * 1.0);
+    keyDrivers.push(`Rate hike (+${rateDeltaBps} bps) cuts bond duration risk and raises cash buffer to capture high rates`);
+  } else if (rateDeltaBps < 0) {
+    const cutFactor = Math.abs(rateDeltaBps) / 100;
+    eq += Math.round(cutFactor * 3.0);
+    fi += Math.round(cutFactor * 2.0);
+    cash -= Math.round(cutFactor * 2.5);
+    keyDrivers.push(`Rate cuts (${rateDeltaBps} bps) expand equity valuations and bond capital appreciation`);
+  }
+
+  // 3. Geopolitical Shock Index (0-10, baseline ~3)
+  if (params.geopoliticalShockIndex >= 5) {
+    const shockFactor = params.geopoliticalShockIndex - 3;
+    gold += Math.round(shockFactor * 1.8);
+    cash += Math.round(shockFactor * 1.2);
+    eq -= Math.round(shockFactor * 2.5);
+    keyDrivers.push(`Geopolitical tension (${params.geopoliticalShockIndex}/10) boosts safe-haven Gold and liquidity`);
+  }
+
+  // 4. Equity Market Shock (-30% to +20%)
+  if (params.equityMarketShockPct <= -10) {
+    const crashFactor = Math.abs(params.equityMarketShockPct) / 10;
+    eq -= Math.round(crashFactor * 3.5);
+    gold += Math.round(crashFactor * 1.5);
+    cash += Math.round(crashFactor * 2.0);
+    keyDrivers.push(`Equity drawdown (${params.equityMarketShockPct}%) shifts capital into resilient hedges & dry powder`);
+  } else if (params.equityMarketShockPct >= 10) {
+    const bullFactor = params.equityMarketShockPct / 10;
+    eq += Math.round(bullFactor * 5.0);
+    fi -= Math.round(bullFactor * 2.5);
+    cash -= Math.round(bullFactor * 2.5);
+    keyDrivers.push(`Strong equity momentum (+${params.equityMarketShockPct}%) increases equity exposure`);
+  }
+
+  // Clamping to sane bounds
+  eq = Math.max(15, Math.min(65, eq));
+  fi = Math.max(10, Math.min(45, fi));
+  gold = Math.max(5, Math.min(35, gold));
+  ret = Math.max(8, Math.min(22, ret));
+  cash = Math.max(4, Math.min(25, cash));
+
+  // Normalize so total is strictly 100
+  const rawSum = eq + fi + gold + ret + cash;
+  const target: PortfolioAllocation = {
+    equities: Math.round((eq / rawSum) * 100),
+    fixedIncome: Math.round((fi / rawSum) * 100),
+    goldCommodity: Math.round((gold / rawSum) * 100),
+    retirementPensions: Math.round((ret / rawSum) * 100),
+    liquidCash: Math.round((cash / rawSum) * 100),
+  };
+
+  const currentSum =
+    target.equities +
+    target.fixedIncome +
+    target.goldCommodity +
+    target.retirementPensions +
+    target.liquidCash;
+  if (currentSum !== 100) {
+    target.liquidCash += 100 - currentSum;
+  }
+
+  const shifts = [
+    {
+      asset: 'Equities & MF',
+      key: 'equities' as const,
+      from: currentAllocation.equities,
+      to: target.equities,
+      diff: target.equities - currentAllocation.equities,
+    },
+    {
+      asset: 'Fixed Income',
+      key: 'fixedIncome' as const,
+      from: currentAllocation.fixedIncome,
+      to: target.fixedIncome,
+      diff: target.fixedIncome - currentAllocation.fixedIncome,
+    },
+    {
+      asset: 'Gold / SGB',
+      key: 'goldCommodity' as const,
+      from: currentAllocation.goldCommodity,
+      to: target.goldCommodity,
+      diff: target.goldCommodity - currentAllocation.goldCommodity,
+    },
+    {
+      asset: 'Retirement (PF/NPS)',
+      key: 'retirementPensions' as const,
+      from: currentAllocation.retirementPensions,
+      to: target.retirementPensions,
+      diff: target.retirementPensions - currentAllocation.retirementPensions,
+    },
+    {
+      asset: 'Cash Buffer',
+      key: 'liquidCash' as const,
+      from: currentAllocation.liquidCash,
+      to: target.liquidCash,
+      diff: target.liquidCash - currentAllocation.liquidCash,
+    },
+  ];
+
+  const primaryRation =
+    keyDrivers.length > 0
+      ? keyDrivers.slice(0, 2).join(' · ')
+      : 'Balanced scenario calibration across multi-asset classes.';
+
+  return {
+    allocation: target,
+    rationale: primaryRation,
+    shifts,
+    keyDrivers,
+  };
+}

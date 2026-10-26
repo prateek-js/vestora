@@ -4,6 +4,7 @@ import { convertCurrency, formatCurrency, formatPercent } from '../utils/currenc
 import {
   computePortfolioAllocation,
   runMacroSimulation,
+  computeInputBasedShuffle,
 } from '../utils/simulationEngine';
 import {
   Sliders,
@@ -16,6 +17,7 @@ import {
   Info,
   Flame,
   CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 
 interface MacroSimulatorTabProps {
@@ -51,6 +53,26 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
 
   // Shuffled Allocation State (starts matched to current allocation)
   const [shuffledAlloc, setShuffledAlloc] = useState<PortfolioAllocation>(initialAllocation);
+  const [shuffledFeedback, setShuffledFeedback] = useState(false);
+
+  // Dynamic recommendation based strictly on the current slider inputs
+  const inputCalibratedShuffle = useMemo(() => {
+    return computeInputBasedShuffle(params, initialAllocation);
+  }, [params, initialAllocation]);
+
+  // Check if current shuffled allocation aligns with input-based calculation
+  const isMatchingInputs =
+    shuffledAlloc.equities === inputCalibratedShuffle.allocation.equities &&
+    shuffledAlloc.fixedIncome === inputCalibratedShuffle.allocation.fixedIncome &&
+    shuffledAlloc.goldCommodity === inputCalibratedShuffle.allocation.goldCommodity &&
+    shuffledAlloc.retirementPensions === inputCalibratedShuffle.allocation.retirementPensions &&
+    shuffledAlloc.liquidCash === inputCalibratedShuffle.allocation.liquidCash;
+
+  const handleApplyInputBasedShuffle = () => {
+    setShuffledAlloc(inputCalibratedShuffle.allocation);
+    setShuffledFeedback(true);
+    setTimeout(() => setShuffledFeedback(false), 2400);
+  };
 
   // Run simulation
   const simResult = useMemo(() => {
@@ -328,6 +350,86 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Dynamic Scenario-Adaptive Shuffle Option based on Input Parameters */}
+        <div className="bg-gradient-to-r from-slate-950 via-slate-950 to-indigo-950/40 border border-indigo-500/30 rounded-xl p-4 mt-3 space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-white">
+                    Shuffle Portfolio Based on Input Parameters
+                  </h4>
+                  <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                    Live Scenario Calibration
+                  </span>
+                </div>
+                <p className="text-2xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  {inputCalibratedShuffle.rationale}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleApplyInputBasedShuffle}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shrink-0 font-mono shadow-sm active:scale-95 ${
+                isMatchingInputs
+                  ? 'bg-emerald-600/90 text-white border border-emerald-500/50'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
+              }`}
+            >
+              {isMatchingInputs ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>Portfolio Aligned with Inputs</span>
+                </>
+              ) : (
+                <>
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span>Shuffle to Match Scenario</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Shift breakdown per asset class */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 font-mono text-2xs">
+            {inputCalibratedShuffle.shifts.map((shift) => (
+              <div
+                key={shift.key}
+                className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between"
+              >
+                <span className="text-slate-400 truncate">{shift.asset}</span>
+                <div className="flex items-baseline justify-between mt-1.5">
+                  <span className="text-white font-bold text-xs">{shift.to}%</span>
+                  <span
+                    className={`font-semibold ${
+                      shift.diff > 0
+                        ? 'text-emerald-400'
+                        : shift.diff < 0
+                        ? 'text-rose-400'
+                        : 'text-slate-500'
+                    }`}
+                  >
+                    {shift.diff > 0 ? `+${shift.diff}%` : shift.diff < 0 ? `${shift.diff}%` : '0%'}
+                  </span>
+                </div>
+                <span className="text-3xs text-slate-500 mt-0.5">Current: {shift.from}%</span>
+              </div>
+            ))}
+          </div>
+
+          {shuffledFeedback && (
+            <div className="text-2xs font-mono text-emerald-400 flex items-center gap-1.5 pt-1">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>Shuffled target allocation applied! Review simulated trajectory below.</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 3. Multi-Year Wealth Trajectory Chart & KPI Summary */}
@@ -475,20 +577,35 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           </div>
 
           {/* Quick Presets */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
+              type="button"
+              onClick={handleApplyInputBasedShuffle}
+              className={`px-2.5 py-1 text-2xs font-mono font-medium rounded transition-colors flex items-center gap-1 ${
+                isMatchingInputs
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-indigo-950/60 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/60'
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>⚡ Calibrate to Inputs</span>
+            </button>
+            <button
+              type="button"
               onClick={() => applyRecommendedPreset('DEFENSIVE')}
               className="px-2.5 py-1 text-2xs font-mono font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors"
             >
               Defensive Shield
             </button>
             <button
+              type="button"
               onClick={() => applyRecommendedPreset('ALL_WEATHER')}
               className="px-2.5 py-1 text-2xs font-mono font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors"
             >
-              All-Weather (Balanced)
+              All-Weather
             </button>
             <button
+              type="button"
               onClick={() => applyRecommendedPreset('MAX_GROWTH')}
               className="px-2.5 py-1 text-2xs font-mono font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors"
             >
