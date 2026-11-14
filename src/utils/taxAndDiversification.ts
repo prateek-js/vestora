@@ -1,4 +1,4 @@
-import { CurrencyCode, Holding } from '../types/wealth';
+import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
 import { convertCurrency } from './currency';
 
 export interface TaxHarvestingAudit {
@@ -238,4 +238,132 @@ export function generateAutomatedInsights(
   });
 
   return insights;
+}
+
+export type RiskPostureLabel = 'No Holdings' | 'Conservative' | 'Moderate' | 'Growth' | 'Aggressive';
+
+export interface PortfolioRiskScore {
+  score: number; // 1-100 (0 when empty)
+  posture: RiskPostureLabel;
+  annualizedVolatilityPct: number;
+  equityExposurePct: number;
+  topHoldingSharePct: number;
+  concentrationHhi: number;
+}
+
+const CATEGORY_VOLATILITY_PCT: Record<AssetCategory, number> = {
+  EQUITY_STOCK: 24.0,
+  MUTUAL_FUND: 15.5,
+  SOVEREIGN_GOLD_BOND: 13.0,
+  NPS: 10.5,
+  CORP_BOND: 6.0,
+  GOVT_BOND: 4.5,
+  FIXED_DEPOSIT: 1.0,
+  RECURRING_DEPOSIT: 1.0,
+  EPF: 0.8,
+  PPF: 0.8,
+  SAVINGS_CASH: 0.5,
+};
+
+export function computePortfolioRiskScore(
+  holdings: Holding[],
+  baseCurrency: CurrencyCode
+): PortfolioRiskScore {
+  if (holdings.length === 0) {
+    return {
+      score: 0,
+      posture: 'No Holdings',
+      annualizedVolatilityPct: 0,
+      equityExposurePct: 0,
+      topHoldingSharePct: 0,
+      concentrationHhi: 0,
+    };
+  }
+
+  const valued = holdings.map((h) => ({
+    holding: h,
+    val: Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency)),
+  }));
+
+  const totalValuation = valued.reduce((sum, item) => sum + item.val, 0);
+  if (totalValuation <= 0) {
+    return {
+      score: 0,
+      posture: 'No Holdings',
+      annualizedVolatilityPct: 0,
+      equityExposurePct: 0,
+      topHoldingSharePct: 0,
+      concentrationHhi: 0,
+    };
+  }
+
+  let weightedVolPct = 0;
+  let equityExposureVal = 0;
+  let hhi = 0;
+  let topHoldingShare = 0;
+
+  valued.forEach(({ holding, val }) => {
+    const weight = val / totalValuation;
+    if (weight <= 0) return;
+
+    hhi += weight * weight;
+    if (weight > topHoldingShare) topHoldingShare = weight;
+
+    if (holding.category === 'MUTUAL_FUND' || holding.category === 'EQUITY_STOCK') {
+      equityExposureVal += val;
+    }
+
+    const baseVol = CATEGORY_VOLATILITY_PCT[holding.category] ?? 5.0;
+    const isMarketLinked =
+      holding.category === 'EQUITY_STOCK' ||
+      holding.category === 'MUTUAL_FUND' ||
+      holding.category === 'SOVEREIGN_GOLD_BOND' ||
+      holding.category === 'NPS';
+
+    const swingPremium = isMarketLinked
+      ? Math.min(3.5, Math.max(0, (Math.abs(holding.unrealizedGainPct) - 20) * 0.08))
+      : 0;
+    const drawdownPremium =
+      holding.unrealizedGainPct < -5
+        ? Math.min(2.5, Math.abs(holding.unrealizedGainPct) * 0.1)
+        : 0;
+
+    weightedVolPct += weight * (baseVol + swingPremium + drawdownPremium);
+  });
+
+  const volScore = (weightedVolPct / 24) * 74 + 6;
+  const concentrationPenalty =
+    holdings.length <= 1 ? 15 : Math.min(18, Math.max(0, (hhi - 0.14) * 24));
+
+  const score = Math.max(1, Math.min(100, Math.round(volScore + concentrationPenalty)));
+
+  let posture: RiskPostureLabel = 'Conservative';
+  if (score >= 75) posture = 'Aggressive';
+  else if (score >= 55) posture = 'Growth';
+  else if (score >= 30) posture = 'Moderate';
+
+  return {
+    score,
+    posture,
+    annualizedVolatilityPct: Number(weightedVolPct.toFixed(1)),
+    equityExposurePct: Math.round((equityExposureVal / totalValuation) * 100),
+    topHoldingSharePct: Math.round(topHoldingShare * 100),
+    concentrationHhi: Number(hhi.toFixed(2)),
+  };
+}
+
+export function getHolding30DayGainPct(holding: Holding): number | undefined {
+  if (typeof holding.gain30dPct === 'number' && !Number.isNaN(holding.gain30dPct)) {
+    return holding.gain30dPct;
+  }
+  if (holding.purchaseDate) {
+    const purchasedMs = Date.parse(holding.purchaseDate);
+    if (!Number.isNaN(purchasedMs)) {
+      const daysHeld = (Date.now() - purchasedMs) / 86_400_000;
+      if (daysHeld >= -1 && daysHeld <= 30) {
+        return holding.unrealizedGainPct;
+      }
+    }
+  }
+  return undefined;
 }

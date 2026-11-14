@@ -37,6 +37,8 @@ export interface Holding {
   daysToMaturity?: number;
   unrealizedGain: number;
   unrealizedGainPct: number;
+  /** Trailing 30-day percentage gain (optional; derived automatically for holdings purchased within 30 days). */
+  gain30dPct?: number;
   taxTag: TaxTag;
   notes?: string;
 }

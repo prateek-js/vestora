@@ -7,6 +7,9 @@ import {
   Tooltip,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  ReferenceLine,
   Line,
   XAxis,
   YAxis,
@@ -14,7 +17,11 @@ import {
 } from 'recharts';
 import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
 import { convertCurrency, formatCurrency, formatPercent } from '../utils/currency';
-import { generateAutomatedInsights } from '../utils/taxAndDiversification';
+import {
+  generateAutomatedInsights,
+  computePortfolioRiskScore,
+  getHolding30DayGainPct,
+} from '../utils/taxAndDiversification';
 import { downloadPortfolioExcelTemplate } from '../utils/statementImport';
 import {
   Clock,
@@ -32,6 +39,7 @@ import {
   Download,
   TrendingUp,
   TrendingDown,
+  Gauge,
 } from 'lucide-react';
 
 const CATEGORY_META: Record<AssetCategory, { label: string; shortLabel: string; color: string }> = {
@@ -93,6 +101,70 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
             <span className={`font-mono font-medium tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
               {isPositive ? '+' : ''}
               {formatCurrency(data.unrealizedGain, baseCurrency, { compact: true })} ({formatPercent(data.gainPct)})
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+interface MomGrowthPoint {
+  month: string;
+  fullDate: string;
+  netGrowth: number;
+  netGrowthPct: number;
+  capitalFlow: number;
+  marketGain: number;
+  endingValuation: number;
+}
+
+interface MomGrowthTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: MomGrowthPoint }>;
+  label?: string;
+  baseCurrency: CurrencyCode;
+}
+
+const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, label, baseCurrency }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const isPositive = data.netGrowth >= 0;
+    return (
+      <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3.5 shadow-2xl backdrop-blur-md min-w-[220px]">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
+          <span className="font-semibold text-white">{data.fullDate || label}</span>
+          <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {isPositive ? '+' : ''}
+            {formatPercent(data.netGrowthPct)}
+          </span>
+        </div>
+        <div className="space-y-1.5 text-xs">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-slate-400">Net Growth (MoM)</span>
+            <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {isPositive ? '+' : ''}
+              {formatCurrency(data.netGrowth, baseCurrency, { compact: false, showDecimals: false })}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-slate-400">Market Return</span>
+            <span className={`font-mono tabular-nums ${data.marketGain >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+              {data.marketGain >= 0 ? '+' : ''}
+              {formatCurrency(data.marketGain, baseCurrency, { compact: true })}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-slate-400">Capital Added</span>
+            <span className="font-mono text-slate-300 tabular-nums">
+              +{formatCurrency(data.capitalFlow, baseCurrency, { compact: true })}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80">
+            <span className="text-slate-400">Month-End Value</span>
+            <span className="font-mono text-white tabular-nums">
+              {formatCurrency(data.endingValuation, baseCurrency, { compact: true })}
             </span>
           </div>
         </div>
@@ -211,6 +283,51 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     const changePct = prevVal > 0 ? (changeAmount / prevVal) * 100 : 0;
     return { changeAmount, changePct };
   }, [fullTrendData, totalValuation]);
+
+  // Month-over-Month Net Growth series derived from monthly valuation profile
+  const momGrowthData = useMemo<MomGrowthPoint[]>(() => {
+    const points: MomGrowthPoint[] = [];
+    for (let i = 1; i < fullTrendData.length; i++) {
+      const prev = fullTrendData[i - 1];
+      const curr = fullTrendData[i];
+      const netGrowth = curr.valuation - prev.valuation;
+      const netGrowthPct = prev.valuation > 0 ? (netGrowth / prev.valuation) * 100 : 0;
+      const capitalFlow = curr.invested - prev.invested;
+      const marketGain = netGrowth - capitalFlow;
+      points.push({
+        month: curr.month,
+        fullDate: curr.fullDate,
+        netGrowth,
+        netGrowthPct,
+        capitalFlow,
+        marketGain,
+        endingValuation: curr.valuation,
+      });
+    }
+    return points;
+  }, [fullTrendData]);
+
+  const visibleMomData = useMemo(() => {
+    if (trendHorizon === '3M') return momGrowthData.slice(-3);
+    if (trendHorizon === '6M') return momGrowthData.slice(-6);
+    return momGrowthData;
+  }, [momGrowthData, trendHorizon]);
+
+  const momSummary = useMemo(() => {
+    if (visibleMomData.length === 0 || totalValuation === 0) {
+      return { avgMonthlyGrowth: 0, positiveMonths: 0, bestMonth: null as MomGrowthPoint | null };
+    }
+    const sum = visibleMomData.reduce((acc, p) => acc + p.netGrowth, 0);
+    const positiveMonths = visibleMomData.filter((p) => p.netGrowth >= 0).length;
+    const bestMonth = visibleMomData.reduce((best, curr) =>
+      curr.netGrowth > best.netGrowth ? curr : best
+    );
+    return {
+      avgMonthlyGrowth: Math.round(sum / visibleMomData.length),
+      positiveMonths,
+      bestMonth,
+    };
+  }, [visibleMomData, totalValuation]);
 
   // Maturing and Matured Holdings
   const maturedHoldings = useMemo(() => {
@@ -340,6 +457,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     return generateAutomatedInsights(holdings, baseCurrency);
   }, [holdings, baseCurrency]);
 
+  // Portfolio Risk Score (1-100) based on allocation & holding volatility
+  const riskScore = useMemo(() => {
+    return computePortfolioRiskScore(holdings, baseCurrency);
+  }, [holdings, baseCurrency]);
+
+  // Holdings gaining >15% over the last 30 days
+  const surgeHoldings30d = useMemo(() => {
+    return holdings
+      .map((h) => ({ holding: h, gain30d: getHolding30DayGainPct(h) }))
+      .filter((item): item is { holding: Holding; gain30d: number } => item.gain30d !== undefined && item.gain30d > 15)
+      .sort((a, b) => b.gain30d - a.gain30d);
+  }, [holdings]);
+
   // Filtered Holdings
   const filteredHoldings = useMemo(() => {
     return holdings.filter((h) => {
@@ -351,6 +481,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       if (!matchesSearch) return false;
 
       if (selectedCategory === 'ALL') return true;
+      if (selectedCategory === 'SURGE_30D') {
+        const gain30d = getHolding30DayGainPct(h);
+        return gain30d !== undefined && gain30d > 15;
+      }
       if (selectedCategory === 'MATURED') {
         return h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 30);
       }
@@ -587,6 +721,43 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
       )}
 
+      {/* Visual Notification for Holdings Gaining >15% in Last 30 Days */}
+      {surgeHoldings30d.length > 0 && (
+        <div
+          role="status"
+          aria-label="30-day high gainers notification"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/35 text-xs"
+        >
+          <div className="flex items-start sm:items-center gap-2 text-emerald-100 min-w-0">
+            <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />
+            <span className="leading-relaxed">
+              <strong className="font-semibold text-emerald-300">
+                {surgeHoldings30d.length} holding{surgeHoldings30d.length > 1 ? 's' : ''} gained &gt;15% in 30 days:
+              </strong>{' '}
+              <span className="font-mono text-emerald-200/90 tabular-nums">
+                {surgeHoldings30d
+                  .slice(0, 2)
+                  .map((item) => `${item.holding.name} (+${item.gain30d.toFixed(1)}%)`)
+                  .join(', ')}
+                {surgeHoldings30d.length > 2 ? ` +${surgeHoldings30d.length - 2} more` : ''}
+              </span>
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setWorkspaceView('ledger');
+              setSelectedCategory((prev) => (prev === 'SURGE_30D' ? 'ALL' : 'SURGE_30D'));
+            }}
+            className="text-xs font-semibold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
+          >
+            <span>{selectedCategory === 'SURGE_30D' ? 'Show All Holdings' : 'Filter Top Gainers'}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* 2. Clean 4-Card KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
@@ -629,13 +800,64 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
-          <div className="text-xs text-slate-400">Active Holdings</div>
-          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white mt-1.5 tabular-nums">
-            {holdings.length}
+        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="text-slate-400">Portfolio Risk Score</span>
+              <span
+                className={`inline-flex items-center gap-1 font-medium ${
+                  riskScore.score === 0
+                    ? 'text-slate-500'
+                    : riskScore.score >= 75
+                    ? 'text-rose-400'
+                    : riskScore.score >= 55
+                    ? 'text-amber-400'
+                    : riskScore.score >= 30
+                    ? 'text-sky-400'
+                    : 'text-emerald-400'
+                }`}
+              >
+                <Gauge className="w-3.5 h-3.5 shrink-0" />
+                <span>{riskScore.posture}</span>
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white tabular-nums">
+                {riskScore.score > 0 ? riskScore.score : '—'}
+              </span>
+              {riskScore.score > 0 && (
+                <span className="text-xs font-mono text-slate-500 tabular-nums">/ 100</span>
+              )}
+            </div>
+
+            <div
+              className="mt-2.5 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden"
+              role="progressbar"
+              aria-label="Portfolio Risk Score"
+              aria-valuenow={riskScore.score}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  riskScore.score >= 75
+                    ? 'bg-rose-400'
+                    : riskScore.score >= 55
+                    ? 'bg-amber-400'
+                    : riskScore.score >= 30
+                    ? 'bg-sky-400'
+                    : 'bg-emerald-400'
+                }`}
+                style={{ width: `${riskScore.score}%` }}
+              />
+            </div>
           </div>
-          <div className="text-xs text-slate-500 mt-1.5">
-            Across {categoryDonutData.length} asset {categoryDonutData.length === 1 ? 'category' : 'categories'}
+
+          <div className="text-xs text-slate-500 mt-2 font-mono tabular-nums">
+            {riskScore.score > 0
+              ? `${riskScore.annualizedVolatilityPct}% est. vol · ${riskScore.equityExposurePct}% equity`
+              : 'Add holdings to assess risk'}
           </div>
         </div>
       </div>
@@ -885,6 +1107,93 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               })}
             </div>
           </div>
+
+          {/* Month-over-Month Net Growth Bar Chart (Full Width below Line & Donut Row) */}
+          <div className="lg:col-span-12 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Month-over-Month Net Growth</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Monthly portfolio value delta showing expansion months vs. pullbacks ({trendHorizon} horizon)
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs font-mono tabular-nums">
+                <div>
+                  <span className="text-slate-500">Avg MoM: </span>
+                  <span className={`font-semibold ${momSummary.avgMonthlyGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {momSummary.avgMonthlyGrowth >= 0 ? '+' : ''}
+                    {formatCurrency(momSummary.avgMonthlyGrowth, baseCurrency, { compact: true })}
+                  </span>
+                </div>
+                {momSummary.bestMonth && (
+                  <div>
+                    <span className="text-slate-500">Best ({momSummary.bestMonth.month}): </span>
+                    <span className="font-semibold text-emerald-400">
+                      +{formatPercent(momSummary.bestMonth.netGrowthPct)}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-slate-500">Positive: </span>
+                  <span className="font-semibold text-slate-200">
+                    {momSummary.positiveMonths}/{visibleMomData.length} mo
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={visibleMomData} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#334155' }}
+                    dy={6}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
+                    width={64}
+                  />
+                  <ReferenceLine y={0} stroke="#475569" strokeWidth={1.25} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }}
+                    content={<MomGrowthTooltip baseCurrency={baseCurrency} />}
+                  />
+                  <Bar dataKey="netGrowth" maxBarSize={42} radius={[4, 4, 4, 4]}>
+                    {visibleMomData.map((entry) => (
+                      <Cell
+                        key={`mom-${entry.month}`}
+                        fill={entry.netGrowth >= 0 ? '#10b981' : '#f43f5e'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs text-slate-400">
+              <div className="flex items-center gap-4">
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 shrink-0" />
+                  Net Monthly Gain
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-rose-500 shrink-0" />
+                  Monthly Pullback
+                </span>
+              </div>
+              <span className="font-mono text-2xs text-slate-500">Hover bars for market vs. capital breakdown</span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -937,6 +1246,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="ALL">All Asset Classes</option>
+                <option value="SURGE_30D">30-Day Gainers (&gt;15%)</option>
                 <option value="MATURED">Matured / Near Maturity</option>
                 <option value="EQUITY">Equities & Mutual Funds</option>
                 <option value="DEBT">Fixed Deposits & Bonds</option>
@@ -1005,6 +1315,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         const valInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
                         const invInBase = convertCurrency(h.investedAmount, h.currency, baseCurrency);
                         const gainInBase = valInBase - invInBase;
+                        const gain30d = getHolding30DayGainPct(h);
+                        const isSurge30d = gain30d !== undefined && gain30d > 15;
                         const isMat = h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0);
                         const isSoon =
                           !isMat && h.daysToMaturity !== undefined && h.daysToMaturity > 0 && h.daysToMaturity <= 30;
@@ -1013,15 +1325,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           <tr
                             key={h.id}
                             className={`hover:bg-slate-800/35 transition-colors ${
-                              isMat ? 'bg-amber-950/15' : ''
+                              isMat ? 'bg-amber-950/15' : isSurge30d ? 'bg-emerald-950/10' : ''
                             }`}
                           >
                             <td className="py-3 px-4">
-                              <div className="font-medium text-slate-100">
-                                {h.name}
-                                {h.currency !== baseCurrency && (
-                                  <span className="ml-1.5 text-2xs font-mono text-slate-400">
-                                    ({h.currency})
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium text-slate-100">
+                                  {h.name}
+                                  {h.currency !== baseCurrency && (
+                                    <span className="ml-1.5 text-2xs font-mono text-slate-400">
+                                      ({h.currency})
+                                    </span>
+                                  )}
+                                </span>
+                                {isSurge30d && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-2xs font-mono font-semibold whitespace-nowrap tabular-nums">
+                                    <TrendingUp className="w-3 h-3 shrink-0" />
+                                    <span>+{gain30d.toFixed(1)}% (30d)</span>
                                   </span>
                                 )}
                               </div>

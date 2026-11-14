@@ -8,14 +8,47 @@ import {
   ShieldCheck,
   TrendingUp,
   Flame,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
-  Info,
   Calendar,
-  Lock,
-  Unlock,
 } from 'lucide-react';
+
+type MaturityWindowFilter = 'ALL' | 'URGENT_30' | 'WINDOW_60' | 'WINDOW_90' | 'BEYOND_90';
+
+interface TimelineEntry {
+  holding: Holding;
+  days: number;
+  isMatured: boolean;
+  windowKey: Exclude<MaturityWindowFilter, 'ALL'>;
+  windowLabel: string;
+  barWidthPct: number;
+  valueInBase: number;
+}
+
+function getEffectiveDaysToMaturity(holding: Holding): number | undefined {
+  if (typeof holding.daysToMaturity === 'number' && !Number.isNaN(holding.daysToMaturity)) {
+    return holding.daysToMaturity;
+  }
+  if (holding.maturityDate) {
+    const parsed = Date.parse(holding.maturityDate);
+    if (!Number.isNaN(parsed)) {
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      return Math.round((parsed - todayMidnight.getTime()) / 86_400_000);
+    }
+  }
+  if (holding.isMatured) return 0;
+  return undefined;
+}
+
+function getTimelineBarWidthPct(days: number): number {
+  if (days <= 0) return 5;
+  if (days <= 30) return Math.max(5, (days / 30) * 25);
+  if (days <= 60) return 25 + ((days - 30) / 30) * 25;
+  if (days <= 90) return 50 + ((days - 60) / 30) * 25;
+  const clamped = Math.min(days, 730);
+  return 75 + ((clamped - 90) / (730 - 90)) * 23;
+}
 
 interface MaturityRadarTabProps {
   holdings: Holding[];
@@ -30,6 +63,81 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 }) => {
   const [selectedRiskTier, setSelectedRiskTier] = useState<RiskProfile | 'ALL'>('ALL');
   const [selectedHoldingId, setSelectedHoldingId] = useState<string>('');
+  const [timelineFilter, setTimelineFilter] = useState<MaturityWindowFilter>('ALL');
+
+  // Compute Maturity Timeline entries for all holdings with a maturity date or daysToMaturity
+  const { timelineEntries, openEndedCount, bucketTotals } = useMemo(() => {
+    const entries: TimelineEntry[] = [];
+    let openEnded = 0;
+
+    const totals = {
+      urgent30Count: 0,
+      urgent30Value: 0,
+      window60Count: 0,
+      window60Value: 0,
+      window90Count: 0,
+      window90Value: 0,
+      beyond90Count: 0,
+      beyond90Value: 0,
+    };
+
+    holdings.forEach((h) => {
+      const days = getEffectiveDaysToMaturity(h);
+      if (days === undefined) {
+        openEnded += 1;
+        return;
+      }
+
+      const isMat = Boolean(h.isMatured) || days <= 0;
+      const valueInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
+
+      let windowKey: Exclude<MaturityWindowFilter, 'ALL'> = 'BEYOND_90';
+      let windowLabel = '> 90 days';
+
+      if (isMat || days <= 30) {
+        windowKey = 'URGENT_30';
+        windowLabel = isMat ? 'Matured' : 'Next 30d';
+        totals.urgent30Count += 1;
+        totals.urgent30Value += valueInBase;
+      } else if (days <= 60) {
+        windowKey = 'WINDOW_60';
+        windowLabel = '31–60d';
+        totals.window60Count += 1;
+        totals.window60Value += valueInBase;
+      } else if (days <= 90) {
+        windowKey = 'WINDOW_90';
+        windowLabel = '61–90d';
+        totals.window90Count += 1;
+        totals.window90Value += valueInBase;
+      } else {
+        totals.beyond90Count += 1;
+        totals.beyond90Value += valueInBase;
+      }
+
+      entries.push({
+        holding: h,
+        days,
+        isMatured: isMat,
+        windowKey,
+        windowLabel,
+        barWidthPct: getTimelineBarWidthPct(days),
+        valueInBase,
+      });
+    });
+
+    entries.sort((a, b) => a.days - b.days);
+
+    return {
+      timelineEntries: entries,
+      openEndedCount: openEnded,
+      bucketTotals: totals,
+    };
+  }, [holdings, baseCurrency]);
+
+  const visibleTimelineEntries = useMemo(() => {
+    if (timelineFilter === 'ALL') return timelineEntries;
+    return timelineEntries.filter((entry) => entry.windowKey === timelineFilter);
+  }, [timelineEntries, timelineFilter]);
 
   // Find all holdings that are maturing or matured
   const maturingHoldings = useMemo(() => {
@@ -45,8 +153,8 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           h.category === 'GOVT_BOND'
       )
       .sort((a, b) => {
-        const aDays = a.isMatured ? -999 : a.daysToMaturity ?? 999;
-        const bDays = b.isMatured ? -999 : b.daysToMaturity ?? 999;
+        const aDays = a.isMatured ? -999 : getEffectiveDaysToMaturity(a) ?? 999;
+        const bDays = b.isMatured ? -999 : getEffectiveDaysToMaturity(b) ?? 999;
         return aDays - bDays;
       });
   }, [holdings]);
@@ -54,7 +162,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
   // Set default selected holding
   const activeHolding = useMemo(() => {
     if (selectedHoldingId) {
-      const found = maturingHoldings.find((h) => h.id === selectedHoldingId);
+      const found = holdings.find((h) => h.id === selectedHoldingId);
       if (found) return found;
     }
     return maturingHoldings[0] || holdings[0];
@@ -99,6 +207,237 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 2. Maturity Timeline Visualization (30 / 60 / 90-Day Horizon) */}
+      <section
+        aria-label="Maturity Timeline"
+        className="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden"
+      >
+        <div className="p-5 border-b border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Maturity Timeline</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Chronological expiration horizon across dated holdings. Click any bar to stage that capital for reinvestment below.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg w-fit">
+            {(
+              [
+                { id: 'ALL', label: `All (${timelineEntries.length})` },
+                { id: 'URGENT_30', label: `Matured & ≤ 30d (${bucketTotals.urgent30Count})` },
+                { id: 'WINDOW_60', label: `31–60d (${bucketTotals.window60Count})` },
+                { id: 'WINDOW_90', label: `61–90d (${bucketTotals.window90Count})` },
+                { id: 'BEYOND_90', label: `> 90d (${bucketTotals.beyond90Count})` },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTimelineFilter(tab.id)}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                  timelineFilter === tab.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Hairline-Divided 30 / 60 / 90-Day Window Totals */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-800/80 border-b border-slate-800/80 bg-slate-950/40">
+          <div className="px-5 py-3.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-medium text-amber-400">Matured &amp; Next 30d</span>
+              <span className="font-mono text-slate-400 tabular-nums">{bucketTotals.urgent30Count}</span>
+            </div>
+            <div className="text-base font-bold font-mono text-white mt-1 tabular-nums">
+              {formatCurrency(bucketTotals.urgent30Value, baseCurrency, { compact: false, showDecimals: false })}
+            </div>
+          </div>
+
+          <div className="px-5 py-3.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-medium text-sky-400">31–60 Days</span>
+              <span className="font-mono text-slate-400 tabular-nums">{bucketTotals.window60Count}</span>
+            </div>
+            <div className="text-base font-bold font-mono text-white mt-1 tabular-nums">
+              {formatCurrency(bucketTotals.window60Value, baseCurrency, { compact: false, showDecimals: false })}
+            </div>
+          </div>
+
+          <div className="px-5 py-3.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-medium text-indigo-400">61–90 Days</span>
+              <span className="font-mono text-slate-400 tabular-nums">{bucketTotals.window90Count}</span>
+            </div>
+            <div className="text-base font-bold font-mono text-white mt-1 tabular-nums">
+              {formatCurrency(bucketTotals.window90Value, baseCurrency, { compact: false, showDecimals: false })}
+            </div>
+          </div>
+
+          <div className="px-5 py-3.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-medium text-slate-300">Beyond 90 Days</span>
+              <span className="font-mono text-slate-400 tabular-nums">{bucketTotals.beyond90Count}</span>
+            </div>
+            <div className="text-base font-bold font-mono text-white mt-1 tabular-nums">
+              {formatCurrency(bucketTotals.beyond90Value, baseCurrency, { compact: false, showDecimals: false })}
+            </div>
+          </div>
+        </div>
+
+        {/* Horizontal Bar Timeline */}
+        <div className="p-5">
+          {timelineEntries.length === 0 ? (
+            <div className="py-10 text-center text-xs text-slate-400">
+              No holdings with fixed maturity dates found. Add an FD, RD, Bond, or upload a sheet with Maturity Date values to view the timeline.
+            </div>
+          ) : visibleTimelineEntries.length === 0 ? (
+            <div className="py-10 text-center text-xs text-slate-400">
+              No holdings expire inside this window. Select <strong className="text-slate-200">All</strong> to see the full maturity schedule.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Horizon Axis Header (Desktop) */}
+              <div className="hidden md:grid md:grid-cols-12 gap-4 items-center pb-2 border-b border-slate-800/80 text-2xs font-mono text-slate-400">
+                <div className="col-span-4">Instrument &amp; Maturity Date</div>
+                <div className="col-span-6 relative h-5">
+                  <span className="absolute left-0 top-0 text-slate-300 font-semibold">Today</span>
+                  <span className="absolute left-1/4 -translate-x-1/2 top-0 text-amber-400 font-semibold">
+                    30d
+                  </span>
+                  <span className="absolute left-1/2 -translate-x-1/2 top-0 text-sky-400 font-semibold">
+                    60d
+                  </span>
+                  <span className="absolute left-3/4 -translate-x-1/2 top-0 text-indigo-400 font-semibold">
+                    90d
+                  </span>
+                  <span className="absolute right-0 top-0 text-slate-500">90d+</span>
+                </div>
+                <div className="col-span-2 text-right">Value &amp; Window</div>
+              </div>
+
+              {/* Timeline Rows */}
+              <div className="divide-y divide-slate-800/60">
+                {visibleTimelineEntries.map((entry) => {
+                  const { holding, days, isMatured, windowKey, windowLabel, barWidthPct, valueInBase } = entry;
+                  const isSelected = activeHolding?.id === holding.id;
+
+                  const barColorClass = isMatured
+                    ? 'bg-rose-500'
+                    : windowKey === 'URGENT_30'
+                    ? 'bg-amber-400'
+                    : windowKey === 'WINDOW_60'
+                    ? 'bg-sky-400'
+                    : windowKey === 'WINDOW_90'
+                    ? 'bg-indigo-400'
+                    : 'bg-slate-500';
+
+                  const labelColorClass = isMatured
+                    ? 'text-rose-400'
+                    : windowKey === 'URGENT_30'
+                    ? 'text-amber-300'
+                    : windowKey === 'WINDOW_60'
+                    ? 'text-sky-300'
+                    : windowKey === 'WINDOW_90'
+                    ? 'text-indigo-300'
+                    : 'text-slate-400';
+
+                  const daysLabel = isMatured
+                    ? days < 0
+                      ? `${Math.abs(days)}d overdue`
+                      : 'Maturing today'
+                    : `In ${days}d`;
+
+                  return (
+                    <button
+                      key={holding.id}
+                      type="button"
+                      onClick={() => setSelectedHoldingId(holding.id)}
+                      className={`w-full text-left py-3 px-2 -mx-2 rounded-lg grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                        isSelected ? 'bg-indigo-950/40' : 'hover:bg-slate-800/40'
+                      }`}
+                    >
+                      {/* Instrument Info */}
+                      <div className="md:col-span-4 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-slate-100 truncate">
+                            {holding.name}
+                          </span>
+                          {isSelected && (
+                            <span className="text-2xs font-mono text-indigo-300 shrink-0">
+                              Selected
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-2 text-2xs text-slate-400 mt-0.5 font-mono tabular-nums">
+                          <span>{holding.maturityDate || 'Date derived'}</span>
+                          <span aria-hidden="true" className="text-slate-600">·</span>
+                          <span>{holding.institution}</span>
+                        </div>
+                      </div>
+
+                      {/* Horizontal Calibrated Bar Track */}
+                      <div className="md:col-span-6">
+                        <div className="relative h-7 rounded-md bg-slate-950 border border-slate-800/90 overflow-hidden flex items-center px-2.5">
+                          {/* Subtle 0-30, 30-60, 60-90 background zones */}
+                          <div className="absolute inset-y-0 left-0 w-1/4 bg-amber-500/[0.04]" />
+                          <div className="absolute inset-y-0 left-1/4 w-1/4 bg-sky-500/[0.03]" />
+                          <div className="absolute inset-y-0 left-1/2 w-1/4 bg-indigo-500/[0.03]" />
+
+                          {/* 30d / 60d / 90d Vertical Milestone Guides */}
+                          <div className="absolute inset-y-0 left-1/4 w-px bg-amber-500/35" />
+                          <div className="absolute inset-y-0 left-1/2 w-px bg-sky-500/35" />
+                          <div className="absolute inset-y-0 left-3/4 w-px bg-indigo-500/35" />
+
+                          {/* Horizontal Duration Bar */}
+                          <div
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 h-3 rounded-r-full transition-all duration-200 ${barColorClass}`}
+                            style={{ width: `${barWidthPct}%` }}
+                          />
+
+                          {/* Days Readout Pinned Cleanly on Right */}
+                          <span className="relative z-20 ml-auto px-1.5 py-0.5 rounded bg-slate-950/85 text-2xs font-mono font-semibold text-slate-100 tabular-nums whitespace-nowrap">
+                            {daysLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Valuation & Explicit Window Text */}
+                      <div className="md:col-span-2 flex md:flex-col items-center md:items-end justify-between gap-1 font-mono tabular-nums">
+                        <span className="text-xs font-bold text-white">
+                          {formatCurrency(valueInBase, baseCurrency, { compact: true })}
+                        </span>
+                        <span className={`text-2xs font-semibold ${labelColorClass}`}>
+                          {windowLabel}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {openEndedCount > 0 && (
+            <div className="mt-4 pt-3 border-t border-slate-800/80 text-2xs text-slate-500 flex items-center justify-between gap-2">
+              <span>
+                {openEndedCount} open-ended holding{openEndedCount === 1 ? '' : 's'} (Mutual Funds, Equities, or Cash) without fixed expiration dates.
+              </span>
+              <span className="hidden sm:inline font-mono text-slate-400">
+                Milestones: 30d · 60d · 90d
+              </span>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* 2. Maturing Assets Pipeline & Selector */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
