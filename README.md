@@ -1,88 +1,47 @@
-# Vestora - Unified Wealth & Reinvestment OS
+# Vestora — Personal Wealth Tracker & Portfolio Simulator
 
-> **All-in-one multi-asset wealth tracker, automated maturity reinvestment engine across 4 risk tiers, tax harvesting auditor, and macroeconomic stress-test laboratory.**
-
-[![React 19](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.x-purple.svg)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8.svg)](https://tailwindcss.com/)
+**Vestora** helps you bring all your investments into one clear workspace, catch idle matured deposits, audit tax-saving opportunities, and simulate how your net worth holds up under changing economic conditions — without creating an account or uploading your data to any server.
 
 ---
 
-## 🚀 Product Hunt Value Proposition
+## What Vestora Helps You Do
 
-Retail and high-earning investors frequently face **idle cash drag** and **fragmented visibility**:
-- Fixed Deposits, Recurring Deposits, Sovereign Gold Bonds, and debentures mature and sit in zero-yield savings accounts.
-- Cross-border assets (Indian EPF/PPF/NPS/MF alongside US RSUs and ETFs) lack a unified balance sheet.
-- Macroeconomic shocks (inflation spikes, central bank rate hikes) erode purchasing power and duration-heavy bonds without real-time stress testing.
+### 1. Track & Understand Your Full Portfolio
+- **Unified Multi-Asset View**: Consolidate Mutual Funds, Direct Stocks, Fixed Deposits (FD), Recurring Deposits (RD), Sovereign Gold Bonds (SGB), Corporate & Government Bonds, EPF, PPF, NPS, and Savings Cash in one place.
+- **Multi-Currency Support**: View and normalize holdings across **INR (₹)**, **USD ($)**, and **EUR (€)** with live benchmark exchange rates.
+- **Net Worth & Risk Posture**: See your total portfolio value, 30-day change, unrealized gains, and an automatic **Portfolio Risk Score (1–100)** classifying your mix from *Conservative* to *Aggressive*.
+- **Interactive Charts**:
+  - **Portfolio Value Trend** across 3M, 6M, and 12M horizons.
+  - **Month-over-Month Net Growth** bar chart highlighting growth months vs. pullbacks.
+  - **Asset Allocation** breakdown by individual category or broad asset class.
+- **Smart Alerts**: Flags matured or soon-to-mature deposits as well as holdings that gained **more than 15% in the last 30 days**.
 
-**Vestora** solves this in one unified terminal:
-1. **Consolidated Net Worth Cockpit**: Unified valuation across Mutual Funds, Demat equities, FDs, RDs, SGBs, Corporate Bonds, EPF, PPF, NPS, and liquid bank savings.
-2. **Multi-Currency Normalization**: Seamless conversion across **INR (₹)**, **USD ($)**, and **EUR (€)** with normalized FX benchmark rates.
-3. **Maturity Radar & 8-Solution Curated Reinvestment Matrix**: Preemptively flags instruments maturing within 30, 90, or 365 days. Proposes 5–8 vetted institutional alternatives categorized by risk appetite:
-   - **Guaranteed Risk**: RBI Floating Rate Savings Bonds (FRSB), SGB Secondary EEE Bullion.
-   - **Low Risk**: Corporate AAA Short-Term Debt, Equity Arbitrage Tax-Advantaged Funds (7.25% yield with 12.5% equity tax treatment).
-   - **Moderate Risk**: Dynamic Balanced Advantage Funds, Commercial Grade-A REITs & InvITs dividend pipelines.
-   - **High Growth Risk**: Flexi-Cap Global Tech Mega-Caps, Systematic Quality & Momentum Factor ETFs.
-4. **Tax Harvesting & Deductions Audit**: Identifies unrealized equity LTCG eligible for annual tax exemption resets (₹1.25 Lakh / $1,500), audits Section 80C and dedicated Section 80CCD(1B) NPS ₹50,000 extra deduction limits, and warns of single-asset concentration (>20%).
-5. **Macro Stress Lab & Portfolio Shuffler**: Stress-test portfolio purchasing power against custom sliders (Inflation 2%–12%, Rate Hikes -200 to +400 bps, Geopolitical Shock 0–10, Equity Drawdowns). Interactive "Portfolio Shuffler" provides tactile sliders to model rebalancing before committing capital.
+### 2. Simulate Your Own Portfolio in Seconds
+Start by exploring built-in sample investor profiles, then switch to your real numbers whenever you are ready:
+- **Import Excel or Statements**: Upload `.xlsx`, `.xls`, `.csv`, CAS, or MF Central exports — or download a ready-made `.xlsx` template, preview parsed rows, and either start fresh or add to your existing holdings.
+- **Manual & Batch Entry**: Add a single holding quickly or enter multiple rows at once in a fast table builder.
+- **Live NAV Sync**: Refresh mutual fund valuations from public AMFI NAV feeds in one click.
 
----
+### 3. Eliminate Idle Cash with Maturity Radar
+- **Maturity Timeline**: Visual horizon bar chart tracking upcoming expiration dates across **30, 60, and 90-day** windows.
+- **Reinvestment Engine**: Select any matured or maturing deposit/bond and compare curated alternatives across **Guaranteed**, **Low**, **Moderate**, and **High Growth** risk tiers with estimated annual yields and tax treatment.
 
-## 🛠️ Tech Stack
+### 4. Audit Tax Efficiency & Concentration Risk
+- **Tax-Gain Harvesting**: Spot unrealized equity gains eligible for annual LTCG exemption resets.
+- **Deduction Tracking**: Check remaining headroom under **Section 80C** and **Section 80CCD(1B) (NPS)**.
+- **Concentration Warnings**: Detect when a single holding or asset class makes up too large a share of your net worth.
 
-- **Framework**: React 19 + TypeScript (ES2022)
-- **Bundler**: Vite 8
-- **Styling**: Tailwind CSS v4 + Institutional Financial Design Constitution (DM Sans + Plus Jakarta Sans + JetBrains Mono Tabular Numerals)
-- **Icons**: Lucide React
-- **Persistence**: Browser `localStorage` — fully client-side, no backend
-- **Data Architecture**: Client-side normalization engine with ready-to-deploy PostgreSQL / Drizzle ORM relational schema (hosted version).
-
----
-
-## 📦 Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/<your-username>/vestora.git
-cd vestora
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Visit `http://localhost:3000` to view the application.
+### 5. Stress-Test Market & Economic Scenarios
+- **Macro Stress Lab**: Adjust **Inflation**, **Interest Rate Changes**, **Geopolitical Risk**, **Equity Market Shocks**, and **Time Horizon** to see how your wealth compounds in nominal and inflation-adjusted terms.
+- **Allocation Shuffler**: Shuffle your target asset mix automatically based on your chosen economic inputs—or fine-tune sliders manually—to compare resilient strategies side-by-side.
 
 ---
 
-## 🔒 Privacy & Data
+## Privacy & Control
 
-Vestora runs entirely in your browser:
-
-- **Persistence** — holdings live in `localStorage` (`vestora.portfolio.v1`).
-  There is no backend, no account, and no analytics on your financial data.
-- **Live data** — NAVs come from the public AMFI feed (mfapi.in) and FX rates
-  from ECB reference rates (Frankfurter API), both fetched anonymously with
-  6-hour caching; benchmark fallbacks keep the app fully offline-capable.
-- **Statement import** — CAS (CAMS/KFintech), bank deposit registries, and
-  MF Central holdings exports (CSV/TSV) are parsed in-page; files never leave
-  your device.
-- **Portability** — export the ledger as JSON from *Manage Portfolio Data*
-  (reset icon in the navbar) and restore it on any other browser.
-
-> **Disclaimer:** Vestora is a tracking and scenario-modeling tool. All figures are
-> self-reported or illustrative sample data, yields are indicative, and nothing in
-> the app is investment, tax, or legal advice.
+- **We don't store your data with us**: There are no accounts, no sign-ups, and no external servers saving your financial records. Your spreadsheets and entries stay privately on your device.
+- **Easy Export & Reset**: Download a portable backup of your portfolio anytime, or wipe and restart your simulation in one click.
 
 ---
 
-## 🗄️ Architecture Notes
-
-Client-side normalization engine (`src/utils/`). Statement parsing in
-`statementImport.ts` auto-detects format from header rows; `navRefresh.ts`
-maps holdings to AMFI scheme codes (one-time, guided) for live NAVs. Direct
-MF Central / Account Aggregator integration requires a regulated FIU
-partnership and is on the post-launch roadmap.
+> **Disclaimer:** Vestora is a personal portfolio tracking and scenario-simulation tool. All yields, risk scores, tax estimates, and projections are illustrative and for informational purposes only. Nothing in this application constitutes financial, investment, tax, or legal advice.
