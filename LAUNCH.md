@@ -1,17 +1,24 @@
 # Product Hunt Launch Kit
 
 Everything below is ready-to-paste when creating the listing at
-<https://www.producthunt.com/posts/new>. Assets in `public/`:
+<https://www.producthunt.com/posts/new>.
+
+- **Product URL:** <https://vestora-wealth.ai.studio>
+- **Source Repo:** <https://github.com/prateek-js/vestora>
+
+## Visual Assets
+
+Ready in `public/` and `docs/images/`:
 
 | File | Purpose | Spec |
 | --- | --- | --- |
-| `logo-240.png` | Gallery thumbnail | 240×240 ✅ |
-| `logo-512.png` | Square logo (spare) | 512×512 |
-| `og-image.png` | First gallery image / social card | 1270×760 ✅ |
+| `public/logo-240.png` | Product Hunt thumbnail | 240×240 ✅ |
+| `public/logo-512.png` | Square logo (spare) | 512×512 |
+| `public/og-image.png` | First gallery image / social card | 1270×760 ✅ |
+| `docs/images/overview-dashboard.jpg` | Overview & analytics preview | 16:9 ✅ |
+| `docs/images/maturity-timeline.jpg` | Maturity Timeline preview | 16:9 ✅ |
 
-**Gallery tip:** after the OG image, add 3–5 more 1270×760 shots — Maturity
-Radar tab, Tax tab, Macro Stress Lab, and one reinvest-modal action shot.
-Screenshot at a 1270×760 viewport with the demo banner dismissed.
+**Gallery tip:** after `public/og-image.png`, upload 3–5 more 1270×760 screenshots captured directly from <https://vestora-wealth.ai.studio> — Overview (Net Worth Summary, Quick-Action cards, Risk Score & charts), Maturity Timeline (30/60/90d), Tax & Insights tab, and Macro Stress Lab with the Allocation Shuffler.
 
 ---
 
@@ -19,95 +26,59 @@ Screenshot at a 1270×760 viewport with the demo banner dismissed.
 
 **Vestora**
 
-## Tagline (≤ 60 chars — this is what wins or loses the listing)
+## Tagline (≤ 60 chars)
 
 > The maturity radar for your idle-wealth problem
 
 Alternates:
-- `Know what matures next — and where to redeploy it`
-- `Stop matured FDs dying in zero-yield savings accounts`
+- `Simulate your portfolio, catch idle maturities, stay private`
+- `Stop matured FDs sitting idle in zero-yield bank accounts`
 
-## Description (first paragraph is the meta description)
+## Description
 
-Vestora is a client-side wealth terminal for Indian retail investors who hold
-FDs, RDs, bonds, and SGBs that quietly mature and then sit in zero-yield
-savings accounts. It consolidates your full balance sheet — mutual funds,
-demat equity, FD/RD, SGBs, EPF, PPF, NPS, and cash across INR/USD/EUR — then
-flags every instrument nearing maturity and proposes vetted reinvestment
-options across four risk tiers. Live AMFI NAVs and ECB FX rates keep
-valuations honest, the tax auditor surfaces harvestable LTCG and unused
-80C/80CCD(1B) headroom, and a macro stress lab shows what inflation spikes
-and rate hikes do to your purchasing power before they happen.
+Vestora is a private, zero-signup wealth tracker and portfolio simulator built for multi-asset retail and NRI investors. Consolidate Mutual Funds, Direct Stocks, Fixed Deposits, Recurring Deposits, Sovereign Gold Bonds, Corporate & Government Bonds, EPF, PPF, NPS, and Savings Cash across **INR (₹)**, **USD ($)**, and **EUR (€)** in one clean dashboard.
 
-No account. No server. Import your CAS or MF Central export, add holdings
-manually, or explore with sample data — everything parses and persists in
-your browser, and a JSON export moves it anywhere.
+Explore built-in sample investor profiles or simulate your own numbers in seconds by uploading an **Excel / CSV spreadsheet** (`.xlsx`, `.xls`, `.csv`, CAS, or MF Central export) or entering holdings manually. Track your **Net Worth & 30-day change**, **Portfolio Risk Score (1–100)**, **Month-over-Month Net Growth**, **>15% 30-day gainer alerts**, **30/60/90-day Maturity Timeline**, **tax-harvesting headroom**, and **macroeconomic stress simulations**—all privately on your device. We don't store your data with us.
 
-## Maker comment (post as first comment, 12:01 AM PT on launch day)
+## Maker Comment (post as first comment on launch day)
 
-I built Vestora out of my own frustration: an HDFC FD matured and sat idle for
-months because I never got a reminder at the right moment, and by the time I
-noticed, it had bled weeks of yield. Every tracker I tried showed me *what I
-own* but none showed me *what is about to mature* — which is the only window
-where redeploying capital is easy.
+I built Vestora out of my own frustration: an FD matured and sat idle for months because I never saw it in a single timeline, and by the time I noticed, it had missed weeks of compounding. Every portfolio tracker showed me *what I owned*, but none gave me a **Maturity Timeline** alongside a fast way to **simulate my own Excel sheet** without handing my financial records over to another server.
 
-So Vestora is built around that moment:
+Here is what is live today at <https://vestora-wealth.ai.studio>:
 
-- **Maturity Radar** — instruments maturing in 10/30/90 days, with 8 curated
-  reinvestment options across Guaranteed → High-Growth tiers, projected
-  first-year yield on your actual matured amount, and one-click rebalance
-  modeling.
-- **Tax audit** — harvestable equity LTCG against the ₹1.25L exemption,
-  80C/80CCD(1B) utilization, and single-asset concentration warnings.
-- **Macro Stress Lab** — drag inflation/rate/geopolitical sliders and watch
-  your wealth trajectory re-shape before committing capital.
-- **Multi-currency** — INR/USD/EUR normalization for the NRI balance sheet,
-  with live ECB reference rates (cached 6h, benchmark fallback offline).
-- **Live NAV refresh** — pulls today's published NAVs from AMFI's feed
-  (mfapi.in, keyless) and re-values funds as units × NAV.
-- **Real statement import** — drop a CAS (CAMS/KFintech), bank FD registry, or
-  MF Central holdings export (CSV) and it parses client-side with column
-  auto-mapping, a preview, and honest skipped-row reporting.
-- **Portable backups** — export the ledger as JSON, restore on any device.
+- **Simulate Your Own Portfolio in Seconds** — upload your own `.xlsx`, `.xls`, or `.csv` file (or download a ready-to-fill `.xlsx` template), enter rows manually in batch, or explore 3 sample investor profiles first.
+- **Overview & Diagnostics** — Net Worth Summary with 30-day change, **Portfolio Risk Score (1–100)** based on asset mix and volatility, **12-Month Value Trend**, **Month-over-Month Net Growth** bar chart, **Asset Allocation** donut, and visual notifications for holdings up **>15% in the last 30 days**.
+- **Maturity Timeline & Reinvestment Engine** — calibrated 30 / 60 / 90-day expiration bar view plus 8 vetted reinvestment alternatives across *Guaranteed*, *Low*, *Moderate*, and *High Growth* risk tiers.
+- **Tax & Concentration Audit** — surfaces unrealized equity LTCG eligible for annual tax-free harvesting (₹1.25L / $1,500), unused Section 80C and 80CCD(1B) NPS headroom, and single-asset concentration alerts.
+- **Macro Stress Lab & Allocation Shuffler** — test inflation, interest rate hikes, geopolitical shocks, and equity drawdowns, then shuffle allocation weights automatically based on your inputs.
+- **Live Public Feeds** — refresh mutual fund prices via public AMFI NAV feeds and convert multi-currency holdings using live ECB reference rates.
 
-Two deliberate choices I'll defend in the comments:
+Two deliberate choices behind Vestora:
 
-1. **It's fully client-side.** Financial data is the most sensitive data you
-   have. Vestora has no backend, no account, and no telemetry on your
-   holdings — the ledger lives in your browser's localStorage, CSV parsing
-   happens in-page, and even the NAV/FX fetches are anonymous GETs to public
-   feeds. The tradeoff: no automatic broker/depository sync. Direct MF
-   Central and Account Aggregator integration is the #1 roadmap item if this
-   resonates, but those require regulated FIU partnerships — I won't fake it
-   with credential scraping.
-2. **It's India-first.** SGBs, EPF, 80C, the ₹1.25L LTCG exemption — the
-   instruments most global trackers treat as exotic are the core of the model.
-   If you hold US assets alongside Indian ones, it normalizes both.
+1. **We don't store your data with us.** No accounts, no sign-ups, and no servers saving your spreadsheets or holdings. Everything parses and runs privately on your device, and you can export a portable JSON backup or clear your session anytime.
+2. **Built for real multi-asset portfolios.** Indian instruments like SGBs, EPF, PPF, NPS, FDs, and RDs sit cleanly alongside US/global equities in a single INR/USD/EUR balance sheet.
 
-I'd genuinely love feedback from this community — especially on the maturity
-radar UX and whether the reinvestment suggestions feel credible. All figures
-in the demo are illustrative sample data, not advice.
+I'd love your feedback on the Maturity Timeline, the Excel simulation workflow, and what asset classes or stress scenarios you'd like to see next! *(Illustrative figures and projections are for modeling only, not financial advice.)*
 
-## First 5 topics
+## First 5 Topics
 
-`Fintech` · `Personal Finance` · `Investing` · `Wealth Management` · `React`
+`Fintech` · `Personal Finance` · `Investing` · `Wealth Management` · `Productivity`
 
 ---
 
-## Launch-week checklist
+## Launch-Week Checklist
 
-- [ ] Deploy to Vercel + point a domain (vestora.app or similar)
-- [ ] Set `VITE_POSTHOG_TOKEN` in Vercel env and verify events arrive
-- [ ] Record 30–60s demo video (Maturity Radar → Deploy & Rebalance flow)
-- [ ] Capture 4 extra gallery screenshots (1270×760, banner dismissed)
-- [ ] Schedule for Tue–Thu, 12:01 AM PT
-- [ ] Prep 3–4 launch-day replies (pricing/roadmap/privacy questions)
-- [ ] Line up hunter or self-ship (self-shipping is fine and on-brand here)
+- [x] Publish live public app at <https://vestora-wealth.ai.studio>
+- [x] Update `README.md` with live link, end-user guide, and visuals
+- [ ] Capture 4–5 live screenshots at 1270×760 from <https://vestora-wealth.ai.studio>
+- [ ] Record a 30–60s demo video (Upload Excel / Quick-Action → Maturity Timeline → Stress Lab Shuffle)
+- [ ] Submit listing at <https://www.producthunt.com/posts/new> (Tue–Thu, 12:01 AM PT recommended)
+- [ ] Post the Maker Comment immediately after listing goes live
 
-## Suggested gallery captions
+## Suggested Gallery Captions
 
-1. OG image — "One terminal for the whole balance sheet"
-2. Maturity Radar — "Nothing matures unnoticed"
-3. Reinvest modal — "Model the redeploy before you commit"
-4. Tax tab — "Harvest the exemption, audit the deductions"
-5. Stress Lab — "Break your portfolio on purpose"
+1. OG image — "One private terminal for your entire multi-asset balance sheet"
+2. Overview — "Net Worth Summary, Risk Score (1–100), MoM Growth & Quick-Actions"
+3. Maturity Timeline — "Catch 30 / 60 / 90-day expirations before cash sits idle"
+4. Tax & Insights — "Spot harvestable LTCG and unclaimed 80C / NPS deductions"
+5. Macro Stress Lab — "Stress-test inflation & rate hikes, then shuffle allocations"
