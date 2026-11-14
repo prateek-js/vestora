@@ -13,9 +13,9 @@ import { TaxAndInsightsTab } from './components/TaxAndInsightsTab';
 import { MacroSimulatorTab } from './components/MacroSimulatorTab';
 import { AddHoldingModal } from './components/AddHoldingModal';
 import { UploadStatementModal } from './components/UploadStatementModal';
+import { ValidatePortfolioModal } from './components/ValidatePortfolioModal';
 import { ReinvestModal } from './components/ReinvestModal';
 import {
-  PersistedPortfolio,
   clearPersistedPortfolio,
   loadPersistedPortfolio,
   sampleHoldingsFor,
@@ -26,22 +26,27 @@ import { trackEvent } from './utils/analytics';
 import { refreshFxRates } from './utils/liveRates';
 import { NavRefreshModal } from './components/NavRefreshModal';
 import { buildExport, downloadPortfolioExport, parsePortfolioExport } from './utils/backupRestore';
-import { Info, X, RotateCcw, Download, Upload } from 'lucide-react';
+import { RotateCcw, Download, Upload, ShieldCheck } from 'lucide-react';
 
 type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
-  // data otherwise. The whole engine is client-side, so this is the database.
+  // data otherwise. Everything is client-side — localStorage is the only storage.
   const initial = useMemo(() => {
     const persisted = loadPersistedPortfolio();
-    if (persisted) return { ...persisted, restored: true };
+    if (persisted) {
+      return {
+        ...persisted,
+        mode: persisted.mode ?? ('demo' as const),
+      };
+    }
     const profile = DEMO_PROFILES[0];
     return {
       profileId: profile.id,
       baseCurrency: profile.baseCurrency,
       holdings: sampleHoldingsFor(profile),
-      restored: false,
+      mode: 'demo' as const,
     };
   }, []);
 
@@ -49,7 +54,7 @@ export default function App() {
   const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initial.baseCurrency);
   const [currentProfileId, setCurrentProfileId] = useState<string>(initial.profileId);
   const [holdings, setHoldings] = useState<Holding[]>(initial.holdings);
-  const [isDemoBannerDismissed, setIsDemoBannerDismissed] = useState(initial.restored);
+  const [portfolioMode, setPortfolioMode] = useState<'demo' | 'personal'>(initial.mode);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [restoreError, setRestoreError] = useState('');
   const restoreInputRef = useRef<HTMLInputElement>(null);
@@ -57,13 +62,18 @@ export default function App() {
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isValidateModalOpen, setIsValidateModalOpen] = useState(false);
+  const [validateInitialTab, setValidateInitialTab] = useState<'excel' | 'manual' | 'reset'>('excel');
   const [isNavRefreshOpen, setIsNavRefreshOpen] = useState(false);
   const [reinvestHolding, setReinvestHolding] = useState<Holding | null>(null);
   const [reinvestSolution, setReinvestSolution] = useState<ReinvestmentSolution | null>(null);
 
-  // Live FX rates: seeded from static benchmarks, then overwritten once the
-  // ECB fix loads (cached for 6h in localStorage). The FX stamp feeds the
-  // navbar badge.
+  const openValidateModal = (tab: 'excel' | 'manual' | 'reset' = 'excel') => {
+    setValidateInitialTab(tab);
+    setIsValidateModalOpen(true);
+  };
+
+  // Live FX rates: seeded from static benchmarks, then overwritten once ECB loads.
   const [fxAsOf, setFxAsOf] = useState<string | null>(null);
   const [fxSource, setFxSource] = useState<'live' | 'cached' | 'benchmark'>('benchmark');
   useEffect(() => {
@@ -79,42 +89,76 @@ export default function App() {
     };
   }, []);
 
-  // Every mutation persists — localStorage is the app's only database.
+  // Persist solely to browser localStorage; never sent to any backend server.
   useEffect(() => {
-    savePersistedPortfolio({ profileId: currentProfileId, baseCurrency, holdings });
-  }, [currentProfileId, baseCurrency, holdings]);
+    savePersistedPortfolio({
+      profileId: currentProfileId,
+      baseCurrency,
+      holdings,
+      mode: portfolioMode,
+    });
+  }, [currentProfileId, baseCurrency, holdings, portfolioMode]);
 
   const currentProfile =
     DEMO_PROFILES.find((p) => p.id === currentProfileId) ?? DEMO_PROFILES[0];
 
-  // Count matured holdings
   const maturedCount = holdings.filter(
     (h) => h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0)
   ).length;
 
-  // Handle Profile Switch (replaces the ledger with the chosen sample persona)
+  // Handle Profile Switch (switches back to sample demo persona)
   const handleProfileSwitch = (newProfile: UserProfile) => {
     setCurrentProfileId(newProfile.id);
     setHoldings(sampleHoldingsFor(newProfile));
     setBaseCurrency(newProfile.baseCurrency);
+    setPortfolioMode('demo');
     trackEvent('profile_switched', { profile_id: newProfile.id });
   };
 
-  // Add Holding
+  // Add Single Holding
   const handleAddHolding = (newHolding: Holding) => {
     setHoldings((prev) => [newHolding, ...prev]);
+    setPortfolioMode('personal');
     trackEvent('holding_added', { category: newHolding.category, currency: newHolding.currency });
   };
 
   // Delete Holding
   const handleDeleteHolding = (id: string) => {
     setHoldings((prev) => prev.filter((h) => h.id !== id));
+    setPortfolioMode('personal');
   };
 
-  // Import Statement Holdings
+  // Import Statement Holdings (Append)
   const handleImportHoldings = (imported: Holding[]) => {
     setHoldings((prev) => [...imported, ...prev]);
+    setPortfolioMode('personal');
     trackEvent('sample_statement_imported', { count: imported.length });
+  };
+
+  // Apply holdings from Validate & Simulate Portfolio flow
+  const handleApplyValidatedHoldings = (
+    validatedHoldings: Holding[],
+    strategy: 'replace' | 'append'
+  ) => {
+    if (strategy === 'replace') {
+      setCurrentProfileId('custom');
+      setHoldings(validatedHoldings);
+    } else {
+      setHoldings((prev) => [...validatedHoldings, ...prev]);
+    }
+    setPortfolioMode('personal');
+    setActiveTab('overview');
+  };
+
+  // Start completely blank (0 holdings) for clean manual / Excel build
+  const handleStartBlank = () => {
+    clearPersistedPortfolio();
+    setCurrentProfileId('custom');
+    setHoldings([]);
+    setPortfolioMode('personal');
+    setIsResetConfirmOpen(false);
+    setActiveTab('overview');
+    trackEvent('portfolio_cleared_blank');
   };
 
   // Trigger Reinvestment Modal
@@ -129,10 +173,8 @@ export default function App() {
     solution: ReinvestmentSolution,
     deployedAmount: number
   ) => {
-    // 1. Remove the source matured holding
     const remainingHoldings = holdings.filter((h) => h.id !== sourceHolding.id);
 
-    // 2. Create the new reinvested holding
     let newCategory = 'MUTUAL_FUND';
     if (solution.instrumentType.includes('Sovereign') || solution.instrumentType.includes('Debt')) {
       newCategory = 'GOVT_BOND';
@@ -174,7 +216,7 @@ export default function App() {
     setCurrentProfileId(profile.id);
     setHoldings(sampleHoldingsFor(profile));
     setBaseCurrency(profile.baseCurrency);
-    setIsDemoBannerDismissed(false);
+    setPortfolioMode('demo');
     setIsResetConfirmOpen(false);
     trackEvent('portfolio_reset');
   };
@@ -196,6 +238,7 @@ export default function App() {
         const result = parsePortfolioExport(String(reader.result ?? ''));
         setHoldings(result.holdings);
         if (result.baseCurrency) setBaseCurrency(result.baseCurrency);
+        setPortfolioMode('personal');
         setRestoreError('');
         setIsResetConfirmOpen(false);
         trackEvent('portfolio_restored', { holdings: result.holdings.length });
@@ -219,6 +262,7 @@ export default function App() {
         setProfile={handleProfileSwitch}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenValidateModal={() => openValidateModal('excel')}
         onOpenNavRefresh={() => setIsNavRefreshOpen(true)}
         maturedCount={maturedCount}
         onResetToSample={() => setIsResetConfirmOpen(true)}
@@ -226,40 +270,22 @@ export default function App() {
         fxSource={fxSource}
       />
 
-      {/* Demo notice for first-time / sample-data visitors */}
-      {!isDemoBannerDismissed && (
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-          <div className="bg-slate-900/60 border border-indigo-500/30 rounded-xl px-4 py-3 flex items-start gap-3">
-            <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-slate-300 leading-relaxed flex-1">
-              <span className="font-semibold text-white">Demo mode — sample portfolio loaded.</span>{' '}
-              This is illustrative data for one sample investor; nothing here is investment advice.
-              Add your own holdings or load a sample statement to explore, and everything stays in
-              this browser — no account, no server.
-            </p>
-            <button
-              onClick={() => setIsDemoBannerDismissed(true)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors shrink-0"
-              aria-label="Dismiss demo notice"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'overview' && (
           <OverviewTab
             holdings={holdings}
             baseCurrency={baseCurrency}
+            portfolioMode={portfolioMode}
+            profileName={currentProfile.name}
             onNavigateToTab={(tab) => setActiveTab(tab)}
             onSelectHoldingToReinvest={(h) => {
               setActiveTab('radar');
               handleOpenReinvest(h);
             }}
             onDeleteHolding={handleDeleteHolding}
+            onOpenValidateModal={openValidateModal}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
           />
         )}
 
@@ -283,22 +309,30 @@ export default function App() {
         )}
       </main>
 
-      {/* Compliance footer: this app shows illustrative figures, not advice */}
-      <footer className="border-t border-slate-800 bg-slate-950">
+      {/* Compliance & Privacy Footer */}
+      <footer className="border-t border-slate-800/80 bg-slate-950">
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <p className="text-2xs text-slate-500 leading-relaxed max-w-3xl">
-            Vestora is a personal portfolio tracking and scenario-modeling tool. All figures are
-            self-reported or sample data, yields are indicative, and nothing here is investment,
-            tax, or legal advice. Verify every product with the issuing institution or a registered
-            advisor before acting.
+            We don&apos;t store your data with us — all spreadsheets and manual entries stay strictly on your device. Figures are illustrative / self-reported and not investment or tax advice.
           </p>
           <span className="text-2xs text-slate-600 font-mono whitespace-nowrap">
-            © {new Date().getFullYear()} Vestora · Client-side only
+            © {new Date().getFullYear()} Vestora · Private by design
           </span>
         </div>
       </footer>
 
       {/* Modals */}
+      <ValidatePortfolioModal
+        isOpen={isValidateModalOpen}
+        onClose={() => setIsValidateModalOpen(false)}
+        baseCurrency={baseCurrency}
+        currentHoldings={holdings}
+        initialTab={validateInitialTab}
+        onApplyHoldings={handleApplyValidatedHoldings}
+        onStartBlank={handleStartBlank}
+        onRestoreDemo={handleResetToSample}
+      />
+
       <AddHoldingModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -309,6 +343,7 @@ export default function App() {
       <UploadStatementModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
+        baseCurrency={baseCurrency}
         onImportHoldings={handleImportHoldings}
       />
 
@@ -340,10 +375,12 @@ export default function App() {
               <RotateCcw className="w-4 h-4 text-amber-400" />
               <span>Manage Portfolio Data</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-3 leading-relaxed">
-              Your ledger lives only in this browser. Export it as a JSON backup to move it to
-              another device, or reset to the sample portfolio.
-            </p>
+            <div className="mt-3 p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/25 flex items-start gap-2 text-2xs text-emerald-200/90">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+              <span>
+                We don&apos;t store your data with us. Everything remains private on your own device.
+              </span>
+            </div>
 
             <div className="mt-4 space-y-2">
               <button
@@ -370,6 +407,14 @@ export default function App() {
                 className="hidden"
                 onChange={handleRestoreFile}
               />
+
+              <button
+                type="button"
+                onClick={handleStartBlank}
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-indigo-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                Clear All & Start Blank (0 Holdings)
+              </button>
 
               <button
                 type="button"

@@ -205,7 +205,10 @@ export function runMacroSimulation(
   const finalBaselineNetWorth = bNominal;
   const finalScenarioNetWorth = sNominal;
   const finalShuffledNetWorth = shNominal;
-  const scenarioAlphaVsBaselinePct = ((finalScenarioNetWorth - finalBaselineNetWorth) / finalBaselineNetWorth) * 100;
+  const scenarioAlphaVsBaselinePct =
+    finalBaselineNetWorth > 0
+      ? ((finalScenarioNetWorth - finalBaselineNetWorth) / finalBaselineNetWorth) * 100
+      : 0;
   const shuffledAdvantageVsScenario = finalShuffledNetWorth - finalScenarioNetWorth;
 
   // Diagnosis logic

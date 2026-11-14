@@ -5,15 +5,11 @@ import { trackEvent } from '../utils/analytics';
 import {
   Plus,
   Upload,
-  User,
   RotateCcw,
   RefreshCw,
-  MoreVertical,
   SlidersHorizontal,
   ChevronDown,
-  Layers,
-  Sparkles,
-  ExternalLink,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 const TAB_NAMES = {
@@ -32,6 +28,7 @@ interface NavbarProps {
   setProfile: (p: UserProfile) => void;
   onOpenAddModal: () => void;
   onOpenUploadModal: () => void;
+  onOpenValidateModal: () => void;
   onOpenNavRefresh: () => void;
   maturedCount: number;
   onResetToSample: () => void;
@@ -49,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setProfile,
   onOpenAddModal,
   onOpenUploadModal,
+  onOpenValidateModal,
   onOpenNavRefresh,
   maturedCount,
   onResetToSample,
@@ -201,9 +199,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => setIsToolsOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 z-50 text-xs space-y-1">
-                    <div className="px-3 py-1.5 text-3xs font-mono uppercase text-slate-500 tracking-wider border-b border-slate-800/80 mb-1">
-                      Data & Portfolio Utilities
+                    <div className="px-3 py-1.5 text-2xs font-medium text-slate-400 border-b border-slate-800/80 mb-1">
+                      Portfolio & Data Tools
                     </div>
+
+                    {/* Restart & Validate Portfolio */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsToolsOpen(false);
+                        onOpenValidateModal();
+                      }}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-800 text-slate-100 hover:text-white transition-colors flex items-center gap-2.5"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div>
+                        <div className="font-medium text-xs">Validate / Restart Portfolio</div>
+                        <div className="text-2xs text-slate-400">Upload Excel or manual batch</div>
+                      </div>
+                    </button>
 
                     {/* Refresh NAVs */}
                     <button
@@ -217,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <RefreshCw className="w-4 h-4 text-indigo-400 shrink-0" />
                       <div>
                         <div className="font-medium text-xs">Refresh AMFI NAVs</div>
-                        <div className="text-3xs text-slate-400">Sync mutual fund prices</div>
+                        <div className="text-2xs text-slate-400">Sync mutual fund prices</div>
                       </div>
                     </button>
 
@@ -232,14 +246,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <Upload className="w-4 h-4 text-sky-400 shrink-0" />
                       <div>
-                        <div className="font-medium text-xs">Load Statement</div>
-                        <div className="text-3xs text-slate-400">Import CAS / CSV portfolio</div>
+                        <div className="font-medium text-xs">Import Excel / CSV</div>
+                        <div className="text-2xs text-slate-400">Append XLSX, CAS, or CSV rows</div>
                       </div>
                     </button>
 
                     {/* Switch Persona (Mobile & Mid-size screens) */}
                     <div className="xl:hidden border-t border-slate-800/80 pt-1.5 px-3 py-1">
-                      <div className="text-3xs font-mono text-slate-500 mb-1">Profile Persona:</div>
+                      <div className="text-2xs text-slate-500 mb-1">Demo Persona:</div>
                       <select
                         value={currentProfile.id}
                         onChange={(e) => {
@@ -259,7 +273,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </select>
                     </div>
 
-                    {/* Reset to Sample Portfolio */}
+                    {/* Backup / Reset */}
                     <div className="border-t border-slate-800/80 pt-1 mt-1">
                       <button
                         type="button"
@@ -271,15 +285,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                       >
                         <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
                         <div>
-                          <div className="font-medium text-xs">Reset Ledger</div>
-                          <div className="text-3xs text-slate-500">Restore default demo assets</div>
+                          <div className="font-medium text-xs">Backup or Reset</div>
+                          <div className="text-2xs text-slate-500">Export JSON or clear your session</div>
                         </div>
                       </button>
                     </div>
 
                     {/* FX Status Footer */}
-                    <div className="px-3 py-1.5 bg-slate-950/60 rounded-md border border-slate-800/60 text-3xs font-mono text-slate-500 mt-1">
-                      FX: {fxSource === 'benchmark' ? 'Built-in Benchmarks' : `ECB Fix (${fxAsOf})`}
+                    <div className="px-3 py-1.5 bg-slate-950/60 rounded-md border border-slate-800/60 text-2xs font-mono text-slate-500 mt-1">
+                      FX: {fxSource === 'benchmark' ? 'Benchmarks' : `ECB (${fxAsOf})`} · On your device
                     </div>
                   </div>
                 </>

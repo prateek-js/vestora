@@ -71,12 +71,9 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                Tax Optimization & Portfolio Diversification Audit
-              </h2>
-            </div>
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              Tax Optimization & Portfolio Diversification Audit
+            </h2>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">
               Automated surveillance of capital gains tax liabilities, statutory deduction allowances (80C &
               NPS), single-asset concentration limits, and cross-border currency exposure.

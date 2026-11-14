@@ -8,6 +8,7 @@ export interface PersistedPortfolio {
   profileId: string;
   baseCurrency: CurrencyCode;
   holdings: Holding[];
+  mode?: 'demo' | 'personal';
 }
 
 /** Sample holdings with maturity countdowns recomputed against today. */
@@ -26,9 +27,13 @@ export function loadPersistedPortfolio(): PersistedPortfolio | null {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedPortfolio;
-    const knownProfile = DEMO_PROFILES.some((p) => p.id === parsed.profileId);
+    const knownProfile = DEMO_PROFILES.some((p) => p.id === parsed.profileId) || parsed.profileId === 'custom';
     if (!knownProfile || !Array.isArray(parsed.holdings)) return null;
-    return { ...parsed, holdings: parsed.holdings.map(withDerivedMaturity) };
+    return {
+      ...parsed,
+      mode: parsed.mode ?? (parsed.profileId === 'custom' ? 'personal' : 'demo'),
+      holdings: parsed.holdings.map(withDerivedMaturity),
+    };
   } catch {
     return null;
   }

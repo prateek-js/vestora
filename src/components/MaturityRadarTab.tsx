@@ -76,12 +76,9 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                Maturity Radar & Intelligent Reinvestment Engine
-              </h2>
-            </div>
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              Maturity Radar & Intelligent Reinvestment Engine
+            </h2>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">
               Track maturing Fixed Deposits, Recurring Deposits, Sovereign Gold Bonds, and Debentures.
               Eliminate zero-yield idle cash drag by preemptively channeling matured capital into 5–8 vetted

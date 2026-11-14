@@ -15,37 +15,37 @@ import {
 import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
 import { convertCurrency, formatCurrency, formatPercent } from '../utils/currency';
 import { generateAutomatedInsights } from '../utils/taxAndDiversification';
+import { downloadPortfolioExcelTemplate } from '../utils/statementImport';
 import {
-  TrendingUp,
-  AlertTriangle,
   Clock,
   Search,
-  Filter,
-  ArrowUpRight,
-  ShieldCheck,
   ChevronRight,
-  Sparkles,
   Trash2,
-  RefreshCw,
-  Info,
-  PieChart as PieChartIcon,
-  Layers,
-  Activity,
-  Calendar,
+  FileSpreadsheet,
+  Plus,
+  PlusCircle,
+  ShieldCheck,
+  ArrowRight,
+  RotateCcw,
+  Table2,
+  Sliders,
+  Download,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 
 const CATEGORY_META: Record<AssetCategory, { label: string; shortLabel: string; color: string }> = {
-  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#6366f1' }, // Indigo 500
-  EQUITY_STOCK: { label: 'Direct Equities (Demat)', shortLabel: 'Equities', color: '#8b5cf6' }, // Violet 500
-  FIXED_DEPOSIT: { label: 'Fixed Deposits (FD)', shortLabel: 'Fixed Deposits', color: '#0ea5e9' }, // Sky 500
-  RECURRING_DEPOSIT: { label: 'Recurring Deposits (RD)', shortLabel: 'Recurring Deposits', color: '#38bdf8' }, // Sky 400
-  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corporate Bonds', color: '#06b6d4' }, // Cyan 500
-  GOVT_BOND: { label: 'Government Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#14b8a6' }, // Teal 500
-  SOVEREIGN_GOLD_BOND: { label: 'Sovereign Gold Bonds (SGB)', shortLabel: 'Sovereign Gold', color: '#f59e0b' }, // Amber 500
-  EPF: { label: 'Employees Provident Fund (EPF)', shortLabel: 'EPF', color: '#10b981' }, // Emerald 500
-  PPF: { label: 'Public Provident Fund (PPF)', shortLabel: 'PPF', color: '#059669' }, // Emerald 600
-  NPS: { label: 'National Pension System (NPS)', shortLabel: 'NPS', color: '#84cc16' }, // Lime 500
-  SAVINGS_CASH: { label: 'Liquid Savings & Cash', shortLabel: 'Savings Cash', color: '#94a3b8' }, // Slate 400
+  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#6366f1' },
+  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#8b5cf6' },
+  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#0ea5e9' },
+  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#38bdf8' },
+  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#06b6d4' },
+  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#14b8a6' },
+  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#f59e0b' },
+  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#10b981' },
+  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#059669' },
+  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#84cc16' },
+  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#94a3b8' },
 };
 
 interface TrendChartTooltipProps {
@@ -70,38 +70,29 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
     const data = payload[0].payload;
     const isPositive = data.unrealizedGain >= 0;
     return (
-      <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3.5 shadow-2xl backdrop-blur-md min-w-[210px]">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-          <span className="text-xs font-semibold text-white">{data.fullDate || label}</span>
-          {data.isCurrent && (
-            <span className="text-3xs font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">
-              Present
-            </span>
-          )}
+      <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3.5 shadow-2xl backdrop-blur-md min-w-[205px]">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
+          <span className="font-semibold text-white">{data.fullDate || label}</span>
+          {data.isCurrent && <span className="text-2xs font-mono text-indigo-300">Current</span>}
         </div>
         <div className="space-y-1.5 text-xs">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-slate-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
-              Avg Valuation:
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-slate-400">Avg Valuation</span>
             <span className="font-mono font-semibold text-white tabular-nums">
               {formatCurrency(data.valuation, baseCurrency, { compact: false, showDecimals: false })}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-slate-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
-              Invested Base:
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-slate-400">Invested Base</span>
             <span className="font-mono text-slate-300 tabular-nums">
               {formatCurrency(data.invested, baseCurrency, { compact: false, showDecimals: false })}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-800/80">
-            <span className="text-slate-400">Unrealized Gain:</span>
+          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80">
+            <span className="text-slate-400">Net Gain</span>
             <span className={`font-mono font-medium tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {isPositive ? '+' : ''}{formatCurrency(data.unrealizedGain, baseCurrency, { compact: true })} ({formatPercent(data.gainPct)})
+              {isPositive ? '+' : ''}
+              {formatCurrency(data.unrealizedGain, baseCurrency, { compact: true })} ({formatPercent(data.gainPct)})
             </span>
           </div>
         </div>
@@ -114,23 +105,32 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
 interface OverviewTabProps {
   holdings: Holding[];
   baseCurrency: CurrencyCode;
+  portfolioMode: 'demo' | 'personal';
+  profileName: string;
   onNavigateToTab: (tab: 'radar' | 'tax' | 'simulator' | 'overview') => void;
   onSelectHoldingToReinvest: (holding: Holding) => void;
   onDeleteHolding: (id: string) => void;
+  onOpenValidateModal: (tab?: 'excel' | 'manual' | 'reset') => void;
+  onOpenAddModal: () => void;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
   holdings,
   baseCurrency,
+  portfolioMode,
+  profileName,
   onNavigateToTab,
   onSelectHoldingToReinvest,
   onDeleteHolding,
+  onOpenValidateModal,
+  onOpenAddModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [chartViewMode, setChartViewMode] = useState<'CATEGORY' | 'BROAD'>('CATEGORY');
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(null);
   const [trendHorizon, setTrendHorizon] = useState<'3M' | '6M' | '12M'>('12M');
+  const [workspaceView, setWorkspaceView] = useState<'ledger' | 'insights'>('ledger');
 
   // KPI Calculations in Base Currency
   const totalValuation = useMemo(() => {
@@ -152,21 +152,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   // 12-Month Historical Portfolio Valuation Trend (assuming monthly average valuation)
   const fullTrendData = useMemo(() => {
-    // 12 monthly points ending at current month (Oct 26)
-    // Multipliers model historical trajectory leading up to current totalValuation & totalInvested
     const monthlyProfiles = [
-      { month: 'Nov 25', fullDate: 'November 2025', valMult: 0.835, invMult: 0.880 },
-      { month: 'Dec 25', fullDate: 'December 2025', valMult: 0.852, invMult: 0.892 },
-      { month: 'Jan 26', fullDate: 'January 2026', valMult: 0.844, invMult: 0.905 },
-      { month: 'Feb 26', fullDate: 'February 2026', valMult: 0.868, invMult: 0.915 },
-      { month: 'Mar 26', fullDate: 'March 2026', valMult: 0.895, invMult: 0.930 },
-      { month: 'Apr 26', fullDate: 'April 2026', valMult: 0.887, invMult: 0.942 },
-      { month: 'May 26', fullDate: 'May 2026', valMult: 0.918, invMult: 0.952 },
-      { month: 'Jun 26', fullDate: 'June 2026', valMult: 0.940, invMult: 0.965 },
-      { month: 'Jul 26', fullDate: 'July 2026', valMult: 0.931, invMult: 0.975 },
-      { month: 'Aug 26', fullDate: 'August 2026', valMult: 0.962, invMult: 0.985 },
-      { month: 'Sep 26', fullDate: 'September 2026', valMult: 0.981, invMult: 0.992 },
-      { month: 'Oct 26', fullDate: 'October 2026 (Current)', valMult: 1.000, invMult: 1.000 },
+      { month: 'Dec 25', fullDate: 'December 2025', valMult: 0.835, invMult: 0.880 },
+      { month: 'Jan 26', fullDate: 'January 2026', valMult: 0.852, invMult: 0.892 },
+      { month: 'Feb 26', fullDate: 'February 2026', valMult: 0.844, invMult: 0.905 },
+      { month: 'Mar 26', fullDate: 'March 2026', valMult: 0.868, invMult: 0.915 },
+      { month: 'Apr 26', fullDate: 'April 2026', valMult: 0.895, invMult: 0.930 },
+      { month: 'May 26', fullDate: 'May 2026', valMult: 0.887, invMult: 0.942 },
+      { month: 'Jun 26', fullDate: 'June 2026', valMult: 0.918, invMult: 0.952 },
+      { month: 'Jul 26', fullDate: 'July 2026', valMult: 0.940, invMult: 0.965 },
+      { month: 'Aug 26', fullDate: 'August 2026', valMult: 0.931, invMult: 0.975 },
+      { month: 'Sep 26', fullDate: 'September 2026', valMult: 0.962, invMult: 0.985 },
+      { month: 'Oct 26', fullDate: 'October 2026', valMult: 0.981, invMult: 0.992 },
+      { month: 'Nov 26', fullDate: 'November 2026 (Current)', valMult: 1.000, invMult: 1.000 },
     ];
 
     return monthlyProfiles.map((item, idx) => {
@@ -192,19 +190,27 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   }, [fullTrendData, trendHorizon]);
 
   const trendStats = useMemo(() => {
-    if (visibleTrendData.length === 0) {
-      return { startVal: 0, endVal: 0, diff: 0, diffPct: 0, minVal: 0, maxVal: 0, avgVal: 0 };
+    if (visibleTrendData.length === 0 || totalValuation === 0) {
+      return { diff: 0, diffPct: 0 };
     }
     const startVal = visibleTrendData[0].valuation;
     const endVal = visibleTrendData[visibleTrendData.length - 1].valuation;
     const diff = endVal - startVal;
     const diffPct = startVal > 0 ? (diff / startVal) * 100 : 0;
-    const vals = visibleTrendData.map((d) => d.valuation);
-    const minVal = Math.min(...vals);
-    const maxVal = Math.max(...vals);
-    const avgVal = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
-    return { startVal, endVal, diff, diffPct, minVal, maxVal, avgVal };
-  }, [visibleTrendData]);
+    return { diff, diffPct };
+  }, [visibleTrendData, totalValuation]);
+
+  // 30-Day Net Worth Change (Oct -> Current from monthly valuation profile)
+  const thirtyDayStats = useMemo(() => {
+    if (fullTrendData.length < 2 || totalValuation === 0) {
+      return { changeAmount: 0, changePct: 0 };
+    }
+    const prevVal = fullTrendData[fullTrendData.length - 2].valuation;
+    const currVal = fullTrendData[fullTrendData.length - 1].valuation;
+    const changeAmount = currVal - prevVal;
+    const changePct = prevVal > 0 ? (changeAmount / prevVal) * 100 : 0;
+    return { changeAmount, changePct };
+  }, [fullTrendData, totalValuation]);
 
   // Maturing and Matured Holdings
   const maturedHoldings = useMemo(() => {
@@ -229,11 +235,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   // Asset Class Allocation Breakdown
   const categoryStats = useMemo(() => {
     const buckets: Record<string, { label: string; amount: number; count: number }> = {
-      EQUITY: { label: 'Equities & Mutual Funds', amount: 0, count: 0 },
-      FIXED_INCOME: { label: 'Fixed Deposits, RDs & Bonds', amount: 0, count: 0 },
-      GOLD: { label: 'Sovereign Gold Bonds (SGB)', amount: 0, count: 0 },
-      RETIREMENT: { label: 'EPF, PPF & NPS Retirement', amount: 0, count: 0 },
-      CASH: { label: 'Liquid Savings Cash', amount: 0, count: 0 },
+      EQUITY: { label: 'Equities & Funds', amount: 0, count: 0 },
+      FIXED_INCOME: { label: 'Fixed Income & Bonds', amount: 0, count: 0 },
+      GOLD: { label: 'Gold / SGB', amount: 0, count: 0 },
+      RETIREMENT: { label: 'Retirement (EPF/PPF/NPS)', amount: 0, count: 0 },
+      CASH: { label: 'Savings & Cash', amount: 0, count: 0 },
     };
 
     holdings.forEach((h) => {
@@ -359,15 +365,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           h.category === 'CORP_BOND'
         );
       }
-      if (selectedCategory === 'GOLD') {
-        return h.category === 'SOVEREIGN_GOLD_BOND';
-      }
+      if (selectedCategory === 'GOLD') return h.category === 'SOVEREIGN_GOLD_BOND';
       if (selectedCategory === 'RETIREMENT') {
         return h.category === 'EPF' || h.category === 'PPF' || h.category === 'NPS';
       }
-      if (selectedCategory === 'CASH') {
-        return h.category === 'SAVINGS_CASH';
-      }
+      if (selectedCategory === 'CASH') return h.category === 'SAVINGS_CASH';
 
       return true;
     });
@@ -375,313 +377,412 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Urgent Action Banner for Maturing Capital */}
-      {(maturedHoldings.length > 0 || maturingSoonHoldings.length > 0) && (
-        <div className="bg-slate-900 border border-amber-500/40 rounded-xl p-4 sm:p-5 shadow-lg relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-white">
-                    {maturedHoldings.length > 0
-                      ? `${maturedHoldings.length} Matured Investment${maturedHoldings.length > 1 ? 's' : ''} Require Immediate Reinvestment`
-                      : `${maturingSoonHoldings.length} Investment${maturingSoonHoldings.length > 1 ? 's' : ''} Maturing Shortly`}
-                  </h3>
-                  <span className="text-xs text-amber-400 font-mono">
-                    {formatCurrency(totalMaturedAmount, baseCurrency, { compact: true })} Ready
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                  {maturedHoldings.length > 0
-                    ? `${maturedHoldings.map((h) => h.name).join(', ')} has matured and is currently sitting idle. Deploy into curated solutions (Guaranteed, Low, Moderate, or High risk) to avoid yield drag.`
-                    : `${maturingSoonHoldings[0]?.name} matures within ${maturingSoonHoldings[0]?.daysToMaturity} days. Pre-plan your reinvestment strategy to transition seamlessly.`}
-                </p>
-              </div>
+      {/* 1. Context Header & Bold High-Contrast Quick-Action Cards */}
+      <section aria-label="Portfolio Quick Actions" className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight text-balance">
+              {portfolioMode === 'demo'
+                ? 'Simulate your own portfolio'
+                : 'Your simulated portfolio'}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-300 mt-1">
+              <span className="text-slate-400">
+                {portfolioMode === 'demo'
+                  ? `Viewing sample data (${profileName.split(' ')[0]})`
+                  : 'Custom personal session'}
+              </span>
+              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                We don&apos;t store your data with us
+              </span>
             </div>
+          </div>
 
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
-              onClick={() => onNavigateToTab('radar')}
-              className="px-4 py-2.5 text-xs font-medium text-slate-900 bg-amber-400 hover:bg-amber-300 rounded-lg transition-colors flex items-center justify-center gap-2 shrink-0 font-semibold shadow-sm"
+              type="button"
+              onClick={() => onOpenValidateModal('manual')}
+              className="px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
             >
-              <span>Explore 8 Curated Solutions</span>
-              <ChevronRight className="w-4 h-4" />
+              <Table2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>Batch Manual Entry</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
+              className="px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <span>Sample Excel (.xlsx)</span>
             </button>
           </div>
         </div>
+
+        {/* Net Worth Summary Widget alongside the 3 Bold Quick-Action Cards */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
+          {/* Net Worth Summary Widget */}
+          <div
+            aria-label="Net Worth Summary"
+            className="xl:col-span-4 bg-slate-900 border border-slate-700/90 rounded-xl p-5 flex flex-col justify-between gap-4"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-medium text-slate-300">Net Worth Summary</span>
+                <span className="text-slate-400">30-day change</span>
+              </div>
+
+              <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-white tabular-nums">
+                {formatCurrency(totalValuation, baseCurrency, { compact: false, showDecimals: false })}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono tabular-nums">
+                <span
+                  className={`inline-flex items-center gap-1 font-semibold ${
+                    thirtyDayStats.changeAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {thirtyDayStats.changeAmount >= 0 ? (
+                    <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+                  ) : (
+                    <TrendingDown className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  <span>
+                    {thirtyDayStats.changeAmount >= 0 ? '+' : ''}
+                    {formatPercent(thirtyDayStats.changePct)}
+                  </span>
+                </span>
+                <span className="text-slate-400">
+                  ({thirtyDayStats.changeAmount >= 0 ? '+' : ''}
+                  {formatCurrency(thirtyDayStats.changeAmount, baseCurrency, { compact: true })} last 30d)
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-400 font-mono tabular-nums">
+              <span>Invested {formatCurrency(totalInvested, baseCurrency, { compact: true })}</span>
+              <span>
+                {holdings.length} {holdings.length === 1 ? 'holding' : 'holdings'}
+              </span>
+            </div>
+          </div>
+
+          {/* 3 Bold, High-Contrast Quick-Action Cards */}
+          <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+            <button
+              type="button"
+              onClick={() => onOpenValidateModal('excel')}
+              className="group text-left bg-indigo-600 hover:bg-indigo-500 border border-indigo-400/50 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-indigo-950/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-indigo-100">
+                    <FileSpreadsheet className="w-4 h-4 text-white shrink-0" />
+                    <span>Excel or CSV</span>
+                  </span>
+                  <span className="text-xs font-mono text-indigo-200">01</span>
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  Import Excel Portfolio
+                </h2>
+                <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
+                  {portfolioMode === 'demo'
+                    ? 'Upload an .xlsx or .csv sheet to replace the demo and simulate your own numbers.'
+                    : 'Upload a fresh .xlsx or .csv sheet to update or restart your simulated holdings.'}
+                </p>
+              </div>
+              <div className="pt-3 border-t border-indigo-400/30 flex items-center justify-between text-xs font-semibold text-white whitespace-nowrap">
+                <span>{portfolioMode === 'demo' ? 'Upload spreadsheet' : 'Update spreadsheet'}</span>
+                <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="group text-left bg-slate-900 hover:bg-slate-800/95 border border-slate-700 hover:border-emerald-400/70 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-emerald-400">
+                    <PlusCircle className="w-4 h-4 shrink-0" />
+                    <span>Quick entry</span>
+                  </span>
+                  <span className="text-xs font-mono text-slate-500">02</span>
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  Add Single Holding
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Log a mutual fund, direct stock, fixed deposit, bond, or cash account in seconds.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-emerald-300 whitespace-nowrap">
+                <span>Add holding</span>
+                <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigateToTab('simulator')}
+              className="group text-left bg-slate-900 hover:bg-slate-800/95 border border-slate-700 hover:border-amber-400/70 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-amber-400">
+                    <Sliders className="w-4 h-4 shrink-0" />
+                    <span>Scenario lab</span>
+                  </span>
+                  <span className="text-xs font-mono text-slate-500">03</span>
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  Run Stress Test
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Simulate rate hikes, market shocks, inflation, and shuffle asset weights dynamically.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-amber-300 whitespace-nowrap">
+                <span>Open Stress Lab</span>
+                <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Slim Single-Line Matured Alert Ribbon (only when action needed) */}
+      {(maturedHoldings.length > 0 || maturingSoonHoldings.length > 0) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 text-xs">
+          <div className="flex items-center gap-2 text-amber-200">
+            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              {maturedHoldings.length > 0 ? (
+                <>
+                  <strong className="font-semibold text-amber-300">
+                    {maturedHoldings.length} matured holding{maturedHoldings.length > 1 ? 's' : ''}
+                  </strong>{' '}
+                  ({formatCurrency(totalMaturedAmount, baseCurrency, { compact: true })}) sitting idle.
+                </>
+              ) : (
+                <>
+                  <strong className="font-semibold text-amber-300">
+                    {maturingSoonHoldings[0]?.name}
+                  </strong>{' '}
+                  matures in {maturingSoonHoldings[0]?.daysToMaturity} days.
+                </>
+              )}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('radar')}
+            className="text-xs font-semibold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
+          >
+            <span>Open Maturity Radar</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       )}
 
-      {/* 2. Primary KPI Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Net Worth */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5">
-          <div className="text-xs font-medium text-slate-400">Total Net Worth</div>
+      {/* 2. Clean 4-Card KPI Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
+          <div className="text-xs text-slate-400">Invested Capital</div>
           <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white mt-1.5 tabular-nums">
-            {formatCurrency(totalValuation, baseCurrency, { compact: false, showDecimals: false })}
+            {formatCurrency(totalInvested, baseCurrency, { compact: false, showDecimals: false })}
           </div>
-          <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
-            <span>Invested: {formatCurrency(totalInvested, baseCurrency, { compact: true })}</span>
+          <div className="text-xs text-slate-500 mt-1.5 font-mono tabular-nums">
+            {totalInvested > 0
+              ? `${(totalValuation / totalInvested).toFixed(2)}x current value`
+              : 'Total cost basis'}
           </div>
         </div>
 
-        {/* Absolute Returns & ROI */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5">
-          <div className="text-xs font-medium text-slate-400">Total Unrealized Gains</div>
+        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
+          <div className="text-xs text-slate-400">Unrealized Gain</div>
           <div
             className={`text-xl sm:text-2xl font-bold font-mono tracking-tight mt-1.5 tabular-nums ${
               totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'
             }`}
           >
+            {totalGain >= 0 ? '+' : ''}
             {formatCurrency(totalGain, baseCurrency, { compact: false, showDecimals: false })}
           </div>
-          <div className="text-xs mt-1 flex items-center gap-1.5 font-mono">
-            <span
-              className={`font-semibold ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
-            >
+          <div className="text-xs mt-1.5 font-mono tabular-nums">
+            <span className={totalGain >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>
               {formatPercent(totalGainPct)}
-            </span>
-            <span className="text-slate-500">all-time ROI</span>
+            </span>{' '}
+            <span className="text-slate-500">overall return</span>
           </div>
         </div>
 
-        {/* Matured Capital Radar */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5">
-          <div className="text-xs font-medium text-slate-400">Matured / Due In 30d</div>
+        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
+          <div className="text-xs text-slate-400">Matured / Due 30d</div>
           <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-amber-400 mt-1.5 tabular-nums">
             {formatCurrency(totalMaturedAmount, baseCurrency, { compact: false, showDecimals: false })}
           </div>
-          <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
-            <span>{maturedHoldings.length} matured · {maturingSoonHoldings.length} upcoming</span>
+          <div className="text-xs text-slate-500 mt-1.5">
+            {maturedHoldings.length} matured · {maturingSoonHoldings.length} upcoming
           </div>
         </div>
 
-        {/* Total Active Assets Count */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5">
-          <div className="text-xs font-medium text-slate-400">Active Instruments</div>
+        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
+          <div className="text-xs text-slate-400">Active Holdings</div>
           <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white mt-1.5 tabular-nums">
-            {holdings.length} <span className="text-xs font-normal text-slate-400">Holdings</span>
+            {holdings.length}
           </div>
-          <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
-            <span>Across 5 asset classes</span>
+          <div className="text-xs text-slate-500 mt-1.5">
+            Across {categoryDonutData.length} asset {categoryDonutData.length === 1 ? 'category' : 'categories'}
           </div>
         </div>
       </div>
 
-      {/* 3. 12-Month Historical Portfolio Value Trend Chart */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <Activity className="w-4 h-4" />
+      {/* 3. Side-by-Side Visual Analytics Row */}
+      {holdings.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          {/* Left (7 cols): 12-Month Historical Value Trend */}
+          <div className="lg:col-span-7 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Portfolio Value Trend</h3>
+                <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                  <span>Monthly average valuation</span>
+                  <span aria-hidden="true">·</span>
+                  <span className={`font-mono font-semibold ${trendStats.diff >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {trendStats.diff >= 0 ? '+' : ''}
+                    {formatPercent(trendStats.diffPct)} ({trendHorizon})
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 w-fit">
+                {(['3M', '6M', '12M'] as const).map((period) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => setTrendHorizon(period)}
+                    className={`px-2.5 py-1 text-2xs font-mono font-medium rounded-md transition-colors ${
+                      trendHorizon === period
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-white">12-Month Historical Portfolio Value Trend</h3>
-                <span className="text-3xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 rounded">
-                  {trendStats.diff >= 0 ? '+' : ''}{formatPercent(trendStats.diffPct)} ({trendHorizon})
+
+            <div className="h-[240px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={visibleTrendData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="trendValuationGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#334155' }}
+                    dy={6}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
+                    domain={['auto', 'auto']}
+                    width={62}
+                  />
+                  <Tooltip content={<TrendChartTooltip baseCurrency={baseCurrency} />} />
+                  <Area
+                    type="monotone"
+                    dataKey="valuation"
+                    stroke="#6366f1"
+                    strokeWidth={2.25}
+                    fillOpacity={1}
+                    fill="url(#trendValuationGradient)"
+                    activeDot={{ r: 5, fill: '#818cf8', stroke: '#1e1b4b', strokeWidth: 2 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="invested"
+                    stroke="#94a3b8"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs text-slate-400">
+              <div className="flex items-center gap-4">
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-0.5 bg-indigo-500 rounded" />
+                  Portfolio Valuation
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-0.5 border-b border-dashed border-slate-400" />
+                  Invested Capital
                 </span>
               </div>
-              <p className="text-2xs text-slate-400 mt-0.5">
-                Trailing trajectory visualizing monthly average portfolio valuations against invested capital.
-              </p>
+              <span className="font-mono text-2xs text-slate-500">{baseCurrency}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-2xs font-mono text-slate-500 hidden sm:inline">Horizon:</span>
-            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
-              {(['3M', '6M', '12M'] as const).map((period) => (
+          {/* Right (5 cols): Portfolio Allocation Donut */}
+          <div className="lg:col-span-5 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Asset Allocation</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {activeDonutData.length} {chartViewMode === 'CATEGORY' ? 'categories' : 'asset classes'}
+                </p>
+              </div>
+
+              <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
                 <button
-                  key={period}
-                  onClick={() => setTrendHorizon(period)}
-                  className={`px-2.5 py-1 text-2xs font-mono font-medium rounded-md transition-colors ${
-                    trendHorizon === period
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                  type="button"
+                  onClick={() => {
+                    setChartViewMode('CATEGORY');
+                    setHoveredSliceIndex(null);
+                  }}
+                  className={`px-2.5 py-1 text-2xs font-medium rounded-md transition-colors ${
+                    chartViewMode === 'CATEGORY'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  {period}
+                  Category
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChartViewMode('BROAD');
+                    setHoveredSliceIndex(null);
+                  }}
+                  className={`px-2.5 py-1 text-2xs font-medium rounded-md transition-colors ${
+                    chartViewMode === 'BROAD'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Class
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Trend Summary Quick Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/60 border border-slate-800/80 rounded-lg p-3">
-          <div>
-            <div className="text-3xs font-mono text-slate-500 uppercase tracking-wider">Trailing Growth</div>
-            <div
-              className={`text-sm font-mono font-semibold tabular-nums mt-0.5 ${
-                trendStats.diff >= 0 ? 'text-emerald-400' : 'text-rose-400'
-              }`}
-            >
-              {trendStats.diff >= 0 ? '+' : ''}
-              {formatCurrency(trendStats.diff, baseCurrency, { compact: false, showDecimals: false })}
-            </div>
-            <div className="text-3xs text-slate-500 mt-0.5 font-mono">
-              Over {trendHorizon} period
-            </div>
-          </div>
-
-          <div>
-            <div className="text-3xs font-mono text-slate-500 uppercase tracking-wider">Monthly Average</div>
-            <div className="text-sm font-mono font-semibold text-white tabular-nums mt-0.5">
-              {formatCurrency(trendStats.avgVal, baseCurrency, { compact: false, showDecimals: false })}
-            </div>
-            <div className="text-3xs text-slate-500 mt-0.5 font-mono">
-              Mean valuation
-            </div>
-          </div>
-
-          <div>
-            <div className="text-3xs font-mono text-slate-500 uppercase tracking-wider">{trendHorizon} Valuation Band</div>
-            <div className="text-sm font-mono font-semibold text-slate-300 tabular-nums mt-0.5">
-              {formatCurrency(trendStats.minVal, baseCurrency, { compact: true })} – {formatCurrency(trendStats.maxVal, baseCurrency, { compact: true })}
-            </div>
-            <div className="text-3xs text-slate-500 mt-0.5 font-mono">
-              Low to peak spread
-            </div>
-          </div>
-
-          <div>
-            <div className="text-3xs font-mono text-slate-500 uppercase tracking-wider">Current Net Worth</div>
-            <div className="text-sm font-mono font-semibold text-indigo-300 tabular-nums mt-0.5">
-              {formatCurrency(totalValuation, baseCurrency, { compact: false, showDecimals: false })}
-            </div>
-            <div className="text-3xs text-slate-500 mt-0.5 font-mono">
-              Active valuation point
-            </div>
-          </div>
-        </div>
-
-        {/* Recharts Area / Line Chart */}
-        <div className="h-[260px] w-full pt-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={visibleTrendData} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
-              <defs>
-                <linearGradient id="trendValuationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.38} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.35} vertical={false} />
-              <XAxis
-                dataKey="month"
-                stroke="#64748b"
-                tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={{ stroke: '#334155' }}
-                dy={6}
-              />
-              <YAxis
-                stroke="#64748b"
-                tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
-                domain={['auto', 'auto']}
-                width={65}
-              />
-              <Tooltip content={<TrendChartTooltip baseCurrency={baseCurrency} />} />
-              <Area
-                type="monotone"
-                dataKey="valuation"
-                stroke="#6366f1"
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill="url(#trendValuationGradient)"
-                activeDot={{ r: 5, fill: '#818cf8', stroke: '#1e1b4b', strokeWidth: 2 }}
-                name="Valuation"
-              />
-              <Line
-                type="monotone"
-                dataKey="invested"
-                stroke="#94a3b8"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                dot={false}
-                name="Invested"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Chart Legend & Context Annotation */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-800/70 text-xs">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="w-3.5 h-1 rounded bg-indigo-500" />
-              <span className="text-slate-300 font-medium">Monthly Average Portfolio Valuation</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3.5 h-0.5 border-b-2 border-dashed border-slate-400" />
-              <span className="text-slate-400">Invested Capital Baseline</span>
-            </div>
-          </div>
-          <div className="text-2xs font-mono text-slate-500">
-            Valuations normalized to <span className="text-slate-300 font-semibold">{baseCurrency}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Asset Allocation & Donut Chart Visualization */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <PieChartIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white">Portfolio Distribution by Asset Category</h3>
-              <p className="text-2xs text-slate-400 mt-0.5">
-                Detailed breakdown of {holdings.length} holdings across {activeDonutData.length} distinct {chartViewMode === 'CATEGORY' ? 'categories' : 'asset classes'}.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-2xs font-mono text-slate-500 hidden sm:inline">Group by:</span>
-            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setChartViewMode('CATEGORY');
-                  setHoveredSliceIndex(null);
-                }}
-                className={`px-2.5 py-1 text-2xs font-medium rounded transition-colors ${
-                  chartViewMode === 'CATEGORY'
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Asset Category
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setChartViewMode('BROAD');
-                  setHoveredSliceIndex(null);
-                }}
-                className={`px-2.5 py-1 text-2xs font-medium rounded transition-colors ${
-                  chartViewMode === 'BROAD'
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Broad Classes
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Donut Chart & Category Breakdown Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          {/* Donut Chart with Interactive Center Readout */}
-          <div className="lg:col-span-5 relative flex items-center justify-center min-h-[260px]">
-            <div className="w-full h-[260px]">
+            <div className="relative h-[180px] flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Tooltip
@@ -690,19 +791,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         const data = payload[0].payload;
                         const pct = totalValuation > 0 ? (data.value / totalValuation) * 100 : 0;
                         return (
-                          <div className="bg-slate-950/95 border border-slate-700/80 px-3 py-2 rounded-lg shadow-xl text-xs font-mono backdrop-blur-xs">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full shrink-0"
-                                style={{ backgroundColor: data.color }}
-                              />
-                              <span className="font-semibold text-white">{data.label}</span>
-                            </div>
-                            <div className="mt-1 text-slate-200 font-bold tabular-nums">
-                              {formatCurrency(data.value, baseCurrency, { compact: false })}
-                            </div>
-                            <div className="text-2xs text-slate-400 mt-0.5">
-                              {pct.toFixed(1)}% of total · {data.count} {data.count === 1 ? 'holding' : 'holdings'}
+                          <div className="bg-slate-950/95 border border-slate-700/80 px-3 py-2 rounded-lg shadow-xl text-xs font-mono">
+                            <div className="font-semibold text-white">{data.label}</div>
+                            <div className="text-slate-200 mt-0.5 tabular-nums">
+                              {formatCurrency(data.value, baseCurrency, { compact: false, showDecimals: false })} ({pct.toFixed(1)}%)
                             </div>
                           </div>
                         );
@@ -714,374 +806,374 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     data={activeDonutData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={98}
-                    paddingAngle={3}
+                    innerRadius={56}
+                    outerRadius={78}
+                    paddingAngle={2.5}
                     dataKey="value"
                     onMouseEnter={(_, index) => setHoveredSliceIndex(index)}
                     onMouseLeave={() => setHoveredSliceIndex(null)}
-                    stroke="#0b0f19"
+                    stroke="#0f172a"
                     strokeWidth={2}
                   >
                     {activeDonutData.map((entry, index) => (
                       <Cell
                         key={`cell-${entry.key}`}
                         fill={entry.color}
-                        opacity={hoveredSliceIndex === null || hoveredSliceIndex === index ? 1 : 0.4}
-                        className="transition-opacity duration-200 cursor-pointer"
+                        opacity={hoveredSliceIndex === null || hoveredSliceIndex === index ? 1 : 0.35}
+                        className="transition-opacity duration-150 cursor-pointer"
                       />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
+                {hoveredSliceIndex !== null && activeDonutData[hoveredSliceIndex] ? (
+                  <>
+                    <span
+                      className="text-2xs font-mono font-semibold truncate max-w-[110px]"
+                      style={{ color: activeDonutData[hoveredSliceIndex].color }}
+                    >
+                      {activeDonutData[hoveredSliceIndex].shortLabel}
+                    </span>
+                    <span className="text-sm font-bold font-mono text-white tabular-nums mt-0.5">
+                      {formatCurrency(activeDonutData[hoveredSliceIndex].value, baseCurrency, { compact: true })}
+                    </span>
+                    <span className="text-2xs font-mono text-slate-400">
+                      {totalValuation > 0
+                        ? `${((activeDonutData[hoveredSliceIndex].value / totalValuation) * 100).toFixed(1)}%`
+                        : '0%'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xs text-slate-400">Total</span>
+                    <span className="text-sm font-bold font-mono text-white tabular-nums mt-0.5">
+                      {formatCurrency(totalValuation, baseCurrency, { compact: true })}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Central Donut Readout */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-              {hoveredSliceIndex !== null && activeDonutData[hoveredSliceIndex] ? (
-                <>
-                  <span
-                    className="text-2xs font-mono font-bold uppercase truncate max-w-[130px]"
-                    style={{ color: activeDonutData[hoveredSliceIndex].color }}
+            {/* Clean Top Categories List (no nested boxes) */}
+            <div className="space-y-2 max-h-[125px] overflow-y-auto pr-1 pt-2 border-t border-slate-800/60">
+              {activeDonutData.map((item, index) => {
+                const pct = totalValuation > 0 ? (item.value / totalValuation) * 100 : 0;
+                return (
+                  <div
+                    key={item.key}
+                    onMouseEnter={() => setHoveredSliceIndex(index)}
+                    onMouseLeave={() => setHoveredSliceIndex(null)}
+                    className="flex items-center justify-between gap-3 text-xs py-0.5 cursor-pointer"
                   >
-                    {activeDonutData[hoveredSliceIndex].shortLabel}
-                  </span>
-                  <span className="text-base sm:text-lg font-bold font-mono text-white tabular-nums tracking-tight mt-0.5">
-                    {formatCurrency(activeDonutData[hoveredSliceIndex].value, baseCurrency, { compact: true })}
-                  </span>
-                  <span className="text-2xs font-mono text-slate-400">
-                    {totalValuation > 0
-                      ? `${((activeDonutData[hoveredSliceIndex].value / totalValuation) * 100).toFixed(1)}%`
-                      : '0%'}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider">
-                    Total Value
-                  </span>
-                  <span className="text-base sm:text-lg font-bold font-mono text-white tabular-nums tracking-tight mt-0.5">
-                    {formatCurrency(totalValuation, baseCurrency, { compact: true })}
-                  </span>
-                  <span className="text-2xs font-mono text-slate-500">
-                    {activeDonutData.length} {chartViewMode === 'CATEGORY' ? 'Categories' : 'Classes'}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Ranked Category List with Progress Bars */}
-          <div className="lg:col-span-7 space-y-2 max-h-[280px] overflow-y-auto pr-1">
-            {activeDonutData.map((item, index) => {
-              const pct = totalValuation > 0 ? (item.value / totalValuation) * 100 : 0;
-              const isHovered = hoveredSliceIndex === index;
-
-              return (
-                <div
-                  key={item.key}
-                  onMouseEnter={() => setHoveredSliceIndex(index)}
-                  onMouseLeave={() => setHoveredSliceIndex(null)}
-                  className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
-                    isHovered
-                      ? 'bg-slate-800/80 border-slate-700'
-                      : 'bg-slate-950/40 border-slate-800/60 hover:bg-slate-800/40'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="font-medium text-slate-200 truncate">{item.label}</span>
-                      <span className="text-2xs font-mono text-slate-500 shrink-0">
-                        ({item.count} {item.count === 1 ? 'holding' : 'holdings'})
-                      </span>
+                      <span className="text-slate-300 truncate">{item.label}</span>
                     </div>
-
-                    <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
-                      <span className="font-semibold text-white tabular-nums">
-                        {formatCurrency(item.value, baseCurrency, { compact: false })}
+                    <div className="flex items-center gap-2.5 shrink-0 font-mono tabular-nums">
+                      <span className="text-slate-200">
+                        {formatCurrency(item.value, baseCurrency, { compact: true })}
                       </span>
-                      <span className="text-slate-400 font-bold tabular-nums w-12 text-right">
-                        {pct.toFixed(1)}%
-                      </span>
+                      <span className="text-slate-400 w-11 text-right">{pct.toFixed(1)}%</span>
                     </div>
                   </div>
-
-                  {/* Micro Progress Bar */}
-                  <div className="w-full h-1 bg-slate-800/80 rounded-full overflow-hidden mt-1.5">
-                    <div
-                      style={{ width: `${pct}%`, backgroundColor: item.color }}
-                      className="h-full rounded-full transition-all duration-300"
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Consolidated Proportional Horizontal Strip at Bottom */}
-        <div className="pt-2 border-t border-slate-800/70">
-          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden flex">
-            {activeDonutData.map((item, index) => {
-              const pct = totalValuation > 0 ? (item.value / totalValuation) * 100 : 0;
-              if (pct <= 0) return null;
-              return (
-                <div
-                  key={item.key}
-                  style={{ width: `${pct}%`, backgroundColor: item.color }}
-                  className={`h-full transition-opacity duration-200 ${
-                    hoveredSliceIndex === null || hoveredSliceIndex === index ? 'opacity-100' : 'opacity-40'
-                  }`}
-                  title={`${item.label}: ${pct.toFixed(1)}%`}
+      {/* 4. Focused Lower Workspace: Segmented Toggle between Holdings Ledger & Smart Insights */}
+      <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl overflow-hidden">
+        {/* Toolbar */}
+        <div className="p-4 sm:px-5 border-b border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setWorkspaceView('ledger')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                workspaceView === 'ledger'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Holdings Ledger ({holdings.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setWorkspaceView('insights')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                workspaceView === 'insights'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Insights & Alerts ({automatedInsights.length})
+            </button>
+          </div>
+
+          {workspaceView === 'ledger' && holdings.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search holdings..."
+                  className="bg-slate-950 border border-slate-800 text-xs rounded-lg pl-8 pr-3 py-1.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-44 sm:w-56"
                 />
-              );
-            })}
-          </div>
-        </div>
-      </div>
+              </div>
 
-      {/* 4. Automated Insights Strip */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-semibold text-white">Automated Portfolio Intelligence</h3>
-          </div>
-          <span className="text-xs text-slate-400">Real-time heuristics</span>
+              <select
+                aria-label="Filter Holdings by Asset Class"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                <option value="ALL">All Asset Classes</option>
+                <option value="MATURED">Matured / Near Maturity</option>
+                <option value="EQUITY">Equities & Mutual Funds</option>
+                <option value="DEBT">Fixed Deposits & Bonds</option>
+                <option value="GOLD">Sovereign Gold Bonds</option>
+                <option value="RETIREMENT">EPF, PPF & NPS</option>
+                <option value="CASH">Savings & Cash</option>
+              </select>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {automatedInsights.slice(0, 3).map((insight) => (
-            <div
-              key={insight.id}
-              onClick={() => insight.tabTarget && onNavigateToTab(insight.tabTarget)}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={`text-2xs font-mono font-semibold uppercase tracking-wider ${
-                      insight.type === 'CRITICAL'
-                        ? 'text-rose-400'
-                        : insight.type === 'WARNING'
-                        ? 'text-amber-400'
-                        : insight.type === 'OPPORTUNITY'
-                        ? 'text-emerald-400'
-                        : 'text-indigo-400'
-                    }`}
-                  >
-                    {insight.type}
-                  </span>
-                  {insight.metric && (
-                    <span className="text-xs font-mono font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded">
-                      {insight.metric}
-                    </span>
-                  )}
+        {/* View A: Clean Holdings Ledger */}
+        {workspaceView === 'ledger' && (
+          <>
+            {holdings.length === 0 ? (
+              <div className="py-14 px-6 text-center max-w-md mx-auto">
+                <div className="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-400 mx-auto mb-3">
+                  <FileSpreadsheet className="w-5 h-5" />
                 </div>
-                <h4 className="text-sm font-medium text-slate-100 mt-2 group-hover:text-indigo-400 transition-colors">
-                  {insight.title}
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  {insight.description}
+                <h3 className="text-base font-semibold text-white">Your workspace is empty</h3>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Upload an Excel spreadsheet (.xlsx/.csv) or add holdings manually to validate your asset mix, tax savings, and macro stress scenarios. Nothing leaves your browser.
                 </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
+                  <button
+                    type="button"
+                    onClick={() => onOpenValidateModal('excel')}
+                    className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    Upload Excel or Batch Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onOpenAddModal}
+                    className="px-4 py-2 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Single Holding
+                  </button>
+                </div>
               </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 font-mono text-2xs">
+                    <tr>
+                      <th className="py-3 px-4 font-medium">Instrument</th>
+                      <th className="py-3 px-4 font-medium">Category</th>
+                      <th className="py-3 px-4 text-right font-medium">Invested</th>
+                      <th className="py-3 px-4 text-right font-medium">Current Value</th>
+                      <th className="py-3 px-4 text-right font-medium">Return</th>
+                      <th className="py-3 px-4 font-medium">Maturity</th>
+                      <th className="py-3 px-4 text-center font-medium">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {filteredHoldings.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-10 text-center text-slate-500">
+                          No holdings match your search filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredHoldings.map((h) => {
+                        const valInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
+                        const invInBase = convertCurrency(h.investedAmount, h.currency, baseCurrency);
+                        const gainInBase = valInBase - invInBase;
+                        const isMat = h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0);
+                        const isSoon =
+                          !isMat && h.daysToMaturity !== undefined && h.daysToMaturity > 0 && h.daysToMaturity <= 30;
 
-              <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs text-indigo-400 font-medium">
-                <span>{insight.actionableText}</span>
-                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        return (
+                          <tr
+                            key={h.id}
+                            className={`hover:bg-slate-800/35 transition-colors ${
+                              isMat ? 'bg-amber-950/15' : ''
+                            }`}
+                          >
+                            <td className="py-3 px-4">
+                              <div className="font-medium text-slate-100">
+                                {h.name}
+                                {h.currency !== baseCurrency && (
+                                  <span className="ml-1.5 text-2xs font-mono text-slate-400">
+                                    ({h.currency})
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-slate-500 text-2xs mt-0.5">
+                                {h.institution}
+                                {h.accountNumberMask ? ` · ${h.accountNumberMask}` : ''}
+                              </div>
+                            </td>
+
+                            <td className="py-3 px-4 text-slate-300">
+                              <span>{CATEGORY_META[h.category]?.shortLabel ?? h.category.replace('_', ' ')}</span>
+                              {h.interestRatePct !== undefined && (
+                                <span className="block text-2xs text-slate-500 font-mono">
+                                  {h.interestRatePct}% p.a.
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4 text-right font-mono text-slate-300 tabular-nums">
+                              {formatCurrency(invInBase, baseCurrency, { showDecimals: false })}
+                            </td>
+
+                            <td className="py-3 px-4 text-right font-mono font-medium text-white tabular-nums">
+                              {formatCurrency(valInBase, baseCurrency, { showDecimals: false })}
+                            </td>
+
+                            <td className="py-3 px-4 text-right font-mono tabular-nums">
+                              <div
+                                className={`font-semibold ${
+                                  gainInBase >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                                }`}
+                              >
+                                {formatPercent(h.unrealizedGainPct)}
+                              </div>
+                              <div className="text-2xs text-slate-500">
+                                {formatCurrency(gainInBase, baseCurrency, { compact: true })}
+                              </div>
+                            </td>
+
+                            <td className="py-3 px-4">
+                              {isMat ? (
+                                <span className="text-amber-400 font-medium">Matured</span>
+                              ) : isSoon ? (
+                                <span className="text-amber-300 font-medium">In {h.daysToMaturity}d</span>
+                              ) : h.maturityDate ? (
+                                <span className="text-slate-400 text-2xs font-mono">{h.maturityDate}</span>
+                              ) : (
+                                <span className="text-slate-500 text-2xs">Open-ended</span>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4 text-center">
+                              {isMat ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectHoldingToReinvest(h)}
+                                  className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors"
+                                >
+                                  Reinvest
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteHolding(h.id)}
+                                  className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                                  title="Delete Holding"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            )}
+          </>
+        )}
 
-      {/* 5. Comprehensive Investment Ledger Table */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold text-white">Investment Asset Ledger</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Consolidated holdings across mutual funds, demat, fixed income, PF, NPS, and bullion.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search holdings..."
-                className="bg-slate-950 border border-slate-800 text-xs rounded-lg pl-8 pr-3 py-1.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-44 sm:w-56"
-              />
-            </div>
-
-            {/* Category Filter Pills */}
-            <select
-              aria-label="Filter Holdings by Asset Class"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
-            >
-              <option value="ALL">All Asset Classes</option>
-              <option value="MATURED">Matured / Near Maturity</option>
-              <option value="EQUITY">Equities & Mutual Funds</option>
-              <option value="DEBT">Fixed Deposits & Bonds</option>
-              <option value="GOLD">Sovereign Gold Bonds</option>
-              <option value="RETIREMENT">EPF, PPF & NPS</option>
-              <option value="CASH">Savings & Cash</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Table Body */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 uppercase font-mono text-2xs tracking-wider">
-              <tr>
-                <th className="py-3 px-4">Instrument & Institution</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4 text-right">Invested</th>
-                <th className="py-3 px-4 text-right">Current Valuation</th>
-                <th className="py-3 px-4 text-right">Gain / ROI</th>
-                <th className="py-3 px-4">Maturity Status</th>
-                <th className="py-3 px-4 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredHoldings.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500">
-                    No investments match your current filters.
-                  </td>
-                </tr>
-              ) : (
-                filteredHoldings.map((h) => {
-                  const valInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
-                  const invInBase = convertCurrency(h.investedAmount, h.currency, baseCurrency);
-                  const gainInBase = valInBase - invInBase;
-                  const isMat = h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0);
-                  const isSoon = !isMat && h.daysToMaturity !== undefined && h.daysToMaturity > 0 && h.daysToMaturity <= 30;
-
-                  return (
-                    <tr
-                      key={h.id}
-                      className={`hover:bg-slate-800/40 transition-colors ${
-                        isMat ? 'bg-amber-950/15' : ''
-                      }`}
-                    >
-                      {/* Name & Account */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-medium text-slate-100 flex items-center gap-1.5">
-                          <span>{h.name}</span>
-                          {h.currency !== baseCurrency && (
-                            <span className="text-2xs font-mono text-slate-400 bg-slate-800 px-1 py-0.2 rounded">
-                              {h.currency}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-slate-500 text-2xs mt-0.5 flex items-center gap-1.5">
-                          <span>{h.institution}</span>
-                          {h.accountNumberMask && (
-                            <>
-                              <span aria-hidden="true">·</span>
-                              <span className="font-mono">{h.accountNumberMask}</span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Category */}
-                      <td className="py-3.5 px-4 text-slate-300">
-                        <span className="text-slate-300 font-medium">
-                          {h.category.replace('_', ' ')}
-                        </span>
-                        {h.interestRatePct && (
-                          <div className="text-2xs text-slate-400 font-mono">
-                            {h.interestRatePct}% p.a.
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Invested Amount */}
-                      <td className="py-3.5 px-4 text-right font-mono text-slate-300 tabular-nums">
-                        {formatCurrency(invInBase, baseCurrency, { showDecimals: false })}
-                      </td>
-
-                      {/* Current Valuation */}
-                      <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-100 tabular-nums">
-                        {formatCurrency(valInBase, baseCurrency, { showDecimals: false })}
-                      </td>
-
-                      {/* Gain / ROI */}
-                      <td className="py-3.5 px-4 text-right font-mono tabular-nums">
-                        <div
+        {/* View B: Actionable Insights & Alerts */}
+        {workspaceView === 'insights' && (
+          <div className="p-5">
+            {holdings.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Add or upload holdings to generate automated tax, maturity, and concentration insights.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {automatedInsights.map((insight) => (
+                  <button
+                    type="button"
+                    key={insight.id}
+                    onClick={() => insight.tabTarget && onNavigateToTab(insight.tabTarget)}
+                    className="text-left bg-slate-950/60 border border-slate-800 rounded-xl p-4 hover:border-slate-600 transition-colors flex flex-col justify-between group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 text-2xs font-mono">
+                        <span
                           className={`font-semibold ${
-                            gainInBase >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                            insight.type === 'CRITICAL'
+                              ? 'text-rose-400'
+                              : insight.type === 'WARNING'
+                              ? 'text-amber-400'
+                              : insight.type === 'OPPORTUNITY'
+                              ? 'text-emerald-400'
+                              : 'text-indigo-400'
                           }`}
                         >
-                          {formatPercent(h.unrealizedGainPct)}
-                        </div>
-                        <div className="text-2xs text-slate-500">
-                          {formatCurrency(gainInBase, baseCurrency, { compact: true })}
-                        </div>
-                      </td>
-
-                      {/* Maturity Status */}
-                      <td className="py-3.5 px-4">
-                        {isMat ? (
-                          <div className="text-amber-400 font-semibold flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Matured (Ready)</span>
-                          </div>
-                        ) : isSoon ? (
-                          <div className="text-amber-300 font-medium flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>In {h.daysToMaturity} days</span>
-                          </div>
-                        ) : h.maturityDate ? (
-                          <div className="text-slate-400 text-2xs font-mono">
-                            {h.maturityDate}
-                          </div>
-                        ) : (
-                          <span className="text-slate-500 text-2xs">Perpetual / Open</span>
+                          {insight.type}
+                        </span>
+                        {insight.metric && (
+                          <span className="text-slate-200 font-semibold tabular-nums">
+                            {insight.metric}
+                          </span>
                         )}
-                      </td>
+                      </div>
+                      <h4 className="text-sm font-medium text-white mt-2 group-hover:text-indigo-300 transition-colors">
+                        {insight.title}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                        {insight.description}
+                      </p>
+                    </div>
 
-                      {/* Action */}
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          {isMat ? (
-                            <button
-                              onClick={() => onSelectHoldingToReinvest(h)}
-                              className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors"
-                            >
-                              Reinvest
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => onDeleteHolding(h.id)}
-                              className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
-                              title="Delete Holding"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div className="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between text-xs text-indigo-400 font-medium">
+                      <span>{insight.actionableText}</span>
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer quick restart action */}
+        {holdings.length > 0 && (
+          <div className="px-5 py-3 border-t border-slate-800/70 bg-slate-950/40 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <span>Want to test with your own numbers instead?</span>
+            <button
+              type="button"
+              onClick={() => onOpenValidateModal('excel')}
+              className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1.5 transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Restart & Validate Portfolio
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

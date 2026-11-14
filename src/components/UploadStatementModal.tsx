@@ -1,21 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Holding } from '../types/wealth';
+import { CurrencyCode, Holding } from '../types/wealth';
 import {
+  downloadPortfolioExcelTemplate,
+  importExcelBuffer,
   importStatement,
   STATEMENT_TEMPLATES,
   StatementFormat,
   ParsedStatement,
 } from '../utils/statementImport';
 import { trackEvent } from '../utils/analytics';
-import { X, FileText, ArrowRight, Sparkles, UploadCloud, Download, AlertTriangle } from 'lucide-react';
+import { X, FileText, ArrowRight, ShieldCheck, UploadCloud, Download, AlertTriangle } from 'lucide-react';
 
 interface UploadStatementModalProps {
   isOpen: boolean;
   onClose: () => void;
+  baseCurrency?: CurrencyCode;
   onImportHoldings: (newHoldings: Holding[]) => void;
 }
 
 const FORMAT_LABELS: Record<StatementFormat, string> = {
+  PORTFOLIO_SHEET: 'Portfolio Spreadsheet (.xlsx / .csv)',
   CAS: 'CAMS / KFintech Consolidated Account Statement',
   FD_REGISTRY: 'Bank FD / RD deposit registry',
   MF_CENTRAL: 'MF Central consolidated holdings export',
@@ -35,6 +39,7 @@ function downloadTemplate(format: StatementFormat): void {
 export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   isOpen,
   onClose,
+  baseCurrency = 'INR',
   onImportHoldings,
 }) => {
   const [parsed, setParsed] = useState<ParsedStatement | null>(null);
@@ -43,8 +48,6 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Reset stale parse state whenever the modal (re)opens — without this, a
-  // previously-previewed statement lingers and can be re-imported by accident.
   useEffect(() => {
     if (isOpen) {
       setParsed(null);
@@ -64,7 +67,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   const ingestText = (text: string, name: string) => {
     setError('');
     try {
-      const result = importStatement(text);
+      const result = importStatement(text, baseCurrency);
       if (result.holdings.length === 0 && result.skipped.length === 0) {
         setError('Statement parsed but no data rows matched the expected columns.');
         setParsed(null);
@@ -80,12 +83,40 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   };
 
   const handleFile = (file: File) => {
+    const isExcel = /\.(xlsx|xls|xlsm|xlsb|ods)$/i.test(file.name);
     const isCsvLike =
       /\.(csv|tsv|txt)$/i.test(file.name) || file.type === 'text/csv' || file.type === 'text/plain';
-    if (!isCsvLike) {
-      setError('Please drop a CSV/TSV export. PDF statements need to be saved as CSV from your bank or MF Central first.');
+    if (!isExcel && !isCsvLike) {
+      setError('Please drop an Excel (.xlsx, .xls) or CSV/TSV file.');
       return;
     }
+
+    if (isExcel) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          try {
+            const workbookResult = importExcelBuffer(reader.result, undefined, baseCurrency);
+            if (workbookResult.parsed.holdings.length === 0) {
+              setError('Excel workbook parsed, but no valid holding rows matched.');
+              setParsed(null);
+              return;
+            }
+            setParsed(workbookResult.parsed);
+            setFileName(file.name);
+            setError('');
+          } catch (e) {
+            setParsed(null);
+            setFileName(file.name);
+            setError(e instanceof Error ? e.message : 'Could not parse Excel file.');
+          }
+        }
+      };
+      reader.onerror = () => setError('Could not read that Excel file.');
+      reader.readAsArrayBuffer(file);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => ingestText(String(reader.result ?? ''), file.name);
     reader.onerror = () => setError('Could not read that file.');
@@ -114,7 +145,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
             <FileText className="w-4 h-4 text-indigo-400" />
-            <span>Import Statement</span>
+            <span>Import Excel or CSV Statement</span>
           </h3>
           <button
             onClick={() => {
@@ -126,6 +157,13 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        <div className="mt-4 p-3 rounded-lg bg-emerald-950/25 border border-emerald-500/25 flex items-start gap-2.5 text-xs text-emerald-100/90">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <span>
+            We don&apos;t store your data with us. Your file is read privately on your device and never sent to any server.
+          </span>
         </div>
 
         {error && (
@@ -158,7 +196,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
             >
               <UploadCloud className="w-8 h-8 text-slate-500 mx-auto" />
               <div className="text-xs font-medium text-slate-300 mt-2">
-                Drop a CSV statement here, or click to browse
+                Drop an Excel (.xlsx, .xls) or CSV statement here, or click to browse
               </div>
               <p className="text-2xs text-slate-500 mt-1">
                 Parsed entirely in your browser — the file never leaves your device.
@@ -166,7 +204,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.tsv,.txt,text/csv,text/plain"
+                accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.txt,text/csv,text/plain"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -176,20 +214,21 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               />
             </div>
 
-            <p className="text-2xs text-slate-500 mt-3 leading-relaxed flex items-start gap-1.5">
-              <Sparkles className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
-              <span>
-                Works with CAS (CAMS/KFintech), bank deposit registries, and MF Central
-                holdings exports — formats are auto-detected from the header row. Monthly CAS
-                from your mailbox or the MF Central download both drop straight in.
-              </span>
-            </p>
-
-            {/* Templates */}
+            {/* Excel & CSV Templates */}
             <div className="mt-4 space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                No statement handy? Try a sample or grab the exact template:
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Templates & sample statements
+                </label>
+                <button
+                  type="button"
+                  onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
+                  className="text-2xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <Download className="w-3 h-3" />
+                  Download Excel Template (.xlsx)
+                </button>
+              </div>
               {(Object.keys(STATEMENT_TEMPLATES) as StatementFormat[]).map((format) => (
                 <div
                   key={format}
@@ -207,7 +246,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                       title="Download CSV template"
                     >
                       <Download className="w-3 h-3" />
-                      Template
+                      CSV
                     </button>
                     <button
                       onClick={() => loadSampleForFormat(format)}
@@ -252,7 +291,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                     </div>
                   </div>
                   <div className="text-2xs text-slate-300 font-mono whitespace-nowrap">
-                    ₹{Math.round(h.currentValue).toLocaleString('en-IN')}
+                    {Math.round(h.currentValue).toLocaleString()} {h.currency}
                   </div>
                 </div>
               ))}
