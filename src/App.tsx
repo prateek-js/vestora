@@ -33,7 +33,8 @@ import {
   importStatement,
 } from './utils/statementImport';
 import { generatePortfolioPdfReport } from './utils/pdfReport';
-import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText } from 'lucide-react';
+import { OnboardingTour } from './components/OnboardingTour';
+import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
 type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
 
@@ -64,7 +65,24 @@ export default function App() {
   const [portfolioMode, setPortfolioMode] = useState<'demo' | 'personal'>(initial.mode);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [restoreError, setRestoreError] = useState('');
+  const [restoreNotice, setRestoreNotice] = useState('');
   const restoreInputRef = useRef<HTMLInputElement>(null);
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(() => {
+    try {
+      return !window.localStorage.getItem('vestora_tour_seen_v1');
+    } catch {
+      return false;
+    }
+  });
+
+  const handleCloseTour = () => {
+    setIsTourOpen(false);
+    try {
+      window.localStorage.setItem('vestora_tour_seen_v1', '1');
+    } catch {
+      // Ignore storage restrictions
+    }
+  };
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -274,7 +292,9 @@ export default function App() {
           }
           setHoldings(preview.parsed.holdings);
           setPortfolioMode('personal');
+          setActiveTab('overview');
           setRestoreError('');
+          setRestoreNotice(`Restored ${preview.parsed.holdings.length} holdings from ${file.name}.`);
           setIsResetConfirmOpen(false);
           trackEvent('portfolio_restored_xlsx', { holdings: preview.parsed.holdings.length });
           return;
@@ -288,7 +308,9 @@ export default function App() {
           }
           setHoldings(parsed.holdings);
           setPortfolioMode('personal');
+          setActiveTab('overview');
           setRestoreError('');
+          setRestoreNotice(`Restored ${parsed.holdings.length} holdings from ${file.name}.`);
           setIsResetConfirmOpen(false);
           trackEvent('portfolio_restored_csv', { holdings: parsed.holdings.length });
           return;
@@ -298,15 +320,23 @@ export default function App() {
         setHoldings(result.holdings);
         if (result.baseCurrency) setBaseCurrency(result.baseCurrency);
         setPortfolioMode('personal');
+        setActiveTab('overview');
         setRestoreError('');
+        setRestoreNotice(`Restored ${result.holdings.length} holdings from ${file.name}.`);
         setIsResetConfirmOpen(false);
         trackEvent('portfolio_restored', { holdings: result.holdings.length });
       } catch (err) {
-        setRestoreError(err instanceof Error ? err.message : 'Could not restore this file.');
+        const msg = err instanceof Error ? err.message : 'Could not restore this file.';
+        setRestoreError(msg);
+        setRestoreNotice('');
+        setIsResetConfirmOpen(true);
       }
     };
 
-    reader.onerror = () => setRestoreError('Could not read that file.');
+    reader.onerror = () => {
+      setRestoreError('Could not read that file.');
+      setIsResetConfirmOpen(true);
+    };
     if (isExcel) {
       reader.readAsArrayBuffer(file);
     } else {
@@ -324,15 +354,53 @@ export default function App() {
         setBaseCurrency={setBaseCurrency}
         currentProfile={currentProfile}
         setProfile={handleProfileSwitch}
+        holdingsCount={holdings.length}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
         onOpenValidateModal={() => openValidateModal('excel')}
         onOpenNavRefresh={() => setIsNavRefreshOpen(true)}
+        onExportExcel={handleExportExcel}
+        onExportCsv={handleExportCsv}
+        onExportPdf={handleExportPdf}
+        onExportJson={handleExportPortfolio}
+        onTriggerRestore={() => restoreInputRef.current?.click()}
+        onStartTour={() => {
+          setActiveTab('overview');
+          setIsTourOpen(true);
+        }}
         maturedCount={maturedCount}
         onResetToSample={() => setIsResetConfirmOpen(true)}
         fxAsOf={fxAsOf}
         fxSource={fxSource}
       />
+
+      {/* Global hidden file input for restoring saved .xlsx / .csv / .json exports */}
+      <input
+        ref={restoreInputRef}
+        type="file"
+        accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.json,application/json"
+        className="hidden"
+        onChange={handleRestoreFile}
+      />
+
+      {restoreNotice && (
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-xs text-emerald-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{restoreNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRestoreNotice('')}
+              className="text-emerald-300 hover:text-white p-0.5"
+              aria-label="Dismiss restore message"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -496,13 +564,6 @@ export default function App() {
                 <Upload className="w-3.5 h-3.5 text-emerald-400" />
                 Re-import Saved (.xlsx / .csv / .json)
               </button>
-              <input
-                ref={restoreInputRef}
-                type="file"
-                accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.json,application/json"
-                className="hidden"
-                onChange={handleRestoreFile}
-              />
 
               <button
                 type="button"
@@ -543,6 +604,12 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <OnboardingTour
+        isOpen={isTourOpen}
+        onClose={handleCloseTour}
+        onEnsureOverviewTab={() => setActiveTab('overview')}
+      />
     </div>
   );
 }

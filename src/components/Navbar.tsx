@@ -10,6 +10,9 @@ import {
   SlidersHorizontal,
   ChevronDown,
   FileSpreadsheet,
+  Download,
+  FileText,
+  HelpCircle,
 } from 'lucide-react';
 
 const TAB_NAMES = {
@@ -30,6 +33,13 @@ interface NavbarProps {
   onOpenUploadModal: () => void;
   onOpenValidateModal: () => void;
   onOpenNavRefresh: () => void;
+  holdingsCount: number;
+  onExportExcel: () => void;
+  onExportCsv: () => void;
+  onExportPdf: () => void;
+  onExportJson: () => void;
+  onTriggerRestore: () => void;
+  onStartTour: () => void;
   maturedCount: number;
   onResetToSample: () => void;
   /** ISO date of the loaded FX fix; null = still on benchmark rates. */
@@ -44,16 +54,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   setBaseCurrency,
   currentProfile,
   setProfile,
+  holdingsCount,
   onOpenAddModal,
   onOpenUploadModal,
   onOpenValidateModal,
   onOpenNavRefresh,
+  onExportExcel,
+  onExportCsv,
+  onExportPdf,
+  onExportJson,
+  onTriggerRestore,
+  onStartTour,
   maturedCount,
   onResetToSample,
   fxAsOf,
   fxSource,
 }) => {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const toolsMenuRef = useRef<HTMLDivElement>(null);
 
   const handleTabChange = (tab: NavbarProps['activeTab']) => {
@@ -61,10 +79,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     trackEvent('tab_viewed', { tab: TAB_NAMES[tab] });
   };
 
-  // Close tools popover on click outside or escape key
+  // Close popovers on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsToolsOpen(false);
+      if (e.key === 'Escape') {
+        setIsToolsOpen(false);
+        setIsExportOpen(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -73,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="border-b border-slate-800 bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 w-full">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-3">
           {/* Zone 1: Brand wordmark single-line */}
           <div className="flex items-center gap-2.5 shrink-0">
             <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-mono font-bold text-sm shadow-inner shrink-0">
@@ -175,11 +196,131 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
+            {/* Dedicated Save / Export & Restore Menu (Always visible top-level action) */}
+            <div className="relative" data-tour="export-menu">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsToolsOpen(false);
+                  setIsExportOpen((prev) => !prev);
+                }}
+                className={`px-2.5 py-1.5 text-xs font-medium border rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  isExportOpen
+                    ? 'bg-emerald-950/60 border-emerald-400 text-emerald-200'
+                    : 'bg-slate-900 border-emerald-500/40 text-emerald-300 hover:bg-emerald-950/40 hover:border-emerald-400/70'
+                }`}
+                title="Save portfolio (.xlsx / .csv / .pdf / .json) or restore a saved file"
+              >
+                <Download className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Save / Export</span>
+                <ChevronDown className="w-3 h-3 opacity-80 shrink-0" />
+              </button>
+
+              {isExportOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsExportOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 text-xs space-y-1">
+                    <div className="px-3 py-1.5 text-2xs font-medium text-slate-400 border-b border-slate-800/80 mb-1 flex items-center justify-between">
+                      <span>Save &amp; Restore Progress</span>
+                      <span className="font-mono text-emerald-400">{holdingsCount} items</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={holdingsCount === 0}
+                      onClick={() => {
+                        setIsExportOpen(false);
+                        onExportExcel();
+                      }}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed text-slate-100 hover:text-white transition-colors flex items-center gap-2.5"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div>
+                        <div className="font-semibold text-xs">Save as Excel (.xlsx)</div>
+                        <div className="text-2xs text-slate-400">Best for re-importing later</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={holdingsCount === 0}
+                      onClick={() => {
+                        setIsExportOpen(false);
+                        onExportCsv();
+                      }}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed text-slate-200 hover:text-white transition-colors flex items-center gap-2.5"
+                    >
+                      <Download className="w-4 h-4 text-sky-400 shrink-0" />
+                      <div>
+                        <div className="font-medium text-xs">Save as CSV (.csv)</div>
+                        <div className="text-2xs text-slate-400">Universal spreadsheet &amp; backup</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={holdingsCount === 0}
+                      onClick={() => {
+                        setIsExportOpen(false);
+                        onExportPdf();
+                      }}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed text-slate-200 hover:text-white transition-colors flex items-center gap-2.5"
+                    >
+                      <FileText className="w-4 h-4 text-rose-400 shrink-0" />
+                      <div>
+                        <div className="font-medium text-xs">Export PDF Report (.pdf)</div>
+                        <div className="text-2xs text-slate-400">Printable summary + growth charts</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={holdingsCount === 0}
+                      onClick={() => {
+                        setIsExportOpen(false);
+                        onExportJson();
+                      }}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed text-slate-300 hover:text-white transition-colors flex items-center gap-2.5"
+                    >
+                      <Download className="w-4 h-4 text-slate-400 shrink-0" />
+                      <div>
+                        <div className="font-medium text-xs">Export JSON Snapshot (.json)</div>
+                        <div className="text-2xs text-slate-400">Portable raw data backup</div>
+                      </div>
+                    </button>
+
+                    <div className="border-t border-slate-800/80 pt-1 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsExportOpen(false);
+                          onTriggerRestore();
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-lg bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/30 text-indigo-200 hover:text-white transition-colors flex items-center gap-2.5"
+                      >
+                        <Upload className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <div>
+                          <div className="font-semibold text-xs">Restore Earlier Export</div>
+                          <div className="text-2xs text-indigo-300/80">Re-import .xlsx, .csv, or .json</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Consolidated Tools & Data Menu Dropdown */}
             <div className="relative" ref={toolsMenuRef}>
               <button
                 type="button"
-                onClick={() => setIsToolsOpen(!isToolsOpen)}
+                onClick={() => {
+                  setIsExportOpen(false);
+                  setIsToolsOpen(!isToolsOpen);
+                }}
                 className={`p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-medium border rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
                   isToolsOpen
                     ? 'bg-slate-800 border-indigo-500 text-white'
@@ -299,6 +440,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </>
               )}
             </div>
+
+            {/* Interactive Quick Tour Trigger */}
+            <button
+              type="button"
+              onClick={onStartTour}
+              className="p-1.5 sm:px-2 sm:py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+              title="Take a quick guided tour of saving, exporting & importing"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <span className="hidden lg:inline text-2xs">Tour</span>
+            </button>
 
             {/* Primary Action CTA (+ Add Holding) */}
             <button

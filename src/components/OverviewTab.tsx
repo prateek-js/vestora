@@ -471,7 +471,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   : 'Custom personal session'}
               </span>
               <span aria-hidden="true" className="text-slate-600">·</span>
-              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+              <span
+                data-tour="privacy-badge"
+                className="inline-flex items-center gap-1.5 text-emerald-400 px-1.5 py-0.5 rounded"
+              >
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                 We don&apos;t store your data with us
               </span>
@@ -493,7 +496,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               className="px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
             >
               <Download className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-              <span>Sample Excel (.xlsx)</span>
+              <span>Sample Template</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
+              disabled={holdings.length === 0}
+              className="px-3.5 py-2 text-xs font-medium text-emerald-300 bg-emerald-950/35 hover:bg-emerald-950/55 disabled:opacity-45 disabled:cursor-not-allowed border border-emerald-500/40 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Export Excel (.xlsx)</span>
             </button>
             <button
               type="button"
@@ -566,6 +578,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="xl:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
             <button
               type="button"
+              data-tour="import-card"
               onClick={() => onOpenValidateModal('excel')}
               className="group text-left bg-indigo-600 hover:bg-indigo-500 border border-indigo-400/50 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-indigo-950/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
@@ -578,22 +591,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <span className="text-xs font-mono text-indigo-200">01</span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  Import Excel Portfolio
+                  Import or Restore Portfolio
                 </h2>
                 <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
                   {portfolioMode === 'demo'
-                    ? 'Upload an .xlsx or .csv sheet to replace the demo and simulate your own numbers.'
-                    : 'Upload a fresh .xlsx or .csv sheet to update or restart your simulated holdings.'}
+                    ? 'Upload your own .xlsx / .csv or re-import a file you previously saved from Vestora.'
+                    : 'Upload a fresh sheet or re-import an earlier Vestora export to restore your progress.'}
                 </p>
               </div>
               <div className="pt-3 border-t border-indigo-400/30 flex items-center justify-between text-xs font-semibold text-white whitespace-nowrap">
-                <span>{portfolioMode === 'demo' ? 'Upload spreadsheet' : 'Update spreadsheet'}</span>
+                <span>Upload or restore file</span>
                 <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </button>
 
             <button
               type="button"
+              data-tour="add-card"
               onClick={onOpenAddModal}
               className="group text-left bg-slate-900 hover:bg-slate-800/95 border border-slate-700 hover:border-emerald-400/70 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
