@@ -26,7 +26,14 @@ import { trackEvent } from './utils/analytics';
 import { refreshFxRates } from './utils/liveRates';
 import { NavRefreshModal } from './components/NavRefreshModal';
 import { buildExport, downloadPortfolioExport, parsePortfolioExport } from './utils/backupRestore';
-import { RotateCcw, Download, Upload, ShieldCheck } from 'lucide-react';
+import {
+  exportHoldingsToCsv,
+  exportHoldingsToExcel,
+  importExcelBuffer,
+  importStatement,
+} from './utils/statementImport';
+import { generatePortfolioPdfReport } from './utils/pdfReport';
+import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText } from 'lucide-react';
 
 type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
 
@@ -227,15 +234,67 @@ export default function App() {
     trackEvent('portfolio_exported', { holdings: holdings.length });
   };
 
-  // Restore a previously exported backup file
+  // Export current portfolio to Excel (.xlsx) or CSV (.csv)
+  const handleExportExcel = () => {
+    exportHoldingsToExcel(holdings, baseCurrency);
+    trackEvent('portfolio_exported_xlsx', { holdings: holdings.length });
+  };
+
+  const handleExportCsv = () => {
+    exportHoldingsToCsv(holdings);
+    trackEvent('portfolio_exported_csv', { holdings: holdings.length });
+  };
+
+  const handleExportPdf = () => {
+    generatePortfolioPdfReport({
+      holdings,
+      baseCurrency,
+      portfolioMode,
+      profileName: currentProfile.name,
+    });
+    trackEvent('portfolio_exported_pdf', { holdings: holdings.length });
+  };
+
+  // Restore a previously exported Excel, CSV, or JSON backup file
   const handleRestoreFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
+
+    const lower = file.name.toLowerCase();
+    const isExcel = /\.(xlsx|xls|xlsm|xlsb|ods)$/i.test(lower);
     const reader = new FileReader();
+
     reader.onload = () => {
       try {
-        const result = parsePortfolioExport(String(reader.result ?? ''));
+        if (isExcel) {
+          const preview = importExcelBuffer(reader.result as ArrayBuffer, undefined, baseCurrency);
+          if (preview.parsed.holdings.length === 0) {
+            throw new Error('No recognizable holdings found in this Excel workbook.');
+          }
+          setHoldings(preview.parsed.holdings);
+          setPortfolioMode('personal');
+          setRestoreError('');
+          setIsResetConfirmOpen(false);
+          trackEvent('portfolio_restored_xlsx', { holdings: preview.parsed.holdings.length });
+          return;
+        }
+
+        const text = String(reader.result ?? '');
+        if (lower.endsWith('.csv') || lower.endsWith('.tsv')) {
+          const parsed = importStatement(text, baseCurrency);
+          if (parsed.holdings.length === 0) {
+            throw new Error('No recognizable holdings found in this CSV file.');
+          }
+          setHoldings(parsed.holdings);
+          setPortfolioMode('personal');
+          setRestoreError('');
+          setIsResetConfirmOpen(false);
+          trackEvent('portfolio_restored_csv', { holdings: parsed.holdings.length });
+          return;
+        }
+
+        const result = parsePortfolioExport(text);
         setHoldings(result.holdings);
         if (result.baseCurrency) setBaseCurrency(result.baseCurrency);
         setPortfolioMode('personal');
@@ -246,8 +305,13 @@ export default function App() {
         setRestoreError(err instanceof Error ? err.message : 'Could not restore this file.');
       }
     };
+
     reader.onerror = () => setRestoreError('Could not read that file.');
-    reader.readAsText(file);
+    if (isExcel) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
   };
 
   return (
@@ -385,25 +449,57 @@ export default function App() {
             <div className="mt-4 space-y-2">
               <button
                 type="button"
-                onClick={handleExportPortfolio}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+                onClick={handleExportExcel}
+                disabled={holdings.length === 0}
+                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                <Download className="w-3.5 h-3.5 text-sky-400" />
-                Export Backup (.json)
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                Save Portfolio as Excel (.xlsx)
+              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  disabled={holdings.length === 0}
+                  className="px-3 py-2 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-sky-400" />
+                  Export .csv
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportPortfolio}
+                  disabled={holdings.length === 0}
+                  className="px-3 py-2 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-400" />
+                  Export .json
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={holdings.length === 0}
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-rose-500/70 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText className="w-3.5 h-3.5 text-rose-400" />
+                Export Printable PDF Report (.pdf)
               </button>
 
               <button
                 type="button"
                 onClick={() => restoreInputRef.current?.click()}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-emerald-500/70 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                Restore from Backup
+                Re-import Saved (.xlsx / .csv / .json)
               </button>
               <input
                 ref={restoreInputRef}
                 type="file"
-                accept=".json,application/json"
+                accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.json,application/json"
                 className="hidden"
                 onChange={handleRestoreFile}
               />

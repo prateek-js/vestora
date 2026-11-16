@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
 import {
   downloadPortfolioExcelTemplate,
+  exportHoldingsToCsv,
+  exportHoldingsToExcel,
   importExcelBuffer,
   importStatement,
   ParsedStatement,
@@ -791,7 +793,39 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
 
           {/* TAB 3: RESET / START BLANK */}
           {activeTab === 'reset' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+            <div className="space-y-4 py-2">
+              {currentHoldings.length > 0 && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold text-emerald-300">
+                      Save your current progress before resetting ({currentHoldings.length} holdings)
+                    </div>
+                    <p className="text-2xs text-slate-300 mt-0.5">
+                      Download your portfolio as Excel or CSV so you can re-import it later anytime.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => exportHoldingsToExcel(currentHoldings, baseCurrency)}
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Save .xlsx
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => exportHoldingsToCsv(currentHoldings)}
+                      className="px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Download className="w-3.5 h-3.5 text-sky-400" />
+                      Save .csv
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-5 rounded-xl border border-slate-800 bg-slate-950/50 flex flex-col justify-between space-y-4">
                 <div>
                   <div className="w-9 h-9 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-3">
@@ -835,6 +869,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   Restore Sample Portfolio
                 </button>
               </div>
+            </div>
             </div>
           )}
         </div>

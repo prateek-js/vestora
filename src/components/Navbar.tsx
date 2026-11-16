@@ -285,8 +285,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                       >
                         <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
                         <div>
-                          <div className="font-medium text-xs">Backup or Reset</div>
-                          <div className="text-2xs text-slate-500">Export JSON or clear your session</div>
+                          <div className="font-medium text-xs">Export, Restore or Reset</div>
+                          <div className="text-2xs text-slate-500">Save Excel / CSV / JSON or clear session</div>
                         </div>
                       </button>
                     </div>

@@ -162,21 +162,34 @@ export function parseFlexibleDate(raw: string | number | Date | undefined | null
   return null;
 }
 
+function matchCategoryKeyword(text: string): AssetCategory | null {
+  const lower = text.toLowerCase().trim();
+  if (!lower) return null;
+  if (/sgb|sovereign\s*gold|gold\s*bond|gold\s*etf|\bgold\b/.test(lower)) return 'SOVEREIGN_GOLD_BOND';
+  if (/recurring\s*deposit|\brd\b/.test(lower)) return 'RECURRING_DEPOSIT';
+  if (/fixed\s*deposit|term\s*deposit|\bfd\b/.test(lower)) return 'FIXED_DEPOSIT';
+  if (/govt\s*bond|g-?sec|treasury|sovereign\s*bond|rbi\s*floating|tbill|t-bill/.test(lower)) return 'GOVT_BOND';
+  if (/corp\s*bond|corporate\s*bond|debenture|\bncd\b/.test(lower)) return 'CORP_BOND';
+  if (/\bepf\b|employee\s*provident|vpf/.test(lower)) return 'EPF';
+  if (/\bppf\b|public\s*provident/.test(lower)) return 'PPF';
+  if (/\bnps\b|national\s*pension/.test(lower)) return 'NPS';
+  if (/savings|liquid\s*cash|\bcash\b|sweep\s*account|checking/.test(lower)) return 'SAVINGS_CASH';
+  if (/mutual\s*fund|mutual_fund|\bmf\b|elss|flexi\s*cap/.test(lower)) return 'MUTUAL_FUND';
+  if (/stock|equity|demat|share|nasdaq|nyse|nse|bse|etf/.test(lower)) return 'EQUITY_STOCK';
+  if (/\bbond\b/.test(lower)) return 'CORP_BOND';
+  return null;
+}
+
 function mapCategoryString(raw: string | undefined, fallbackName = ''): AssetCategory {
+  if (raw) {
+    const explicit = matchCategoryKeyword(raw);
+    if (explicit) return explicit;
+  }
   const combined = `${raw ?? ''} ${fallbackName}`.toLowerCase();
-  if (/sgb|sovereign\s*gold|gold\s*bond|gold\s*etf|\bgold\b/.test(combined)) return 'SOVEREIGN_GOLD_BOND';
-  if (/recurring\s*deposit|\brd\b/.test(combined)) return 'RECURRING_DEPOSIT';
-  if (/fixed\s*deposit|term\s*deposit|\bfd\b/.test(combined)) return 'FIXED_DEPOSIT';
-  if (/govt\s*bond|g-?sec|treasury|sovereign\s*bond|rbi\s*floating|tbill|t-bill/.test(combined)) return 'GOVT_BOND';
-  if (/corp\s*bond|corporate\s*bond|debenture|\bncd\b|\bbond\b/.test(combined)) return 'CORP_BOND';
-  if (/\bepf\b|employee\s*provident|vpf/.test(combined)) return 'EPF';
-  if (/\bppf\b|public\s*provident/.test(combined)) return 'PPF';
-  if (/\bnps\b|national\s*pension/.test(combined)) return 'NPS';
-  if (/savings|liquid\s*cash|\bcash\b|sweep\s*account|checking/.test(combined)) return 'SAVINGS_CASH';
   if (/stock|equity|demat|share|nasdaq|nyse|nse|bse|etf/.test(combined) && !/mutual|fund|elss|flexi|nifty.*index/.test(combined)) {
     return 'EQUITY_STOCK';
   }
-  return 'MUTUAL_FUND';
+  return matchCategoryKeyword(fallbackName) ?? 'MUTUAL_FUND';
 }
 
 function guessCategory(format: StatementFormat, row: string[], col: Record<string, number>): AssetCategory {
@@ -241,6 +254,13 @@ export function detectFormat(rows: string[][]): StatementFormat | null {
   if (rows.length === 0) return null;
   const header = rows[0].map(norm).join('|');
 
+  if (
+    /(instrumentname|category)/.test(header) &&
+    /(name|instrument|asset|holding|security|scheme|stock|fund|description|particulars)/.test(header) &&
+    /(currentvalue|marketvalue|valuation|presentvalue|value|invested|cost|principal|amount|balance)/.test(header)
+  ) {
+    return 'PORTFOLIO_SHEET';
+  }
   if (/assetclass|mfcentral|isin.*nav.*units|scheme.*isin/.test(header)) return 'MF_CENTRAL';
   if (/maturitydate|rateofinterest|depositname|depositamount|principal/.test(header) && !/category|assettype|instrument/.test(header)) {
     return 'FD_REGISTRY';
@@ -278,6 +298,8 @@ function parsePortfolioSheet(
     maturityDate: findCol(headers, ['maturitydate', 'maturity', 'duedate', 'enddate']),
     units: findCol(headers, ['units', 'qty', 'quantity', 'shares']),
     nav: findCol(headers, ['nav', 'price', 'ltp', 'currentnav']),
+    gain30d: findCol(headers, ['30dgain', 'gain30d', '30dreturn', 'return30d']),
+    schemeCode: findCol(headers, ['amfischemecode', 'schemecode', 'amficode']),
     taxTag: findCol(headers, ['taxtag', 'tax', 'taxclassification']),
     notes: findCol(headers, ['notes', 'remarks', 'comment']),
   };
@@ -311,6 +333,8 @@ function parsePortfolioSheet(
     const category = mapCategoryString(rawCat, rawName);
     const currency = col.currency >= 0 ? parseCurrencyCode(row[col.currency], defaultCurrency) : defaultCurrency;
     const rate = col.rate >= 0 ? parseAmount(row[col.rate]) : null;
+    const gain30d = col.gain30d >= 0 ? parseAmount(row[col.gain30d]) : null;
+    const schemeCode = col.schemeCode >= 0 ? parseAmount(row[col.schemeCode]) : null;
     const purchaseDate = (col.purchaseDate >= 0 ? parseFlexibleDate(row[col.purchaseDate]) : null) ?? todayIso();
     const maturityDate = col.maturityDate >= 0 ? parseFlexibleDate(row[col.maturityDate]) ?? undefined : undefined;
     const taxTag = guessTaxTag(category, col.taxTag >= 0 ? row[col.taxTag] : undefined);
@@ -328,11 +352,13 @@ function parsePortfolioSheet(
       currency,
       interestRatePct: rate ?? undefined,
       units: units ?? undefined,
+      schemeCode: schemeCode !== null ? Math.round(schemeCode) : undefined,
       navOrPrice: nav ?? undefined,
       purchaseDate,
       maturityDate,
       unrealizedGain,
       unrealizedGainPct,
+      gain30dPct: gain30d ?? undefined,
       taxTag,
       notes: col.notes >= 0 && row[col.notes] ? row[col.notes].trim() : `Imported from spreadsheet on ${todayIso()}`,
     };
@@ -678,6 +704,128 @@ export function downloadPortfolioExcelTemplate(currency: CurrencyCode = 'INR'): 
   XLSX.utils.book_append_sheet(wb, wsHoldings, 'Portfolio');
   XLSX.utils.book_append_sheet(wb, wsGuide, 'Instructions');
   XLSX.writeFile(wb, 'vestora-portfolio-template.xlsx');
+}
+
+const CATEGORY_EXPORT_LABELS: Record<AssetCategory, string> = {
+  MUTUAL_FUND: 'Mutual Fund',
+  EQUITY_STOCK: 'Stock',
+  FIXED_DEPOSIT: 'Fixed Deposit',
+  RECURRING_DEPOSIT: 'Recurring Deposit',
+  SOVEREIGN_GOLD_BOND: 'SGB',
+  GOVT_BOND: 'Govt Bond',
+  CORP_BOND: 'Corp Bond',
+  EPF: 'EPF',
+  PPF: 'PPF',
+  NPS: 'NPS',
+  SAVINGS_CASH: 'Savings Cash',
+};
+
+const EXPORT_HEADERS = [
+  'Instrument Name',
+  'Category',
+  'Institution',
+  'Account / Folio',
+  'Invested Amount',
+  'Current Value',
+  'Currency',
+  'Interest Rate %',
+  'Units',
+  'NAV / Price',
+  'Purchase Date',
+  'Maturity Date',
+  '30d Gain %',
+  'AMFI Scheme Code',
+  'Tax Tag',
+  'Notes',
+];
+
+function holdingToExportRow(h: Holding): (string | number)[] {
+  return [
+    h.name,
+    CATEGORY_EXPORT_LABELS[h.category] ?? h.category,
+    h.institution,
+    h.accountNumberMask ?? '',
+    h.investedAmount,
+    h.currentValue,
+    h.currency,
+    h.interestRatePct ?? '',
+    h.units ?? '',
+    h.navOrPrice ?? '',
+    h.purchaseDate,
+    h.maturityDate ?? '',
+    h.gain30dPct ?? '',
+    h.schemeCode ?? '',
+    h.taxTag,
+    h.notes ?? '',
+  ];
+}
+
+/** Exports the active portfolio to a lossless, re-importable .xlsx Excel workbook. */
+export function exportHoldingsToExcel(
+  holdings: Holding[],
+  baseCurrency: CurrencyCode = 'INR'
+): void {
+  const rows: (string | number)[][] = [EXPORT_HEADERS, ...holdings.map(holdingToExportRow)];
+  const wsPortfolio = XLSX.utils.aoa_to_sheet(rows);
+  wsPortfolio['!cols'] = [
+    { wch: 36 },
+    { wch: 16 },
+    { wch: 24 },
+    { wch: 18 },
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 13 },
+    { wch: 13 },
+    { wch: 12 },
+    { wch: 16 },
+    { wch: 16 },
+    { wch: 38 },
+  ];
+
+  const summaryRows = [
+    ['Vestora Portfolio Export'],
+    ['Export Date', todayIso()],
+    ['Active Display Currency', baseCurrency],
+    ['Holdings Count', holdings.length],
+    ['How to Restore', 'Upload this .xlsx file in Vestora via Import Excel Portfolio to resume your simulation anytime.'],
+  ];
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSummary['!cols'] = [{ wch: 24 }, { wch: 76 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsPortfolio, 'Portfolio');
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+  XLSX.writeFile(wb, `vestora-portfolio-${todayIso()}.xlsx`);
+}
+
+function escapeCsvCell(value: string | number): string {
+  const str = String(value ?? '');
+  if (/[",\n\r]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+/** Exports the active portfolio to an RFC-4180 CSV file ready for spreadsheet viewing or re-import. */
+export function exportHoldingsToCsv(holdings: Holding[]): void {
+  const lines = [
+    EXPORT_HEADERS.map(escapeCsvCell).join(','),
+    ...holdings.map((h) => holdingToExportRow(h).map(escapeCsvCell).join(',')),
+  ];
+  const csvContent = '\uFEFF' + lines.join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `vestora-portfolio-${todayIso()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /** Downloadable starter templates so users know exactly what Vestora expects. */

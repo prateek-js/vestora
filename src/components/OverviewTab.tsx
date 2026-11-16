@@ -22,13 +22,25 @@ import {
   computePortfolioRiskScore,
   getHolding30DayGainPct,
 } from '../utils/taxAndDiversification';
-import { downloadPortfolioExcelTemplate } from '../utils/statementImport';
+import {
+  downloadPortfolioExcelTemplate,
+  exportHoldingsToExcel,
+  exportHoldingsToCsv,
+} from '../utils/statementImport';
+import {
+  CATEGORY_META,
+  buildPortfolioTrendSeries,
+  buildMomGrowthSeries,
+  MomGrowthPoint,
+} from '../utils/portfolioMetrics';
+import { generatePortfolioPdfReport } from '../utils/pdfReport';
 import {
   Clock,
   Search,
   ChevronRight,
   Trash2,
   FileSpreadsheet,
+  FileText,
   Plus,
   PlusCircle,
   ShieldCheck,
@@ -41,20 +53,6 @@ import {
   TrendingDown,
   Gauge,
 } from 'lucide-react';
-
-const CATEGORY_META: Record<AssetCategory, { label: string; shortLabel: string; color: string }> = {
-  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#6366f1' },
-  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#8b5cf6' },
-  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#0ea5e9' },
-  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#38bdf8' },
-  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#06b6d4' },
-  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#14b8a6' },
-  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#f59e0b' },
-  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#10b981' },
-  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#059669' },
-  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#84cc16' },
-  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#94a3b8' },
-};
 
 interface TrendChartTooltipProps {
   active?: boolean;
@@ -109,16 +107,6 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
   }
   return null;
 };
-
-interface MomGrowthPoint {
-  month: string;
-  fullDate: string;
-  netGrowth: number;
-  netGrowthPct: number;
-  capitalFlow: number;
-  marketGain: number;
-  endingValuation: number;
-}
 
 interface MomGrowthTooltipProps {
   active?: boolean;
@@ -223,37 +211,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
 
   // 12-Month Historical Portfolio Valuation Trend (assuming monthly average valuation)
-  const fullTrendData = useMemo(() => {
-    const monthlyProfiles = [
-      { month: 'Dec 25', fullDate: 'December 2025', valMult: 0.835, invMult: 0.880 },
-      { month: 'Jan 26', fullDate: 'January 2026', valMult: 0.852, invMult: 0.892 },
-      { month: 'Feb 26', fullDate: 'February 2026', valMult: 0.844, invMult: 0.905 },
-      { month: 'Mar 26', fullDate: 'March 2026', valMult: 0.868, invMult: 0.915 },
-      { month: 'Apr 26', fullDate: 'April 2026', valMult: 0.895, invMult: 0.930 },
-      { month: 'May 26', fullDate: 'May 2026', valMult: 0.887, invMult: 0.942 },
-      { month: 'Jun 26', fullDate: 'June 2026', valMult: 0.918, invMult: 0.952 },
-      { month: 'Jul 26', fullDate: 'July 2026', valMult: 0.940, invMult: 0.965 },
-      { month: 'Aug 26', fullDate: 'August 2026', valMult: 0.931, invMult: 0.975 },
-      { month: 'Sep 26', fullDate: 'September 2026', valMult: 0.962, invMult: 0.985 },
-      { month: 'Oct 26', fullDate: 'October 2026', valMult: 0.981, invMult: 0.992 },
-      { month: 'Nov 26', fullDate: 'November 2026 (Current)', valMult: 1.000, invMult: 1.000 },
-    ];
-
-    return monthlyProfiles.map((item, idx) => {
-      const valuation = Math.round(totalValuation * item.valMult);
-      const invested = Math.round(totalInvested * item.invMult);
-      const unrealizedGain = valuation - invested;
-      const gainPct = invested > 0 ? (unrealizedGain / invested) * 100 : 0;
-      return {
-        ...item,
-        valuation,
-        invested,
-        unrealizedGain,
-        gainPct,
-        isCurrent: idx === monthlyProfiles.length - 1,
-      };
-    });
-  }, [totalValuation, totalInvested]);
+  const fullTrendData = useMemo(
+    () => buildPortfolioTrendSeries(totalValuation, totalInvested),
+    [totalValuation, totalInvested]
+  );
 
   const visibleTrendData = useMemo(() => {
     if (trendHorizon === '3M') return fullTrendData.slice(-3);
@@ -285,27 +246,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   }, [fullTrendData, totalValuation]);
 
   // Month-over-Month Net Growth series derived from monthly valuation profile
-  const momGrowthData = useMemo<MomGrowthPoint[]>(() => {
-    const points: MomGrowthPoint[] = [];
-    for (let i = 1; i < fullTrendData.length; i++) {
-      const prev = fullTrendData[i - 1];
-      const curr = fullTrendData[i];
-      const netGrowth = curr.valuation - prev.valuation;
-      const netGrowthPct = prev.valuation > 0 ? (netGrowth / prev.valuation) * 100 : 0;
-      const capitalFlow = curr.invested - prev.invested;
-      const marketGain = netGrowth - capitalFlow;
-      points.push({
-        month: curr.month,
-        fullDate: curr.fullDate,
-        netGrowth,
-        netGrowthPct,
-        capitalFlow,
-        marketGain,
-        endingValuation: curr.valuation,
-      });
-    }
-    return points;
-  }, [fullTrendData]);
+  const momGrowthData = useMemo<MomGrowthPoint[]>(
+    () => buildMomGrowthSeries(fullTrendData),
+    [fullTrendData]
+  );
 
   const visibleMomData = useMemo(() => {
     if (trendHorizon === '3M') return momGrowthData.slice(-3);
@@ -550,6 +494,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             >
               <Download className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
               <span>Sample Excel (.xlsx)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                generatePortfolioPdfReport({
+                  holdings,
+                  baseCurrency,
+                  portfolioMode,
+                  profileName,
+                })
+              }
+              disabled={holdings.length === 0}
+              className="px-3.5 py-2 text-xs font-medium text-slate-100 bg-slate-900 hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed border border-slate-700 hover:border-rose-400/60 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            >
+              <FileText className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <span>Export PDF Report</span>
             </button>
           </div>
         </div>
@@ -1254,6 +1214,43 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <option value="RETIREMENT">EPF, PPF & NPS</option>
                 <option value="CASH">Savings & Cash</option>
               </select>
+
+              <button
+                type="button"
+                onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
+                title="Save portfolio as Excel (.xlsx) to re-import later"
+                className="px-2.5 py-1.5 text-xs font-medium text-emerald-300 bg-emerald-950/30 hover:bg-emerald-950/50 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              >
+                <Download className="w-3.5 h-3.5 shrink-0" />
+                <span>Export .xlsx</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => exportHoldingsToCsv(holdings)}
+                title="Save portfolio as CSV (.csv) to re-import later"
+                className="px-2.5 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              >
+                <Download className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <span>Export .csv</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  generatePortfolioPdfReport({
+                    holdings,
+                    baseCurrency,
+                    portfolioMode,
+                    profileName,
+                  })
+                }
+                title="Download printable PDF wealth report with charts & summary stats"
+                className="px-2.5 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              >
+                <FileText className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span>Export .pdf</span>
+              </button>
             </div>
           )}
         </div>
