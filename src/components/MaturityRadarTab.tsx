@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Sparkles,
   Calendar,
+  Shuffle,
 } from 'lucide-react';
 
 type MaturityWindowFilter = 'ALL' | 'URGENT_30' | 'WINDOW_60' | 'WINDOW_90' | 'BEYOND_90';
@@ -54,12 +55,14 @@ interface MaturityRadarTabProps {
   holdings: Holding[];
   baseCurrency: CurrencyCode;
   onDeploySolution: (holding: Holding, solution: ReinvestmentSolution) => void;
+  onOpenMarketRebalance?: (holding: Holding) => void;
 }
 
 export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
   holdings,
   baseCurrency,
   onDeploySolution,
+  onOpenMarketRebalance,
 }) => {
   const [selectedRiskTier, setSelectedRiskTier] = useState<RiskProfile | 'ALL'>('ALL');
   const [selectedHoldingId, setSelectedHoldingId] = useState<string>('');
@@ -529,29 +532,42 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
             </div>
           </div>
 
-          {/* Risk Profile Filter Buttons */}
-          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 shrink-0 overflow-x-auto">
-            {(
-              [
-                { id: 'ALL', label: 'All Tiers (8)' },
-                { id: 'GUARANTEED', label: 'Guaranteed' },
-                { id: 'LOW', label: 'Low Risk' },
-                { id: 'MODERATE', label: 'Moderate' },
-                { id: 'HIGH', label: 'High Growth' },
-              ] as const
-            ).map((tier) => (
+          {/* Risk Profile Filter Buttons & Full Market Rebalance Link */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {onOpenMarketRebalance && (
               <button
-                key={tier.id}
-                onClick={() => setSelectedRiskTier(tier.id)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                  selectedRiskTier === tier.id
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                type="button"
+                onClick={() => onOpenMarketRebalance(activeHolding)}
+                className="px-3 py-1.5 text-xs font-semibold text-emerald-200 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
               >
-                {tier.label}
+                <Shuffle className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Search All Market Funds / Bonds / Home Loan</span>
               </button>
-            ))}
+            )}
+
+            <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 overflow-x-auto">
+              {(
+                [
+                  { id: 'ALL', label: 'All Tiers (8)' },
+                  { id: 'GUARANTEED', label: 'Guaranteed' },
+                  { id: 'LOW', label: 'Low Risk' },
+                  { id: 'MODERATE', label: 'Moderate' },
+                  { id: 'HIGH', label: 'High Growth' },
+                ] as const
+              ).map((tier) => (
+                <button
+                  key={tier.id}
+                  onClick={() => setSelectedRiskTier(tier.id)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                    selectedRiskTier === tier.id
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {tier.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

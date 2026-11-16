@@ -17,14 +17,15 @@ import {
 
 const TAB_NAMES = {
   overview: 'Overview & Ledger',
+  rebalance: 'Rebalance & Market',
   radar: 'Maturity Radar',
   tax: 'Tax & Diversification',
   simulator: 'Macro Stress Lab',
 } as const;
 
 interface NavbarProps {
-  activeTab: 'overview' | 'radar' | 'tax' | 'simulator';
-  setActiveTab: (tab: 'overview' | 'radar' | 'tax' | 'simulator') => void;
+  activeTab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
+  setActiveTab: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
   baseCurrency: CurrencyCode;
   setBaseCurrency: (c: CurrencyCode) => void;
   currentProfile: UserProfile;
@@ -116,6 +117,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Overview
+            </button>
+            <button
+              onClick={() => handleTabChange('rebalance')}
+              className={`px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+                activeTab === 'rebalance'
+                  ? 'bg-slate-800 text-white'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              }`}
+            >
+              Rebalance
             </button>
             <button
               onClick={() => handleTabChange('radar')}
@@ -473,6 +484,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             Overview
+          </button>
+          <button
+            onClick={() => handleTabChange('rebalance')}
+            className={`py-1 px-2 rounded font-medium ${
+              activeTab === 'rebalance' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            Rebalance
           </button>
           <button
             onClick={() => handleTabChange('radar')}

@@ -1,4 +1,4 @@
-import { CurrencyCode, Holding, UserProfile } from '../types/wealth';
+import { CurrencyCode, DebtPrepaymentRecord, Holding, UserProfile } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
 import { withDerivedMaturity } from './maturity';
 
@@ -9,6 +9,7 @@ export interface PersistedPortfolio {
   baseCurrency: CurrencyCode;
   holdings: Holding[];
   mode?: 'demo' | 'personal';
+  prepayments?: DebtPrepaymentRecord[];
 }
 
 /** Sample holdings with maturity countdowns recomputed against today. */
@@ -33,6 +34,7 @@ export function loadPersistedPortfolio(): PersistedPortfolio | null {
       ...parsed,
       mode: parsed.mode ?? (parsed.profileId === 'custom' ? 'personal' : 'demo'),
       holdings: parsed.holdings.map(withDerivedMaturity),
+      prepayments: Array.isArray(parsed.prepayments) ? parsed.prepayments : [],
     };
   } catch {
     return null;

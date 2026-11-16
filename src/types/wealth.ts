@@ -83,3 +83,15 @@ export interface UserProfile {
   riskProfile: RiskProfile;
   holdings: Holding[];
 }
+
+export interface DebtPrepaymentRecord {
+  id: string;
+  date: string;
+  sourceName: string;
+  loanLabel: string;
+  amountInBase: number;
+  currency: CurrencyCode;
+  loanRatePct: number;
+  interestSaved: number;
+  monthsSaved: number;
+}

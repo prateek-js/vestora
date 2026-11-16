@@ -4,10 +4,11 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CurrencyCode, Holding, ReinvestmentSolution, UserProfile } from './types/wealth';
+import { CurrencyCode, DebtPrepaymentRecord, Holding, ReinvestmentSolution, UserProfile } from './types/wealth';
 import { DEMO_PROFILES, CURATED_REINVESTMENT_SOLUTIONS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { OverviewTab } from './components/OverviewTab';
+import { RebalanceDestination, RebalanceTab } from './components/RebalanceTab';
 import { MaturityRadarTab } from './components/MaturityRadarTab';
 import { TaxAndInsightsTab } from './components/TaxAndInsightsTab';
 import { MacroSimulatorTab } from './components/MacroSimulatorTab';
@@ -21,7 +22,8 @@ import {
   sampleHoldingsFor,
   savePersistedPortfolio,
 } from './utils/portfolioStorage';
-import { todayIso } from './utils/maturity';
+import { isoFromToday, todayIso, withDerivedMaturity } from './utils/maturity';
+import { convertCurrency } from './utils/currency';
 import { trackEvent } from './utils/analytics';
 import { refreshFxRates } from './utils/liveRates';
 import { NavRefreshModal } from './components/NavRefreshModal';
@@ -36,7 +38,7 @@ import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
 import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
-type ActiveTab = 'overview' | 'radar' | 'tax' | 'simulator';
+type ActiveTab = 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
@@ -47,6 +49,7 @@ export default function App() {
       return {
         ...persisted,
         mode: persisted.mode ?? ('demo' as const),
+        prepayments: persisted.prepayments ?? ([] as DebtPrepaymentRecord[]),
       };
     }
     const profile = DEMO_PROFILES[0];
@@ -55,6 +58,7 @@ export default function App() {
       baseCurrency: profile.baseCurrency,
       holdings: sampleHoldingsFor(profile),
       mode: 'demo' as const,
+      prepayments: [] as DebtPrepaymentRecord[],
     };
   }, []);
 
@@ -62,7 +66,9 @@ export default function App() {
   const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initial.baseCurrency);
   const [currentProfileId, setCurrentProfileId] = useState<string>(initial.profileId);
   const [holdings, setHoldings] = useState<Holding[]>(initial.holdings);
+  const [prepayments, setPrepayments] = useState<DebtPrepaymentRecord[]>(initial.prepayments);
   const [portfolioMode, setPortfolioMode] = useState<'demo' | 'personal'>(initial.mode);
+  const [rebalanceSourceId, setRebalanceSourceId] = useState<string | null>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [restoreError, setRestoreError] = useState('');
   const [restoreNotice, setRestoreNotice] = useState('');
@@ -121,8 +127,9 @@ export default function App() {
       baseCurrency,
       holdings,
       mode: portfolioMode,
+      prepayments,
     });
-  }, [currentProfileId, baseCurrency, holdings, portfolioMode]);
+  }, [currentProfileId, baseCurrency, holdings, portfolioMode, prepayments]);
 
   const currentProfile =
     DEMO_PROFILES.find((p) => p.id === currentProfileId) ?? DEMO_PROFILES[0];
@@ -180,6 +187,8 @@ export default function App() {
     clearPersistedPortfolio();
     setCurrentProfileId('custom');
     setHoldings([]);
+    setPrepayments([]);
+    setRebalanceSourceId(null);
     setPortfolioMode('personal');
     setIsResetConfirmOpen(false);
     setActiveTab('overview');
@@ -234,12 +243,118 @@ export default function App() {
     });
   };
 
+  // Execute holistic partial/full rebalance across Market MFs, Bonds, FDs, Stocks, or Home Loan Prepayments
+  const handleExecuteRebalance = ({
+    sourceHoldingId,
+    movedAmountInBase,
+    destinations,
+  }: {
+    sourceHoldingId: string;
+    movedAmountInBase: number;
+    destinations: RebalanceDestination[];
+  }) => {
+    const source = holdings.find((h) => h.id === sourceHoldingId);
+    if (!source || movedAmountInBase <= 0 || destinations.length === 0) return;
+
+    const sourceValueInBase = convertCurrency(source.currentValue, source.currency, baseCurrency);
+    const movedRatio = sourceValueInBase > 0 ? Math.min(1, movedAmountInBase / sourceValueInBase) : 1;
+
+    const updatedHoldings: Holding[] = [];
+    holdings.forEach((h) => {
+      if (h.id !== sourceHoldingId) {
+        updatedHoldings.push(h);
+        return;
+      }
+      if (movedRatio < 0.999) {
+        const remainRatio = Math.max(0, 1 - movedRatio);
+        const remainingValue = Number((h.currentValue * remainRatio).toFixed(2));
+        const remainingInvested = Number((h.investedAmount * remainRatio).toFixed(2));
+        const remainingGain = Number((remainingValue - remainingInvested).toFixed(2));
+        const remainingGainPct =
+          remainingInvested > 0 ? Number(((remainingGain / remainingInvested) * 100).toFixed(2)) : 0;
+        updatedHoldings.push({
+          ...h,
+          currentValue: remainingValue,
+          investedAmount: remainingInvested,
+          units: h.units !== undefined ? Number((h.units * remainRatio).toFixed(4)) : undefined,
+          unrealizedGain: remainingGain,
+          unrealizedGainPct: remainingGainPct,
+        });
+      }
+    });
+
+    const newHoldings: Holding[] = [];
+    const newPrepayments: DebtPrepaymentRecord[] = [];
+    const stamp = Date.now();
+
+    destinations.forEach((dest, idx) => {
+      if (dest.allocatedInBase <= 0) return;
+
+      if (dest.kind === 'HOME_LOAN') {
+        newPrepayments.push({
+          id: `prepay-${stamp}-${idx}`,
+          date: todayIso(),
+          sourceName: source.name,
+          loanLabel: dest.title,
+          amountInBase: dest.allocatedInBase,
+          currency: baseCurrency,
+          loanRatePct: dest.loanRatePct ?? 8.5,
+          interestSaved: dest.loanInterestSaved ?? 0,
+          monthsSaved: dest.loanMonthsSaved ?? 0,
+        });
+        return;
+      }
+
+      const amountInDestCurrency = Number(
+        convertCurrency(dest.allocatedInBase, baseCurrency, dest.currency).toFixed(2)
+      );
+      const navOrPrice = dest.navOrPrice && dest.navOrPrice > 0 ? dest.navOrPrice : undefined;
+      const units = navOrPrice ? Number((amountInDestCurrency / navOrPrice).toFixed(4)) : undefined;
+      const maturityDate = dest.tenureDays ? isoFromToday(dest.tenureDays) : undefined;
+
+      const created = withDerivedMaturity<Holding>({
+        id: `h-rebal-${stamp}-${idx}`,
+        name: dest.title,
+        category: dest.category ?? 'MUTUAL_FUND',
+        institution: dest.institution ?? 'Market Allocation',
+        accountNumberMask: dest.schemeCode ? `AMFI-${dest.schemeCode}` : `MKT-${String(stamp).slice(-4)}`,
+        investedAmount: amountInDestCurrency,
+        currentValue: amountInDestCurrency,
+        currency: dest.currency,
+        interestRatePct: dest.expectedRatePct,
+        units,
+        navOrPrice,
+        gain30dPct: dest.gain30dPct,
+        schemeCode: dest.schemeCode,
+        purchaseDate: todayIso(),
+        maturityDate,
+        unrealizedGain: 0,
+        unrealizedGainPct: 0,
+        taxTag: dest.taxTag ?? 'LTCG_EQUITY',
+        notes: `Rebalanced from ${source.name} on ${todayIso()}`,
+      });
+      newHoldings.push(created);
+    });
+
+    setHoldings([...newHoldings, ...updatedHoldings]);
+    if (newPrepayments.length > 0) {
+      setPrepayments((prev) => [...newPrepayments, ...prev]);
+    }
+    setPortfolioMode('personal');
+    trackEvent('portfolio_rebalanced', {
+      destinations: destinations.length,
+      debt_prepayments: newPrepayments.length,
+    });
+  };
+
   // Reset to a fresh sample portfolio
   const handleResetToSample = () => {
     const profile = DEMO_PROFILES[0];
     clearPersistedPortfolio();
     setCurrentProfileId(profile.id);
     setHoldings(sampleHoldingsFor(profile));
+    setPrepayments([]);
+    setRebalanceSourceId(null);
     setBaseCurrency(profile.baseCurrency);
     setPortfolioMode('demo');
     setIsResetConfirmOpen(false);
@@ -415,9 +530,25 @@ export default function App() {
               setActiveTab('radar');
               handleOpenReinvest(h);
             }}
+            onRebalanceHolding={(h) => {
+              setRebalanceSourceId(h.id);
+              setActiveTab('rebalance');
+            }}
             onDeleteHolding={handleDeleteHolding}
             onOpenValidateModal={openValidateModal}
             onOpenAddModal={() => setIsAddModalOpen(true)}
+          />
+        )}
+
+        {activeTab === 'rebalance' && (
+          <RebalanceTab
+            holdings={holdings}
+            baseCurrency={baseCurrency}
+            initialSourceHoldingId={rebalanceSourceId}
+            prepayments={prepayments}
+            onExecuteRebalance={handleExecuteRebalance}
+            onClearPrepayments={() => setPrepayments([])}
+            onNavigateToOverview={() => setActiveTab('overview')}
           />
         )}
 
@@ -428,6 +559,10 @@ export default function App() {
             onDeploySolution={(h, s) => {
               setReinvestHolding(h);
               setReinvestSolution(s);
+            }}
+            onOpenMarketRebalance={(h) => {
+              setRebalanceSourceId(h.id);
+              setActiveTab('rebalance');
             }}
           />
         )}

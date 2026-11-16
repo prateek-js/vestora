@@ -52,6 +52,7 @@ import {
   TrendingUp,
   TrendingDown,
   Gauge,
+  Shuffle,
 } from 'lucide-react';
 
 interface TrendChartTooltipProps {
@@ -167,8 +168,9 @@ interface OverviewTabProps {
   baseCurrency: CurrencyCode;
   portfolioMode: 'demo' | 'personal';
   profileName: string;
-  onNavigateToTab: (tab: 'radar' | 'tax' | 'simulator' | 'overview') => void;
+  onNavigateToTab: (tab: 'radar' | 'rebalance' | 'tax' | 'simulator' | 'overview') => void;
   onSelectHoldingToReinvest: (holding: Holding) => void;
+  onRebalanceHolding?: (holding: Holding) => void;
   onDeleteHolding: (id: string) => void;
   onOpenValidateModal: (tab?: 'excel' | 'manual' | 'reset') => void;
   onOpenAddModal: () => void;
@@ -181,6 +183,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   profileName,
   onNavigateToTab,
   onSelectHoldingToReinvest,
+  onRebalanceHolding,
   onDeleteHolding,
   onOpenValidateModal,
   onOpenAddModal,
@@ -1405,24 +1408,44 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             </td>
 
                             <td className="py-3 px-4 text-center">
-                              {isMat ? (
-                                <button
-                                  type="button"
-                                  onClick={() => onSelectHoldingToReinvest(h)}
-                                  className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors"
-                                >
-                                  Reinvest
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => onDeleteHolding(h.id)}
-                                  className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
-                                  title="Delete Holding"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                              <div className="inline-flex items-center justify-center gap-1.5">
+                                {isMat ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onRebalanceHolding
+                                        ? onRebalanceHolding(h)
+                                        : onSelectHoldingToReinvest(h)
+                                    }
+                                    className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors whitespace-nowrap"
+                                    title="Reinvest or diversify matured capital across market instruments or debt payoff"
+                                  >
+                                    Reinvest
+                                  </button>
+                                ) : (
+                                  <>
+                                    {onRebalanceHolding && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onRebalanceHolding(h)}
+                                        className="px-2 py-1 text-2xs font-medium text-indigo-300 hover:text-white bg-indigo-950/50 hover:bg-indigo-600 border border-indigo-500/35 rounded transition-colors inline-flex items-center gap-1 whitespace-nowrap"
+                                        title="Break partial/full amount & move into Market MFs, Bonds, FDs, Stocks or Home Loan"
+                                      >
+                                        <Shuffle className="w-3 h-3 shrink-0" />
+                                        <span>Move</span>
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => onDeleteHolding(h.id)}
+                                      className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                                      title="Delete Holding"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
