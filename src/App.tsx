@@ -36,9 +36,19 @@ import {
 } from './utils/statementImport';
 import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
+import { StreetStoryGame } from './components/StreetStoryGame';
 import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
-type ActiveTab = 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
+type ActiveTab = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
+
+const HASH_TO_TAB: Record<string, ActiveTab> = {
+  '#story': 'story',
+  '#overview': 'overview',
+  '#rebalance': 'rebalance',
+  '#radar': 'radar',
+  '#tax': 'tax',
+  '#simulator': 'simulator',
+};
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
@@ -62,7 +72,42 @@ export default function App() {
     };
   }, []);
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    if (typeof window !== 'undefined') {
+      const matched = HASH_TO_TAB[window.location.hash.toLowerCase()];
+      if (matched) return matched;
+    }
+    return 'story';
+  });
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const h = window.location.hash.toLowerCase();
+      if (!h) {
+        setActiveTab('story');
+        return;
+      }
+      const matched = HASH_TO_TAB[h];
+      if (matched) setActiveTab(matched);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentHash = window.location.hash.toLowerCase();
+    if (activeTab === 'story') {
+      if (currentHash && currentHash !== '#street-stage' && currentHash !== '#why-vestora' && currentHash !== '#story') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    } else {
+      const desired = `#${activeTab}`;
+      if (currentHash !== desired) {
+        window.history.replaceState(null, '', desired);
+      }
+    }
+  }, [activeTab]);
   const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initial.baseCurrency);
   const [currentProfileId, setCurrentProfileId] = useState<string>(initial.profileId);
   const [holdings, setHoldings] = useState<Holding[]>(initial.holdings);
@@ -73,13 +118,7 @@ export default function App() {
   const [restoreError, setRestoreError] = useState('');
   const [restoreNotice, setRestoreNotice] = useState('');
   const restoreInputRef = useRef<HTMLInputElement>(null);
-  const [isTourOpen, setIsTourOpen] = useState<boolean>(() => {
-    try {
-      return !window.localStorage.getItem('vestora_tour_seen_v1');
-    } catch {
-      return false;
-    }
-  });
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
 
   const handleCloseTour = () => {
     setIsTourOpen(false);
@@ -573,6 +612,23 @@ export default function App() {
 
         {activeTab === 'simulator' && (
           <MacroSimulatorTab holdings={holdings} baseCurrency={baseCurrency} />
+        )}
+
+        {activeTab === 'story' && (
+          <StreetStoryGame
+            holdings={holdings}
+            baseCurrency={baseCurrency}
+            onEnterLiveRebalance={() => {
+              const preferred =
+                holdings.find((h) => h.isMatured) ??
+                holdings.find((h) => h.category === 'SAVINGS_CASH') ??
+                holdings[0];
+              if (preferred) setRebalanceSourceId(preferred.id);
+              setActiveTab('rebalance');
+            }}
+            onOpenOverview={() => setActiveTab('overview')}
+            onOpenValidateModal={() => openValidateModal('excel')}
+          />
         )}
       </main>
 
