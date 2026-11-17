@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CurrencyCode, UserProfile } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
 import { trackEvent } from '../utils/analytics';
+import { VestoraLogo } from './VestoraLogo';
 import {
   ArrowRight,
   ChevronDown,
@@ -104,9 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-2.5 shrink-0 text-left"
           >
-            <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-mono font-bold text-sm shadow-inner shrink-0">
-              V
-            </span>
+            <VestoraLogo size={32} />
             <span className="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">
               Vestora
             </span>
@@ -140,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={() => handleTabChange('overview')}
-              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>Enter Overview</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -162,9 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleTabChange('overview')}
             className="flex items-center gap-2.5 shrink-0 text-left"
           >
-            <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-mono font-bold text-sm shadow-inner shrink-0">
-              V
-            </span>
+            <VestoraLogo size={32} />
             <span className="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">
               Vestora
             </span>
@@ -177,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('overview')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'overview'
-                  ? 'bg-slate-800 text-white'
+                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -188,7 +185,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('rebalance')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'rebalance'
-                  ? 'bg-slate-800 text-white'
+                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -199,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('radar')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 ${
                 activeTab === 'radar'
-                  ? 'bg-slate-800 text-white'
+                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -215,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('tax')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'tax'
-                  ? 'bg-slate-800 text-white'
+                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -226,7 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('simulator')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'simulator'
-                  ? 'bg-slate-800 text-white'
+                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -254,12 +251,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setIsMenuOpen((prev) => !prev)}
                 className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   isMenuOpen
-                    ? 'bg-slate-800 border-indigo-500 text-white'
+                    ? 'bg-slate-800 border-emerald-500 text-white'
                     : 'bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700'
                 }`}
                 title="Currency, Save/Export, Import & Tools"
               >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span className="font-mono text-2xs text-slate-300">{baseCurrency}</span>
                 <span className="hidden sm:inline">Menu</span>
                 <ChevronDown className="w-3 h-3 opacity-75 shrink-0" />
@@ -282,9 +279,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                               key={curr}
                               type="button"
                               onClick={() => setBaseCurrency(curr)}
-                              className={`px-2 py-1 text-2xs font-mono font-medium rounded transition-colors ${
+                              className={`px-2 py-1 text-2xs font-mono font-semibold rounded transition-colors ${
                                 baseCurrency === curr
-                                  ? 'bg-indigo-600 text-white'
+                                  ? 'bg-emerald-500 text-slate-950'
                                   : 'text-slate-400 hover:text-white'
                               }`}
                             >
@@ -306,7 +303,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                               setIsMenuOpen(false);
                             }
                           }}
-                          className="bg-slate-950 border border-slate-800 text-slate-200 text-2xs rounded-md px-2 py-1 focus:outline-none focus:border-indigo-500 max-w-[180px] truncate"
+                          className="bg-slate-950 border border-slate-800 text-slate-200 text-2xs rounded-md px-2 py-1 focus:outline-none focus:border-emerald-500 max-w-[180px] truncate"
                         >
                           {DEMO_PROFILES.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -381,9 +378,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onTriggerRestore();
                         }}
-                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/30 text-indigo-200 hover:text-white transition-colors flex items-center gap-2"
+                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-emerald-950/35 hover:bg-emerald-900/45 border border-emerald-500/30 text-emerald-200 hover:text-white transition-colors flex items-center gap-2"
                       >
-                        <Upload className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <Upload className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span>Restore Earlier Export (.xlsx / .csv / .json)</span>
                       </button>
                     </div>
@@ -410,7 +407,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         }}
                         className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
                       >
-                        <RefreshCw className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <RefreshCw className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span>Refresh Live AMFI NAVs</span>
                       </button>
 
@@ -434,7 +431,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         }}
                         className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
                       >
-                        <HelpCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <HelpCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span>Interactive Guided Tour</span>
                       </button>
 
@@ -463,7 +460,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
+              className="px-3 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-500 rounded-lg hover:bg-emerald-400 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Holding</span>
@@ -478,7 +475,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('overview')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'overview' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+              activeTab === 'overview' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
             }`}
           >
             Overview
@@ -487,7 +484,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('rebalance')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'rebalance' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+              activeTab === 'rebalance' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
             }`}
           >
             Rebalance
@@ -496,7 +493,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('radar')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'radar' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+              activeTab === 'radar' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
             }`}
           >
             Radar {maturedCount > 0 && `(${maturedCount})`}
@@ -505,7 +502,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('tax')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'tax' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+              activeTab === 'tax' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
             }`}
           >
             Tax
@@ -514,7 +511,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('simulator')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'simulator' ? 'text-indigo-400 font-semibold' : 'text-slate-400'
+              activeTab === 'simulator' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
             }`}
           >
             Stress

@@ -374,9 +374,9 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('excel')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                 activeTab === 'excel'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-emerald-500 text-slate-950'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -386,9 +386,9 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('manual')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                 activeTab === 'manual'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-emerald-500 text-slate-950'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -398,9 +398,9 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('reset')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                 activeTab === 'reset'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-emerald-500 text-slate-950'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -469,11 +469,11 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
                       dragActive
-                        ? 'border-indigo-400 bg-indigo-500/10'
+                        ? 'border-emerald-400 bg-emerald-500/10'
                         : 'border-slate-700 hover:border-slate-500 bg-slate-950/50'
                     }`}
                   >
-                    <UploadCloud className="w-9 h-9 text-indigo-400 mx-auto" />
+                    <UploadCloud className="w-9 h-9 text-emerald-400 mx-auto" />
                     <div className="text-sm font-medium text-white mt-3">
                       Drop your Excel (.xlsx, .xls) or CSV file here
                     </div>
@@ -504,7 +504,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                           onClick={() => processExcelBuffer(fileBuffer, fileName, sheet)}
                           className={`px-2.5 py-1 rounded-md border text-xs font-mono transition-colors ${
                             activeSheet === sheet
-                              ? 'bg-indigo-600 border-indigo-500 text-white'
+                              ? 'bg-emerald-500 border-emerald-400 text-slate-950 font-semibold'
                               : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-600'
                           }`}
                         >
@@ -528,7 +528,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                       onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
                       className="px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap"
                     >
-                      <Download className="w-3.5 h-3.5 text-indigo-400" />
+                      <Download className="w-3.5 h-3.5 text-emerald-400" />
                       Download Excel Template (.xlsx)
                     </button>
                   </div>
@@ -537,7 +537,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
                     <div>
-                      <div className="text-xs font-mono text-indigo-300">{fileName}</div>
+                      <div className="text-xs font-mono text-emerald-300">{fileName}</div>
                       <div className="text-xs text-slate-300 mt-0.5">
                         Detected: <span className="font-semibold text-white">{FORMAT_LABELS[parsed.format]}</span>
                         {parsed.sheetName && ` · Sheet "${parsed.sheetName}"`}
@@ -572,7 +572,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                           onClick={() => processExcelBuffer(fileBuffer, fileName, sheet)}
                           className={`px-2.5 py-1 rounded-md border text-xs font-mono transition-colors ${
                             activeSheet === sheet
-                              ? 'bg-indigo-600 border-indigo-500 text-white'
+                              ? 'bg-emerald-500 border-emerald-400 text-slate-950 font-semibold'
                               : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-600'
                           }`}
                         >
@@ -661,7 +661,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   <button
                     type="button"
                     onClick={handleLoadExistingIntoManual}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                    className="text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
                   >
                     Load current {currentHoldings.length} holdings to edit
                   </button>
@@ -690,7 +690,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         value={row.name}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'name', e.target.value)}
                         placeholder="e.g. Nifty 50 Index or SBI FD"
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -699,7 +699,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                       <select
                         value={row.category}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'category', e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                       >
                         {CATEGORY_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -717,7 +717,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         value={row.investedAmount}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'investedAmount', e.target.value)}
                         placeholder="500000"
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -729,7 +729,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         value={row.currentValue}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'currentValue', e.target.value)}
                         placeholder="565000"
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -739,7 +739,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         type="date"
                         value={row.maturityDate}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'maturityDate', e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -775,7 +775,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setDraftRows((prev) => [...prev, createEmptyDraft(baseCurrency)])}
-                  className="px-3 py-1.5 text-xs font-medium text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-medium text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Another Row
@@ -828,7 +828,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-5 rounded-xl border border-slate-800 bg-slate-950/50 flex flex-col justify-between space-y-4">
                 <div>
-                  <div className="w-9 h-9 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-3">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-3">
                     <Eraser className="w-4 h-4" />
                   </div>
                   <h3 className="text-sm font-semibold text-white">Start with Blank Slate (0 Holdings)</h3>
@@ -842,7 +842,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     onStartBlank();
                     onClose();
                   }}
-                  className="w-full px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors"
+                  className="w-full px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors"
                 >
                   Clear All & Start Blank
                 </button>
@@ -893,7 +893,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <button
                 type="button"
                 onClick={handleApplyExcel}
-                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-2"
+                className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-2"
               >
                 <span>
                   {applyStrategy === 'replace' ? 'Simulate with' : 'Add'} {previewHoldings.length} Holdings
@@ -906,7 +906,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <button
                 type="button"
                 onClick={handleApplyManual}
-                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-2"
+                className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-2"
               >
                 <span>
                   {applyStrategy === 'replace' ? 'Restart & Simulate Portfolio' : 'Add Entries'}

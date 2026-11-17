@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#4f46e5"/>
-  <path d="M18 18 L32 46 L46 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="64" height="64" rx="14" fill="#0A0D1C"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#02C37E" stroke-opacity="0.28" stroke-width="1.5"/>
+  <!-- Left wing: ivory + ice-silver bevel -->
+  <polygon points="13,18 22,18 30,42 28,49" fill="#F8FAFC"/>
+  <polygon points="22,18 27,21 31,34 30,42" fill="#CBD5E1"/>
+  <!-- Right wing: faceted luminous emerald -->
+  <polygon points="31,34 41,17 44,24 32,42" fill="#02A26D"/>
+  <polygon points="41,17 51,12 44,24" fill="#34D99B"/>
+  <polygon points="28,49 30,42 44,24 51,12 31,49" fill="#02C37E"/>
 </svg>

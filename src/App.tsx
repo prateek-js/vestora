@@ -710,7 +710,7 @@ export default function App() {
                 type="button"
                 onClick={handleExportExcel}
                 disabled={holdings.length === 0}
-                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 Save Portfolio as Excel (.xlsx)
@@ -759,7 +759,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleStartBlank}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-indigo-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 Clear All & Start Blank (0 Holdings)
               </button>

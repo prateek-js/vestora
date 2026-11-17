@@ -112,7 +112,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                   <button
                     onClick={() => handleSearch(fund.id, fund.name)}
                     disabled={searchingFor === fund.id}
-                    className="text-2xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 shrink-0 disabled:opacity-50"
+                    className="text-2xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 shrink-0 disabled:opacity-50"
                   >
                     <Search className="w-3 h-3" />
                     {searchingFor === fund.id ? 'Searching…' : 'Find scheme'}
@@ -128,7 +128,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                         }
                         className={`w-full text-left px-2 py-1.5 rounded text-2xs transition-colors flex items-center justify-between gap-2 ${
                           mapping[fund.id] === r.schemeCode
-                            ? 'bg-indigo-600/30 border border-indigo-500 text-white'
+                            ? 'bg-emerald-500/20 border border-emerald-500 text-white'
                             : 'bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-600'
                         }`}
                       >
@@ -229,7 +229,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors shadow-sm"
+                className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors shadow-sm"
               >
                 Done
               </button>

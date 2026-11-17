@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CurrencyCode, Holding } from '../types/wealth';
 import { formatCurrency } from '../utils/currency';
+import { VestoraLogo } from './VestoraLogo';
 import {
   ArrowLeft,
   ArrowRight,
@@ -509,11 +510,11 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
       const camX = cameraXRef.current;
       const groundY = cssH - 76;
 
-      // 1. Evening Sky Gradient
+      // 1. Evening Sky Gradient (Obsidian twilight matching Street Story artwork)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
-      skyGrad.addColorStop(0, '#040814');
-      skyGrad.addColorStop(0.6, '#0b1426');
-      skyGrad.addColorStop(1, '#16223a');
+      skyGrad.addColorStop(0, '#050811');
+      skyGrad.addColorStop(0.6, '#0a111f');
+      skyGrad.addColorStop(1, '#131d31');
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, cssW, cssH);
 
@@ -526,7 +527,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
       }
 
       // 2. Parallax Distant City Skyline (0.25x speed)
-      ctx.fillStyle = '#0c1528';
+      ctx.fillStyle = '#090f1d';
       for (let i = 0; i < 18; i++) {
         const bx = i * 180 - camX * 0.25;
         const bh = 70 + ((i * 47) % 95);
@@ -534,9 +535,9 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
       }
 
       // 3. Sidewalk & Street Asphalt
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#182132';
       ctx.fillRect(0, groundY - 12, cssW, 18); // sidewalk curb
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#090d16';
       ctx.fillRect(0, groundY + 6, cssW, cssH - groundY);
 
       // Dashed road centerline
@@ -587,18 +588,18 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
             20,
             bx + b.width / 2,
             by + b.height / 2,
-            220
+            230
           );
-          glow.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
-          glow.addColorStop(0.55, 'rgba(99, 102, 241, 0.10)');
-          glow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+          glow.addColorStop(0, 'rgba(2, 195, 126, 0.26)');
+          glow.addColorStop(0.55, 'rgba(2, 162, 109, 0.12)');
+          glow.addColorStop(1, 'rgba(6, 9, 17, 0)');
           ctx.fillStyle = glow;
           ctx.fillRect(bx - 60, by - 60, b.width + 120, b.height + 80);
         }
 
         // Main building facade
-        ctx.fillStyle = isVestora ? '#111c33' : '#172033';
-        ctx.strokeStyle = isVestora ? '#10b981' : isNearby ? '#818cf8' : '#334155';
+        ctx.fillStyle = isVestora ? '#0a141d' : '#111827';
+        ctx.strokeStyle = isVestora ? '#02c37e' : isNearby ? '#34d99b' : '#26334a';
         ctx.lineWidth = isVestora || isNearby ? 2 : 1.2;
         ctx.fillRect(bx, by, b.width, b.height);
         ctx.strokeRect(bx, by, b.width, b.height);
@@ -677,27 +678,50 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
         const signW = b.width - 20;
         const signX = bx + 10;
         const signY = by + 14;
-        ctx.fillStyle = isVestora ? '#0f172a' : '#0b1220';
+        ctx.fillStyle = isVestora ? '#080e1a' : '#090e1a';
         ctx.fillRect(signX, signY, signW, 44);
-        ctx.strokeStyle = isVestora ? '#34d399' : b.accentColor;
+        ctx.strokeStyle = isVestora ? '#02c37e' : b.accentColor;
         ctx.lineWidth = isVestora ? 2 : 1.2;
         ctx.strokeRect(signX, signY, signW, 44);
 
-        ctx.fillStyle = isVestora ? '#34d399' : '#f8fafc';
+        if (isVestora) {
+          // Faceted white + emerald V crest on signboard
+          const lx = signX + 14;
+          const ly = signY + 9;
+          ctx.fillStyle = '#f8fafc';
+          ctx.beginPath();
+          ctx.moveTo(lx + 1, ly + 4);
+          ctx.lineTo(lx + 7, ly + 4);
+          ctx.lineTo(lx + 12, ly + 22);
+          ctx.lineTo(lx + 10, ly + 26);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#02c37e';
+          ctx.beginPath();
+          ctx.moveTo(lx + 10, ly + 26);
+          ctx.lineTo(lx + 12, ly + 22);
+          ctx.lineTo(lx + 24, ly + 1);
+          ctx.lineTo(lx + 18, ly + 7);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.fillStyle = isVestora ? '#34d99b' : '#f8fafc';
         ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(b.signTop, bx + b.width / 2, signY + 19);
+        ctx.fillText(b.signTop, bx + b.width / 2 + (isVestora ? 10 : 0), signY + 19);
 
         ctx.fillStyle = isVestora ? '#a7f3d0' : '#94a3b8';
         ctx.font = '600 9.5px JetBrains Mono, monospace';
-        ctx.fillText(b.signSub, bx + b.width / 2, signY + 35);
+        ctx.fillText(b.signSub, bx + b.width / 2 + (isVestora ? 10 : 0), signY + 35);
 
         // Interactive prompt over nearby door
         if (isNearby && mode === 'GAME') {
           const pulseY = Math.sin(now / 260) * 3;
-          ctx.fillStyle = isVestora ? '#10b981' : '#6366f1';
+          ctx.fillStyle = '#02c37e';
           ctx.fillRect(bx + b.width / 2 - 74, by - 36 + pulseY, 148, 24);
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = '#04130d';
           ctx.font = 'bold 10.5px DM Sans, sans-serif';
           ctx.fillText(
             isVestora
@@ -744,7 +768,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
       ctx.stroke();
 
       // Torso (suit jacket)
-      ctx.fillStyle = currentStress > 60 ? '#475569' : '#4f46e5';
+      ctx.fillStyle = currentStress > 60 ? '#475569' : '#02c37e';
       ctx.beginPath();
       ctx.roundRect(-11 + hunch * 0.4, -54, 22, 32, 6);
       ctx.fill();
@@ -800,7 +824,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
   const stressMeta = useMemo(() => {
     if (stressLevel >= 80) return { label: 'Overwhelmed', color: 'text-rose-400', bar: 'bg-rose-500' };
     if (stressLevel >= 55) return { label: 'Tensed & Unclear', color: 'text-amber-300', bar: 'bg-amber-400' };
-    if (stressLevel >= 20) return { label: 'Relieved', color: 'text-indigo-300', bar: 'bg-indigo-400' };
+    if (stressLevel >= 20) return { label: 'Relieved', color: 'text-emerald-300', bar: 'bg-emerald-400' };
     return { label: 'Clear & Diversified', color: 'text-emerald-400', bar: 'bg-emerald-500' };
   }, [stressLevel]);
 
@@ -837,8 +861,8 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                   setIsMoviePlaying(false);
                   setMode('GAME');
                 }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
-                  mode === 'GAME' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                  mode === 'GAME' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Interactive Game
@@ -846,8 +870,8 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
               <button
                 type="button"
                 onClick={startAnimatedMovie}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 ${
-                  mode === 'MOVIE' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 ${
+                  mode === 'MOVIE' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <Play className="w-3.5 h-3.5" />
@@ -932,7 +956,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
             <button
               type="button"
               onClick={onOpenOverview}
-              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>Enter Overview Dashboard</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -949,16 +973,19 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
           className="scroll-mt-20 bg-slate-900 border border-emerald-500/40 rounded-xl p-6 space-y-6"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-            <div>
-              <div className="text-2xs font-mono text-emerald-400 font-semibold">
-                INSIDE VESTORA WEALTH · PRIVATE ADVISORY DESK
+            <div className="flex items-start gap-3.5">
+              <VestoraLogo size={40} className="mt-0.5 hidden sm:block" />
+              <div>
+                <div className="text-2xs font-mono text-emerald-400 font-semibold">
+                  INSIDE VESTORA WEALTH · PRIVATE ADVISORY DESK
+                </div>
+                <h2 className="text-xl font-bold text-white mt-1">
+                  Every Street Problem Solved on One Screen — Private on Your Device
+                </h2>
+                <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+                  Instead of running across banks, pension windows, and commission agents, Vestora pulls live Indian &amp; global yields alongside your real holdings and solves your split automatically.
+                </p>
               </div>
-              <h2 className="text-xl font-bold text-white mt-1">
-                Every Street Problem Solved on One Screen — Private on Your Device
-              </h2>
-              <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                Instead of running across banks, pension windows, and commission agents, Vestora pulls live Indian &amp; global yields alongside your real holdings and solves your split automatically.
-              </p>
             </div>
             <button
               type="button"
@@ -1018,7 +1045,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                   <button
                     type="button"
                     onClick={handleSolveInsideOffice}
-                    className="px-5 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors inline-flex items-center gap-2"
+                    className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-2"
                   >
                     <TrendingUp className="w-4 h-4" />
                     <span>Solve My Portfolio Split Now</span>
@@ -1036,7 +1063,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                     </div>
                     <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
                       <span className="text-2xs text-slate-400 block">35% Direct Index + Arbitrage</span>
-                      <span className="text-sm font-bold text-indigo-300 mt-0.5 block">
+                      <span className="text-sm font-bold text-indigo-400 mt-0.5 block">
                         0% Agent Commission
                       </span>
                       <span className="text-2xs text-slate-500">12.5% LTCG tax efficiency</span>
@@ -1068,14 +1095,14 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                       <button
                         type="button"
                         onClick={onEnterLiveRebalance}
-                        className="px-3 py-2 text-xs font-medium text-indigo-300 bg-slate-900 hover:bg-slate-800 border border-indigo-500/40 rounded-lg whitespace-nowrap"
+                        className="px-3 py-2 text-xs font-medium text-emerald-300 bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 rounded-lg whitespace-nowrap"
                       >
                         Open Rebalance
                       </button>
                       <button
                         type="button"
                         onClick={onOpenOverview}
-                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg inline-flex items-center gap-1.5 whitespace-nowrap"
+                        className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg inline-flex items-center gap-1.5 whitespace-nowrap"
                       >
                         <span>Enter Vestora Overview</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -1232,7 +1259,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                     <button
                       type="button"
                       onClick={enterVestoraOffice}
-                      className="px-5 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap"
+                      className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap"
                     >
                       <DoorOpen className="w-4 h-4" />
                       <span>Step Inside Vestora Wealth</span>
@@ -1249,7 +1276,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                           walkToStop(nextB);
                         }
                       }}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                      className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <span>Walk to Next Office</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -1260,7 +1287,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
             ) : (
               <>
                 <div className="space-y-1.5">
-                  <div className="text-2xs font-mono text-indigo-400 font-semibold">
+                  <div className="text-2xs font-mono text-emerald-400 font-semibold">
                     {nearbyBuilding ? `OUTSIDE ${nearbyBuilding.signTop}` : 'ON THE AVENUE'}
                   </div>
                   <p className="text-sm text-slate-200 font-medium">
@@ -1278,11 +1305,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                           ? enterVestoraOffice()
                           : visitBuilding(nearbyBuilding)
                       }
-                      className={`px-4 py-2 text-xs font-semibold text-white rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap ${
-                        nearbyBuilding.id === 'VESTORA_DOOR'
-                          ? 'bg-emerald-600 hover:bg-emerald-500'
-                          : 'bg-indigo-600 hover:bg-indigo-500'
-                      }`}
+                      className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <DoorOpen className="w-3.5 h-3.5" />
                       <span>
@@ -1295,7 +1318,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                     <button
                       type="button"
                       onClick={() => walkToStop(BUILDINGS[0])}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                      className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <span>Walk to Bank Branch</span>
                       <ArrowRight className="w-3.5 h-3.5" />

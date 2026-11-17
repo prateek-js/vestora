@@ -241,9 +241,9 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setTimelineFilter(tab.id)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                   timelineFilter === tab.id
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-emerald-500 text-slate-950'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -364,8 +364,8 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                       key={holding.id}
                       type="button"
                       onClick={() => setSelectedHoldingId(holding.id)}
-                      className={`w-full text-left py-3 px-2 -mx-2 rounded-lg grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
-                        isSelected ? 'bg-indigo-950/40' : 'hover:bg-slate-800/40'
+                      className={`w-full text-left py-3 px-2 -mx-2 rounded-lg grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                        isSelected ? 'bg-emerald-950/35' : 'hover:bg-slate-800/40'
                       }`}
                     >
                       {/* Instrument Info */}
@@ -375,7 +375,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                             {holding.name}
                           </span>
                           {isSelected && (
-                            <span className="text-2xs font-mono text-indigo-300 shrink-0">
+                            <span className="text-2xs font-mono text-emerald-400 shrink-0">
                               Selected
                             </span>
                           )}
@@ -446,7 +446,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-indigo-400" />
+            <Calendar className="w-4 h-4 text-emerald-400" />
             <span>Select Maturing Instrument to Reinvest</span>
           </h3>
           <span className="text-xs text-slate-400 font-mono">
@@ -471,7 +471,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                   onClick={() => setSelectedHoldingId(h.id)}
                   className={`border rounded-xl p-3.5 cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-slate-800/90 border-indigo-500 ring-1 ring-indigo-500'
+                      ? 'bg-slate-800/90 border-emerald-500 ring-1 ring-emerald-500'
                       : isMat
                       ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
                       : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
@@ -514,18 +514,18 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
       {/* 3. Reinvestment Target Configuration Bar */}
       {activeHolding && (
-        <div className="bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-emerald-950/25 border border-emerald-500/35 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs text-indigo-300 font-medium">
+              <div className="text-xs text-emerald-300 font-medium">
                 Active Capital Staged for Reallocation:
               </div>
               <div className="text-sm font-bold text-white font-mono flex items-center gap-2">
                 <span>{activeHolding.name}</span>
-                <span className="text-indigo-400">
+                <span className="text-emerald-400">
                   ({formatCurrency(activeHoldingValuation, baseCurrency)})
                 </span>
               </div>
@@ -558,9 +558,9 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                 <button
                   key={tier.id}
                   onClick={() => setSelectedRiskTier(tier.id)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap ${
                     selectedRiskTier === tier.id
-                      ? 'bg-indigo-600 text-white shadow-sm'
+                      ? 'bg-emerald-500 text-slate-950 shadow-sm'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -635,7 +635,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                 </div>
 
                 {/* Title */}
-                <h4 className="text-base font-bold text-white mt-2 group-hover:text-indigo-300 transition-colors">
+                <h4 className="text-base font-bold text-white mt-2 group-hover:text-emerald-300 transition-colors">
                   {sol.solutionName}
                 </h4>
                 <div className="text-xs text-slate-400 mt-0.5 font-mono">
@@ -680,7 +680,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
                 <button
                   onClick={() => activeHolding && onDeploySolution(activeHolding, sol)}
-                  className="px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-indigo-600/30 shrink-0"
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 shrink-0"
                 >
                   <span>Deploy & Rebalance</span>
                   <ArrowRight className="w-3.5 h-3.5" />

@@ -553,7 +553,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   if (holdings.length === 0) {
     return (
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-10 text-center space-y-3">
-        <Shuffle className="w-8 h-8 text-indigo-400 mx-auto" />
+        <Shuffle className="w-8 h-8 text-emerald-400 mx-auto" />
         <h2 className="text-base font-bold text-white">Add or Import Holdings to Rebalance</h2>
         <p className="text-xs text-slate-400 max-w-md mx-auto">
           Once you have at least one holding (such as Savings Cash, Mutual Funds, Stocks, or FDs), you can break partial or full capital here and diversify across market funds, bonds, FDs, or Home Loan prepayments.
@@ -561,7 +561,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         <button
           type="button"
           onClick={onNavigateToOverview}
-          className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors"
+          className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors"
         >
           Go to Overview
         </button>
@@ -624,7 +624,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-800 pb-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span className="font-semibold text-indigo-300">Smart Diversification Suggestions</span>
+              <span className="font-semibold text-emerald-400">Smart Diversification Suggestions</span>
               <span aria-hidden="true">·</span>
               <span>
                 {benchmarksLoading
@@ -648,7 +648,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             disabled={benchmarksLoading}
             className="px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 self-start"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${benchmarksLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${benchmarksLoading ? 'animate-spin' : ''}`} />
             <span>Refresh Live Market Data</span>
           </button>
         </div>
@@ -663,9 +663,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   key={g}
                   type="button"
                   onClick={() => setSmartGoal(g)}
-                  className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                  className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
                     smartGoal === g
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-emerald-500 text-slate-950'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -683,9 +683,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   key={slab}
                   type="button"
                   onClick={() => setTaxSlabPct(slab)}
-                  className={`px-2 py-1.5 text-xs font-mono font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                  className={`px-2 py-1.5 text-xs font-mono font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
                     taxSlabPct === slab
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-emerald-500 text-slate-950'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -702,8 +702,8 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <button
                   type="button"
                   onClick={() => setHasHomeLoan(true)}
-                  className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
-                    hasHomeLoan ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                  className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                    hasHomeLoan ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Include Loan
@@ -894,14 +894,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   key={plan.id}
                   className={`rounded-xl p-4 border flex flex-col justify-between gap-4 transition-colors ${
                     isStaged
-                      ? 'bg-indigo-950/30 border-indigo-500'
+                      ? 'bg-emerald-950/25 border-emerald-500'
                       : 'bg-slate-950/70 border-slate-800 hover:border-slate-700'
                   }`}
                 >
                   <div className="space-y-2.5">
                     <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-slate-400">
-                      <span className="font-medium text-indigo-300">{plan.categoryLabel}</span>
-                      <span className="font-mono tabular-nums text-emerald-400 font-semibold">
+                      <span className="font-medium text-emerald-400">{plan.categoryLabel}</span>
+                      <span className="font-mono tabular-nums text-emerald-300 font-semibold">
                         {plan.benefitSummary}
                       </span>
                     </div>
@@ -936,7 +936,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       Risk Score:{' '}
                       <span className="text-slate-200 font-semibold">{plan.riskBefore}</span>
                       {' → '}
-                      <span className="text-indigo-300 font-bold">
+                      <span className="text-emerald-400 font-bold">
                         {plan.riskAfter} ({plan.postureAfter})
                       </span>
                     </div>
@@ -946,8 +946,8 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       onClick={() => handleApplySuggestedPlan(plan)}
                       className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                         isStaged
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                          ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/50'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
                       }`}
                     >
                       {isStaged ? (
@@ -979,7 +979,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         >
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-2xs font-mono uppercase tracking-wider text-indigo-400 font-semibold">
+              <span className="text-2xs font-mono uppercase tracking-wider text-emerald-400 font-semibold">
                 Step 1 · Break or Move From
               </span>
               <h3 className="text-sm font-bold text-white mt-0.5">Select Source Holding</h3>
@@ -1004,7 +1004,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   }}
                   className={`w-full text-left p-3 rounded-lg border transition-colors flex items-center justify-between gap-3 ${
                     isSelected
-                      ? 'bg-indigo-950/45 border-indigo-500 ring-1 ring-indigo-500/50'
+                      ? 'bg-emerald-950/35 border-emerald-500 ring-1 ring-emerald-500/40'
                       : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
                   }`}
                 >
@@ -1048,9 +1048,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         key={pct}
                         type="button"
                         onClick={() => setMoveAmountInBase(target)}
-                        className={`px-2 py-0.5 text-2xs font-mono rounded transition-colors ${
+                        className={`px-2 py-0.5 text-2xs font-mono font-semibold rounded transition-colors ${
                           active
-                            ? 'bg-indigo-600 text-white'
+                            ? 'bg-emerald-500 text-slate-950'
                             : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'
                         }`}
                       >
@@ -1070,7 +1070,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   const val = Math.max(0, Math.min(sourceValueInBase, Number(e.target.value) || 0));
                   setMoveAmountInBase(val);
                 }}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-lg px-3 py-2 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
               />
 
               <input
@@ -1080,14 +1080,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 step={Math.max(1, Math.round(sourceValueInBase / 100))}
                 value={moveAmountInBase}
                 onChange={(e) => setMoveAmountInBase(Number(e.target.value))}
-                className="w-full accent-indigo-500 cursor-pointer"
+                className="w-full accent-emerald-500 cursor-pointer"
                 aria-label="Percentage of holding to break or move"
               />
 
               <div className="grid grid-cols-2 gap-2 text-2xs font-mono bg-slate-950/80 border border-slate-800 rounded-lg p-3">
                 <div>
                   <span className="text-slate-500 block">Staged to Diversify</span>
-                  <span className="text-indigo-300 font-bold text-xs tabular-nums">
+                  <span className="text-emerald-400 font-bold text-xs tabular-nums">
                     {formatCurrency(moveAmountInBase, baseCurrency, { compact: false })}
                   </span>
                 </div>
@@ -1149,9 +1149,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setExplorerTab(tab.id)}
-                  className={`px-2 py-2 text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-2 py-2 text-xs font-semibold rounded-md transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 ${
                     active
-                      ? 'bg-indigo-600 text-white shadow-xs'
+                      ? 'bg-emerald-500 text-slate-950 shadow-xs'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900'
                   }`}
                 >
@@ -1204,9 +1204,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         key={subcat}
                         type="button"
                         onClick={() => setSelectedKuveraSubcat(subcat)}
-                        className={`px-2.5 py-1 text-2xs font-medium rounded-md border transition-colors whitespace-nowrap ${
+                        className={`px-2.5 py-1 text-2xs font-semibold rounded-md border transition-colors whitespace-nowrap ${
                           selectedKuveraSubcat === subcat
-                            ? 'bg-indigo-600 border-indigo-500 text-white'
+                            ? 'bg-emerald-500 border-emerald-400 text-slate-950'
                             : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
                         }`}
                       >
@@ -1218,7 +1218,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   <div className="border border-slate-800 rounded-xl bg-slate-950/60 divide-y divide-slate-800/80 max-h-[340px] overflow-y-auto">
                     {kuveraLoading ? (
                       <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                         <span>Loading live categorized Direct-Growth rankings...</span>
                       </div>
                     ) : rankedKuveraMatches.length === 0 ? (
@@ -1289,7 +1289,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                               className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                                 alreadyInCart
                                   ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
-                                  : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                                  : 'bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950'
                               }`}
                             >
                               {isResolving ? (
@@ -1332,13 +1332,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     value={mfQuery}
                     onChange={(e) => setMfQuery(e.target.value)}
                     placeholder="Search 40,000+ AMFI mutual funds (e.g. Parag Parikh, Nifty 50, Gilt, Liquid)..."
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={mfSearching || !mfQuery.trim()}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                  className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
                   {mfSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
                   <span>Search Market</span>
@@ -1354,7 +1354,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     onClick={() => handleMfSearch(chip)}
                     className={`px-2 py-1 text-2xs font-medium rounded-md border transition-colors ${
                       mfQuery.toLowerCase() === chip.toLowerCase()
-                        ? 'bg-indigo-950/60 border-indigo-400 text-indigo-200'
+                        ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                     }`}
                   >
@@ -1367,7 +1367,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <div className="border border-slate-800 rounded-xl bg-slate-950/60 divide-y divide-slate-800/80 max-h-[340px] overflow-y-auto">
                 {mfSearching ? (
                   <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                     <span>Searching live AMFI directory...</span>
                   </div>
                 ) : mfHits.length === 0 && mfHasSearched ? (
@@ -1386,13 +1386,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                             onClick={() => handleInspectMf(hit.schemeCode)}
                             className="text-left min-w-0 flex-1 group"
                           >
-                            <div className="text-xs font-semibold text-slate-100 group-hover:text-indigo-300 transition-colors leading-snug">
+                            <div className="text-xs font-semibold text-slate-100 group-hover:text-emerald-300 transition-colors leading-snug">
                               {hit.schemeName}
                             </div>
                             <div className="text-2xs font-mono text-slate-500 mt-0.5 flex items-center gap-2">
                               <span>AMFI #{hit.schemeCode}</span>
                               <span>·</span>
-                              <span className="text-indigo-400">
+                              <span className="text-emerald-400">
                                 {isExpanded ? 'Hide NAV & CAGR' : 'Click to inspect live NAV & 1Y/3Y CAGR'}
                               </span>
                             </div>
@@ -1437,7 +1437,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                             className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                               alreadyInCart
                                 ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
-                                : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                                : 'bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950'
                             }`}
                           >
                             {alreadyInCart ? (
@@ -1459,7 +1459,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-2xs">
                             {loadingDetail ? (
                               <div className="flex items-center gap-2 text-slate-400 py-1">
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
                                 <span>Loading live NAV history &amp; CAGR...</span>
                               </div>
                             ) : schemeDetail && schemeDetail.schemeCode === hit.schemeCode ? (
@@ -1549,13 +1549,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     value={marketQuery}
                     onChange={(e) => setMarketQuery(e.target.value)}
                     placeholder="Search SBI FD, RBI Bond, T-Bill, NABARD, Treasury, SGB..."
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowCustomBondForm((v) => !v)}
-                  className="px-3 py-2 text-xs font-medium text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/35 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                  className="px-3 py-2 text-xs font-medium text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/35 rounded-lg transition-colors whitespace-nowrap shrink-0"
                 >
                   {showCustomBondForm ? 'Hide Custom Form' : '+ Custom FD / Bond'}
                 </button>
@@ -1577,9 +1577,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       key={f.id}
                       type="button"
                       onClick={() => setMarketFilter(f.id)}
-                      className={`px-2.5 py-1 text-2xs font-medium rounded-md border transition-colors ${
+                      className={`px-2.5 py-1 text-2xs font-semibold rounded-md border transition-colors ${
                         marketFilter === f.id
-                          ? 'bg-indigo-600 border-indigo-500 text-white'
+                          ? 'bg-emerald-500 border-emerald-400 text-slate-950'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
                       }`}
                     >
@@ -1603,27 +1603,27 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
               {/* Optional Custom FD / Bond Builder */}
               {showCustomBondForm && (
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-indigo-500/40 space-y-2.5 text-xs">
-                  <div className="font-semibold text-indigo-300">Add Custom Fixed Deposit or Listed Bond</div>
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-emerald-500/40 space-y-2.5 text-xs">
+                  <div className="font-semibold text-emerald-300">Add Custom Fixed Deposit or Listed Bond</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       type="text"
                       value={customBondName}
                       onChange={(e) => setCustomBondName(e.target.value)}
                       placeholder="Instrument Name (e.g. ICICI 15M FD / Tata Capital NCD)"
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                     />
                     <input
                       type="text"
                       value={customBondInstitution}
                       onChange={(e) => setCustomBondInstitution(e.target.value)}
                       placeholder="Bank / Issuer (e.g. ICICI Bank)"
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                     />
                     <select
                       value={customBondCat}
                       onChange={(e) => setCustomBondCat(e.target.value as 'FIXED_DEPOSIT' | 'GOVT_BOND' | 'CORP_BOND')}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-indigo-500"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-emerald-500"
                     >
                       <option value="FIXED_DEPOSIT">Fixed Deposit (FD)</option>
                       <option value="GOVT_BOND">Govt Bond / T-Bill</option>
@@ -1636,14 +1636,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         value={customBondRate}
                         onChange={(e) => setCustomBondRate(e.target.value)}
                         placeholder="Rate %"
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                        className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                       />
                       <input
                         type="number"
                         value={customBondDays}
                         onChange={(e) => setCustomBondDays(e.target.value)}
                         placeholder="Days (e.g. 365)"
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                        className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -1669,7 +1669,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         setCustomBondName('');
                         setShowCustomBondForm(false);
                       }}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 rounded-lg transition-colors"
+                      className="px-3.5 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 rounded-lg transition-colors"
                     >
                       + Add Custom Bond / FD to Split
                     </button>
@@ -1730,7 +1730,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap ${
                             alreadyInCart
                               ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
-                              : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                              : 'bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950'
                           }`}
                         >
                           {alreadyInCart ? (
@@ -1763,7 +1763,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   value={marketQuery}
                   onChange={(e) => setMarketQuery(e.target.value)}
                   placeholder="Filter listed index ETFs (NIFTYBEES, BANKBEES, VOO, QQQ)..."
-                  className="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
+                  className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
                 />
               </div>
 
@@ -1797,7 +1797,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                           alreadyInCart
                             ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                            : 'bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950'
                         }`}
                       >
                         <Plus className="w-3 h-3" />
@@ -1817,20 +1817,20 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     value={customStockName}
                     onChange={(e) => setCustomStockName(e.target.value)}
                     placeholder="Stock / Ticker (e.g. TCS, NVDA, MSFT)"
-                    className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
                   <input
                     type="text"
                     value={customStockBroker}
                     onChange={(e) => setCustomStockBroker(e.target.value)}
                     placeholder="Exchange / Broker"
-                    className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                   />
                   <div className="flex gap-2">
                     <select
                       value={customStockCcy}
                       onChange={(e) => setCustomStockCcy(e.target.value as CurrencyCode)}
-                      className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono focus:outline-none"
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                     >
                       <option value="INR">INR</option>
                       <option value="USD">USD</option>
@@ -1852,7 +1852,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         });
                         setCustomStockName('');
                       }}
-                      className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 rounded-lg transition-colors whitespace-nowrap"
+                      className="flex-1 px-3 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 rounded-lg transition-colors whitespace-nowrap"
                     >
                       + Add Stock
                     </button>
@@ -1879,9 +1879,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       key={cls.id}
                       type="button"
                       onClick={() => setNpsClassFilter(cls.id)}
-                      className={`px-2.5 py-1 text-2xs font-medium rounded-md border transition-colors whitespace-nowrap ${
+                      className={`px-2.5 py-1 text-2xs font-semibold rounded-md border transition-colors whitespace-nowrap ${
                         npsClassFilter === cls.id
-                          ? 'bg-indigo-600 border-indigo-500 text-white'
+                          ? 'bg-emerald-500 border-emerald-400 text-slate-950'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
                       }`}
                     >
@@ -1897,7 +1897,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <div className="border border-slate-800 rounded-xl bg-slate-950/60 divide-y divide-slate-800/80 max-h-[340px] overflow-y-auto">
                 {benchmarksLoading && filteredNpsSchemes.length === 0 ? (
                   <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                     <span>Loading live NPS Tier-I NAVs from PFRDA / NPSNAV...</span>
                   </div>
                 ) : filteredNpsSchemes.length === 0 ? (
@@ -1947,7 +1947,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                             alreadyInCart
                               ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
-                              : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                              : 'bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950'
                           }`}
                         >
                           {alreadyInCart ? (
@@ -1997,7 +1997,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       type="text"
                       value={loanLabel}
                       onChange={(e) => setLoanLabel(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -2009,7 +2009,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       min={0}
                       value={loanPrincipal}
                       onChange={(e) => setLoanPrincipal(Math.max(0, Number(e.target.value) || 0))}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -2023,7 +2023,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       max={30}
                       value={loanRatePct}
                       onChange={(e) => setLoanRatePct(Math.max(0, Number(e.target.value) || 0))}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -2036,7 +2036,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       max={35}
                       value={loanYearsLeft}
                       onChange={(e) => setLoanYearsLeft(Math.max(1, Number(e.target.value) || 1))}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -2063,7 +2063,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
                     <span className="text-2xs text-slate-500 block">Tenure Reduced By</span>
-                    <span className="text-sm font-bold text-indigo-300">
+                    <span className="text-sm font-bold text-emerald-300">
                       {Math.floor(homeLoanImpact.monthsSaved / 12)}y {homeLoanImpact.monthsSaved % 12}m
                     </span>
                     <span className="text-2xs text-slate-500 block mt-0.5">
@@ -2090,7 +2090,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         loanMonthsSaved: homeLoanImpact.monthsSaved,
                       })
                     }
-                    className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                    className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 rounded-lg transition-colors inline-flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>
@@ -2147,7 +2147,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <button
                 type="button"
                 onClick={handleSplitEvenly}
-                className="px-2.5 py-1 text-2xs font-sans font-medium text-indigo-300 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/35 rounded-md transition-colors"
+                className="px-2.5 py-1 text-2xs font-sans font-medium text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/35 rounded-md transition-colors"
               >
                 Split Evenly
               </button>
@@ -2199,7 +2199,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       onChange={(e) =>
                         handleUpdateDestAmount(dest.id, Math.max(0, Number(e.target.value) || 0))
                       }
-                      className="w-32 bg-slate-900 border border-slate-700 focus:border-indigo-500 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white text-right focus:outline-none tabular-nums"
+                      className="w-32 bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white text-right focus:outline-none tabular-nums"
                     />
                   </div>
                   {unallocatedAmount > 0 && (
@@ -2208,7 +2208,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       onClick={() =>
                         handleUpdateDestAmount(dest.id, dest.allocatedInBase + unallocatedAmount)
                       }
-                      className="px-2 py-1 text-2xs font-mono text-indigo-300 hover:text-white bg-slate-900 border border-slate-700 rounded-md"
+                      className="px-2 py-1 text-2xs font-mono text-emerald-300 hover:text-white bg-slate-900 border border-slate-700 hover:border-emerald-500/50 rounded-md"
                       title="Allocate remaining staged capital here"
                     >
                       +Fill
@@ -2235,7 +2235,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     {riskSimulation.before.score} ({riskSimulation.before.posture})
                   </span>
                   <span className="text-slate-500 mx-1.5">→</span>
-                  <span className="text-indigo-300 font-bold">
+                  <span className="text-emerald-400 font-bold">
                     {riskSimulation.after.score} ({riskSimulation.after.posture})
                   </span>
                 </div>
@@ -2258,7 +2258,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   type="button"
                   disabled={!canExecute}
                   onClick={handleConfirmExecute}
-                  className="px-5 py-2.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shadow-sm shadow-indigo-600/30"
+                  className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shadow-sm shadow-emerald-500/25"
                 >
                   <span>Execute Rebalance &amp; Update Portfolio</span>
                   <ArrowRight className="w-3.5 h-3.5" />

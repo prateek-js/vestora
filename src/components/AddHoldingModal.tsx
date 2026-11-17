@@ -92,7 +92,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-indigo-400" />
+            <Plus className="w-4 h-4 text-emerald-400" />
             <span>Add New Investment Holding</span>
           </h3>
           <button
@@ -122,7 +122,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Parag Parikh Flexi Cap Fund or SBI 1-Year FD"
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -135,7 +135,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as AssetCategory)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
                 <option value="MUTUAL_FUND">Mutual Fund (Equity/Debt/ELSS)</option>
                 <option value="EQUITY_STOCK">Direct Equities (Demat)</option>
@@ -161,7 +161,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
                 placeholder="e.g. HDFC Bank, Zerodha, EPFO"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -173,7 +173,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
               >
                 <option value="INR">INR (₹)</option>
                 <option value="USD">USD ($)</option>
@@ -193,7 +193,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 value={investedAmount}
                 onChange={(e) => setInvestedAmount(e.target.value)}
                 placeholder="e.g. 500000"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -209,7 +209,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 value={currentValue}
                 onChange={(e) => setCurrentValue(e.target.value)}
                 placeholder="e.g. 545000"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 value={interestRatePct}
                 onChange={(e) => setInterestRatePct(e.target.value)}
                 placeholder="e.g. 7.5"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -237,7 +237,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 type="date"
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -250,7 +250,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
                 type="date"
                 value={maturityDate}
                 onChange={(e) => setMaturityDate(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             <select
               value={taxTag}
               onChange={(e) => setTaxTag(e.target.value as TaxTag)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
             >
               <option value="LTCG_EQUITY">LTCG Equity (12.5% above ₹1.25L)</option>
               <option value="80C">Section 80C Tax Deduction Eligible (ELSS/PPF)</option>
@@ -282,7 +282,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors shadow-sm"
+              className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors shadow-sm"
             >
               Save Investment
             </button>

@@ -127,7 +127,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
 
           <div className="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800/80">
             <div className="text-2xs text-slate-400">Annual Exemption Ceiling</div>
-            <div className="text-base font-bold font-mono text-indigo-400 mt-1">
+            <div className="text-base font-bold font-mono text-emerald-400 mt-1">
               {formatCurrency(taxHarvestAudit.annualExemptionLimit, baseCurrency)}
             </div>
             <div className="text-2xs text-slate-500 mt-0.5">Section 112A annual exemption quota</div>
@@ -164,7 +164,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
                 Statutory cap: {formatCurrency(taxSectionAudit.section80cLimit, baseCurrency)}
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-indigo-400">
+            <span className="text-xs font-mono font-bold text-emerald-400">
               {sec80cPct.toFixed(0)}% Utilized
             </span>
           </div>
@@ -173,7 +173,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
           <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
             <div
               style={{ width: `${sec80cPct}%` }}
-              className="h-full bg-indigo-500 rounded-full transition-all"
+              className="h-full bg-emerald-500 rounded-full transition-all"
             />
           </div>
 
@@ -296,7 +296,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-indigo-400" />
+              <PieChart className="w-4 h-4 text-emerald-400" />
               <span>Multi-Currency Asset Exposure</span>
             </h4>
             <span className="text-2xs font-mono text-slate-400">FX Risk Radar</span>

@@ -22,18 +22,18 @@ export interface PdfReportOptions {
 
 type Rgb = [number, number, number];
 
-const SLATE_900: Rgb = [15, 23, 42];
+const SLATE_900: Rgb = [12, 17, 27];
+const OBSIDIAN_LOGO: Rgb = [10, 13, 28];
 const SLATE_700: Rgb = [51, 65, 85];
 const SLATE_600: Rgb = [71, 85, 105];
 const SLATE_500: Rgb = [100, 116, 139];
 const SLATE_300: Rgb = [203, 213, 225];
 const SLATE_200: Rgb = [226, 232, 240];
 const SLATE_50: Rgb = [248, 250, 252];
-const INDIGO_600: Rgb = [79, 70, 229];
-const INDIGO_500: Rgb = [99, 102, 241];
-const INDIGO_100: Rgb = [224, 231, 255];
-const EMERALD_600: Rgb = [5, 150, 105];
-const EMERALD_500: Rgb = [16, 185, 129];
+const COBALT_600: Rgb = [76, 92, 230];
+const EMERALD_600: Rgb = [2, 162, 109];
+const EMERALD_500: Rgb = [2, 195, 126];
+const EMERALD_100: Rgb = [214, 250, 235];
 const ROSE_600: Rgb = [225, 29, 72];
 const ROSE_500: Rgb = [244, 63, 94];
 const AMBER_600: Rgb = [217, 119, 6];
@@ -156,7 +156,7 @@ function drawGrowthChart(
 
   const legendY = y + 6.3;
   // Valuation legend
-  doc.setDrawColor(...INDIGO_600);
+  doc.setDrawColor(...EMERALD_600);
   doc.setLineWidth(0.7);
   doc.line(x + w - 76, legendY - 0.8, x + w - 71, legendY - 0.8);
   doc.text('Valuation', x + w - 69.5, legendY);
@@ -208,7 +208,7 @@ function drawGrowthChart(
   // Shaded area polygon under Valuation curve
   const valPoints = trendData.map((d, i) => ({ px: toX(i), py: toY(d.valuation) }));
   const baseLineY = plotY + plotH;
-  doc.setFillColor(...INDIGO_100);
+  doc.setFillColor(...EMERALD_100);
   const polyDeltas: [number, number][] = [];
   for (let i = 1; i < valPoints.length; i++) {
     polyDeltas.push([valPoints[i].px - valPoints[i - 1].px, valPoints[i].py - valPoints[i - 1].py]);
@@ -246,7 +246,7 @@ function drawGrowthChart(
   doc.setLineDashPattern([], 0);
 
   // Valuation solid curve + points
-  doc.setDrawColor(...INDIGO_600);
+  doc.setDrawColor(...EMERALD_600);
   doc.setLineWidth(0.65);
   for (let i = 1; i < valPoints.length; i++) {
     doc.line(valPoints[i - 1].px, valPoints[i - 1].py, valPoints[i].px, valPoints[i].py);
@@ -254,9 +254,9 @@ function drawGrowthChart(
 
   valPoints.forEach((pt, idx) => {
     const isLast = idx === valPoints.length - 1;
-    const dotFill: Rgb = isLast ? INDIGO_600 : [255, 255, 255];
+    const dotFill: Rgb = isLast ? EMERALD_500 : [255, 255, 255];
     doc.setFillColor(...dotFill);
-    doc.setDrawColor(...INDIGO_600);
+    doc.setDrawColor(...EMERALD_600);
     doc.setLineWidth(0.4);
     doc.circle(pt.px, pt.py, isLast ? 1.15 : 0.75, 'FD');
 
@@ -477,21 +477,35 @@ export function generatePortfolioPdfReport({
 
   const metrics = computePortfolioSummaryMetrics(holdings, baseCurrency);
 
-  // 1. Dark Slate Header Banner with Indigo Accent Bar
+  // 1. Dark Obsidian Header Banner with Faceted Emerald Accent Bar & Brand Mark
   doc.setFillColor(...SLATE_900);
   doc.roundedRect(margin, margin, contentWidth, 20, 2.5, 2.5, 'F');
-  doc.setFillColor(...INDIGO_500);
+  doc.setFillColor(...EMERALD_500);
   doc.rect(margin, margin, contentWidth, 1.4, 'F');
+
+  // Vector Vestora V-crest badge inside PDF banner
+  const badgeX = margin + 5;
+  const badgeY = margin + 4.4;
+  doc.setFillColor(...OBSIDIAN_LOGO);
+  doc.setDrawColor(...[38, 51, 74]);
+  doc.setLineWidth(0.25);
+  doc.roundedRect(badgeX, badgeY, 10.5, 10.5, 1.8, 1.8, 'FD');
+  // Left ivory wing
+  doc.setFillColor(241, 245, 249);
+  doc.triangle(badgeX + 2.1, badgeY + 2.6, badgeX + 4.0, badgeY + 2.6, badgeX + 5.25, badgeY + 8.3, 'F');
+  // Right emerald blade
+  doc.setFillColor(...EMERALD_500);
+  doc.triangle(badgeX + 6.5, badgeY + 2.6, badgeX + 8.4, badgeY + 2.6, badgeX + 5.25, badgeY + 8.3, 'F');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(255, 255, 255);
-  doc.text('VESTORA', margin + 5, margin + 8.5);
+  doc.text('VESTORA', margin + 18.5, margin + 8.6);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(...SLATE_300);
-  doc.text('PORTFOLIO WEALTH SUMMARY REPORT', margin + 5, margin + 14.8);
+  doc.text('PORTFOLIO WEALTH SUMMARY REPORT', margin + 18.5, margin + 14.8);
 
   const sessionLabel =
     portfolioMode === 'demo' && profileName
@@ -565,7 +579,7 @@ export function generatePortfolioPdfReport({
       : metrics.riskScore.score >= 55
       ? AMBER_600
       : metrics.riskScore.score >= 30
-      ? INDIGO_600
+      ? COBALT_600
       : EMERALD_600;
 
   drawKpiCard(

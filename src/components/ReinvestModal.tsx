@@ -113,14 +113,14 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                 type="number"
                 value={allocatedAmount}
                 onChange={(e) => setAllocatedAmount(parseFloat(e.target.value) || 0)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono font-bold text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono font-bold text-sm focus:outline-none focus:border-emerald-500"
               />
               <div className="flex justify-between text-2xs text-slate-500 font-mono mt-1">
                 <span>Full Balance: {formatCurrency(sourceValuation, baseCurrency)}</span>
                 <button
                   type="button"
                   onClick={() => setAllocatedAmount(sourceValuation)}
-                  className="text-indigo-400 hover:underline"
+                  className="text-emerald-400 hover:underline"
                 >
                   Allocate 100%
                 </button>
@@ -157,7 +157,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
               >
                 <span>Confirm & Rebalance Portfolio</span>
                 <ArrowRight className="w-3.5 h-3.5" />

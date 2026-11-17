@@ -207,7 +207,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Sliders className="w-4 h-4 text-indigo-400" />
+            <Sliders className="w-4 h-4 text-emerald-400" />
             <span>Simulate Economic Conditions</span>
           </div>
           <button
@@ -322,7 +322,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) =>
                 setParams({ ...params, equityMarketShockPct: parseInt(e.target.value) })
               }
-              className="w-full accent-indigo-500 cursor-pointer"
+              className="w-full accent-emerald-500 cursor-pointer"
             />
             <div className="flex justify-between text-2xs text-slate-500 font-mono">
               <span>-30% (Crash)</span>
@@ -341,7 +341,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
                 onClick={() => setParams({ ...params, projectionHorizonYears: yr })}
                 className={`px-3 py-1 rounded text-2xs font-bold transition-colors ${
                   params.projectionHorizonYears === yr
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-emerald-500 text-slate-950'
                     : 'bg-slate-950 text-slate-400 hover:text-white'
                 }`}
               >
@@ -352,10 +352,10 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
         </div>
 
         {/* Dynamic Scenario-Adaptive Shuffle Option based on Input Parameters */}
-        <div className="bg-gradient-to-r from-slate-950 via-slate-950 to-indigo-950/40 border border-indigo-500/30 rounded-xl p-4 mt-3 space-y-3">
+        <div className="bg-gradient-to-r from-slate-950 via-slate-950 to-emerald-950/35 border border-emerald-500/30 rounded-xl p-4 mt-3 space-y-3">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
@@ -363,7 +363,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
                   <h4 className="text-sm font-semibold text-white">
                     Shuffle Portfolio Based on Input Parameters
                   </h4>
-                  <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                  <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                     Live Scenario Calibration
                   </span>
                 </div>
@@ -378,8 +378,8 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onClick={handleApplyInputBasedShuffle}
               className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shrink-0 font-mono shadow-sm active:scale-95 ${
                 isMatchingInputs
-                  ? 'bg-emerald-600/90 text-white border border-emerald-500/50'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30'
+                  ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/50'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
               }`}
             >
               {isMatchingInputs ? (
@@ -583,12 +583,12 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onClick={handleApplyInputBasedShuffle}
               className={`px-2.5 py-1 text-2xs font-mono font-medium rounded transition-colors flex items-center gap-1 ${
                 isMatchingInputs
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-indigo-950/60 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/60'
+                  ? 'bg-emerald-500 text-slate-950 font-semibold shadow-xs'
+                  : 'bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/55'
               }`}
             >
               <Sparkles className="w-3 h-3" />
-              <span>⚡ Calibrate to Inputs</span>
+              <span>Calibrate to Inputs</span>
             </button>
             <button
               type="button"
@@ -704,7 +704,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
 
         {/* Strategic Rebalancing Advice Box */}
         <div className="mt-4 bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-400">
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
             <Shield className="w-4 h-4" />
             <span>Macro Stress Intelligence Advice:</span>
           </div>
