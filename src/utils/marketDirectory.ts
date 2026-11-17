@@ -4,6 +4,12 @@ const MFAPI_SEARCH_URL = 'https://api.mfapi.in/mf/search';
 const MFAPI_SCHEME_URL = 'https://api.mfapi.in/mf';
 const US_TREASURY_RATES_URL =
   'https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates?sort=-record_date&page[size]=20';
+const INDIA_GSEC_RATES_URL =
+  'https://raw.githubusercontent.com/TechfaneTechnologies/risk_free_interest_rate/main/RiskFreeInterestRate.json';
+const NPS_DETAILED_URL = 'https://npsnav.in/api/detailed';
+const KUVERA_SCHEMES_URL = 'https://api.kuvera.in/mf/api/v4/fund_schemes/list.json';
+const GOLD_INR_URL =
+  'https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=inr';
 
 export interface MutualFundSearchHit {
   schemeCode: number;
@@ -21,6 +27,7 @@ export interface MutualFundMarketDetail {
   return30dPct: number | null;
   cagr1yPct: number | null;
   cagr3yPct: number | null;
+  annualizedVolatilityPct: number | null;
 }
 
 export interface ListedMarketInstrument {
@@ -41,6 +48,30 @@ export interface ListedMarketInstrument {
   asOf?: string;
 }
 
+export interface NpsMarketScheme {
+  schemeCode: string;
+  schemeName: string;
+  pfmName: string;
+  assetClass: 'E' | 'C' | 'G';
+  nav: number;
+  return1yPct: number | null;
+  cagr3yPct: number | null;
+  cagr5yPct: number | null;
+  lastUpdated: string;
+}
+
+export interface KuveraFundEntry {
+  code: string;
+  name: string;
+  topCategory: string;
+  subCategory: string;
+  cagr1y: number | null;
+  cagr3y: number | null;
+  cagr5y: number | null;
+  volatility: number | null;
+  date: string;
+}
+
 export interface HomeLoanImpactResult {
   prepayApplied: number;
   newPrincipal: number;
@@ -56,6 +87,10 @@ export interface HomeLoanImpactResult {
 }
 
 const mfDetailCache = new Map<number, MutualFundMarketDetail>();
+let kuveraCache: KuveraFundEntry[] | null = null;
+let npsCache: NpsMarketScheme[] | null = null;
+let indiaGsecCache: ListedMarketInstrument[] | null = null;
+let goldSpotCache: { inrPer10g: number; inrPerOz: number } | null = null;
 
 function parseDdmmyyyy(dateStr: string): number | null {
   const parts = dateStr.split('-').map(Number);
@@ -156,6 +191,27 @@ export async function fetchMutualFundDetails(
     const nav1y = findHistoricalNav(parsed, latest.ts, 365, 20);
     const nav3y = findHistoricalNav(parsed, latest.ts, 1095, 30);
 
+    // Annualized volatility over up to ~252 recent trading days (parsed is newest -> oldest)
+    let annualizedVolatilityPct: number | null = null;
+    const sampleWindow = parsed.slice(0, Math.min(252, parsed.length));
+    if (sampleWindow.length >= 20) {
+      const dailyReturns: number[] = [];
+      for (let i = 0; i < sampleWindow.length - 1; i++) {
+        const curr = sampleWindow[i].nav;
+        const prev = sampleWindow[i + 1].nav;
+        if (prev > 0 && curr > 0) {
+          dailyReturns.push(Math.log(curr / prev));
+        }
+      }
+      if (dailyReturns.length >= 15) {
+        const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+        const variance =
+          dailyReturns.reduce((acc, r) => acc + Math.pow(r - mean, 2), 0) /
+          (dailyReturns.length - 1);
+        annualizedVolatilityPct = Number((Math.sqrt(variance * 252) * 100).toFixed(1));
+      }
+    }
+
     const detail: MutualFundMarketDetail = {
       schemeCode: json.meta?.scheme_code ?? schemeCode,
       schemeName: json.meta?.scheme_name ?? `Scheme #${schemeCode}`,
@@ -167,6 +223,7 @@ export async function fetchMutualFundDetails(
       return30dPct: nav30d ? ((latest.nav / nav30d) - 1) * 100 : null,
       cagr1yPct: nav1y ? ((latest.nav / nav1y) - 1) * 100 : null,
       cagr3yPct: nav3y ? (Math.pow(latest.nav / nav3y, 1 / 3) - 1) * 100 : null,
+      annualizedVolatilityPct,
     };
 
     mfDetailCache.set(schemeCode, detail);
@@ -235,6 +292,218 @@ export async function fetchLiveUsTreasuryRates(): Promise<ListedMarketInstrument
     });
 
     return instruments;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetches live Indian Government Security (G-Sec) & Treasury Bill yields
+ * sourced from official RBI/FBIL risk-free benchmarks.
+ */
+export async function fetchLiveIndiaGsecRates(): Promise<ListedMarketInstrument[]> {
+  if (indiaGsecCache) return indiaGsecCache;
+  try {
+    const res = await fetch(INDIA_GSEC_RATES_URL);
+    if (!res.ok) return [];
+    const rows = (await res.json()) as Array<{
+      GovernmentSecurityName?: string;
+      Percent?: number;
+    }>;
+    if (!Array.isArray(rows) || rows.length === 0) return [];
+
+    const instruments: ListedMarketInstrument[] = [];
+    rows.forEach((row) => {
+      const name = row.GovernmentSecurityName?.trim();
+      const rate = Number(row.Percent);
+      if (!name || !Number.isFinite(rate) || rate <= 0) return;
+
+      const is91 = /91\s*day/i.test(name);
+      const is182 = /182\s*day/i.test(name);
+      const is364 = /364\s*day/i.test(name);
+      const yearMatch = name.match(/\b(20\d{2})\b/);
+      const years = yearMatch ? Math.max(1, Number(yearMatch[1]) - new Date().getFullYear()) : 5;
+      const tenureDays = is91 ? 91 : is182 ? 182 : is364 ? 364 : years * 365;
+      const tenureLabel = is91
+        ? '91 Days'
+        : is182
+        ? '182 Days'
+        : is364
+        ? '364 Days'
+        : `${years} Years (G-Sec)`;
+
+      instruments.push({
+        id: `in-gsec-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        name: `GoI ${name}`,
+        category: 'GOVT_BOND',
+        group: 'GOVT_BOND',
+        issuer: 'Government of India (RBI / CCIL)',
+        currency: 'INR',
+        rateOrYieldPct: Number(rate.toFixed(2)),
+        tenureLabel,
+        tenureDays,
+        rating: '100% Sovereign',
+        liquidity: is91 || is182 || is364 ? 'Zero default risk · T-Bill' : 'RBI Retail Direct / NSE',
+        taxTag: is91 || is182 || is364 ? 'SLAB_INCOME' : 'LTCG_EQUITY',
+        taxSummary:
+          is91 || is182 || is364
+            ? 'T-Bill discount taxed at slab'
+            : 'Coupon at slab; LTCG 12.5% > 12m',
+        sourceLabel: 'Live GoI G-Sec Yield API',
+        asOf: 'Live',
+      });
+    });
+
+    indiaGsecCache = instruments;
+    return instruments;
+  } catch {
+    return [];
+  }
+}
+
+const VERIFIED_NPS_CODES: Array<{ code: string; assetClass: 'E' | 'C' | 'G' }> = [
+  { code: 'SM007001', assetClass: 'E' }, // ICICI Pru E Tier I
+  { code: 'SM005001', assetClass: 'E' }, // Kotak E Tier I
+  { code: 'SM008001', assetClass: 'E' }, // HDFC E Tier I
+  { code: 'SM010001', assetClass: 'E' }, // Aditya Birla E Tier I
+  { code: 'SM001003', assetClass: 'E' }, // SBI E Tier I
+  { code: 'SM008002', assetClass: 'C' }, // HDFC Corporate Bond C Tier I
+  { code: 'SM005002', assetClass: 'C' }, // Kotak Corporate Bond C Tier I
+  { code: 'SM007002', assetClass: 'C' }, // ICICI Corporate Bond C Tier I
+  { code: 'SM001001', assetClass: 'G' }, // SBI Central Govt G
+  { code: 'SM007003', assetClass: 'G' }, // ICICI Govt G Tier I
+  { code: 'SM008003', assetClass: 'G' }, // HDFC Govt G Tier I
+];
+
+/**
+ * Fetches live Tier-I NPS scheme NAVs & 1Y/3Y/5Y CAGRs via open npsnav.in API.
+ */
+export async function fetchLiveNpsSchemes(): Promise<NpsMarketScheme[]> {
+  if (npsCache) return npsCache;
+  try {
+    const results = await Promise.all(
+      VERIFIED_NPS_CODES.map(async ({ code, assetClass }) => {
+        try {
+          const res = await fetch(`${NPS_DETAILED_URL}/${code}`);
+          if (!res.ok) return null;
+          const j = (await res.json()) as Record<string, string>;
+          const nav = parseFloat(j.NAV);
+          if (!Number.isFinite(nav) || nav <= 0) return null;
+          const numOrNull = (val?: string) => {
+            if (!val) return null;
+            const n = parseFloat(val);
+            return Number.isFinite(n) ? n : null;
+          };
+          return {
+            schemeCode: j['Scheme Code'] || code,
+            schemeName: j['Scheme Name'] || `NPS Scheme ${code}`,
+            pfmName: j['PFM Name'] || 'PFRDA Pension Fund',
+            assetClass,
+            nav,
+            return1yPct: numOrNull(j['1Y']),
+            cagr3yPct: numOrNull(j['3Y']),
+            cagr5yPct: numOrNull(j['5Y']),
+            lastUpdated: j['Last Updated'] || 'Latest',
+          } satisfies NpsMarketScheme;
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const valid = results.filter((x): x is NpsMarketScheme => x !== null);
+    if (valid.length > 0) npsCache = valid;
+    return valid;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetches live 24K Gold price in INR (per 10g & per troy oz) via CoinGecko PAX-Gold INR feed.
+ */
+export async function fetchLiveGoldInrSpot(): Promise<{ inrPer10g: number; inrPerOz: number } | null> {
+  if (goldSpotCache) return goldSpotCache;
+  try {
+    const res = await fetch(GOLD_INR_URL);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { 'pax-gold'?: { inr?: number } };
+    const inrPerOz = Number(json['pax-gold']?.inr);
+    if (!Number.isFinite(inrPerOz) || inrPerOz <= 0) return null;
+    const inrPer10g = Math.round((inrPerOz / 31.1034768) * 10);
+    goldSpotCache = { inrPer10g, inrPerOz: Math.round(inrPerOz) };
+    return goldSpotCache;
+  } catch {
+    return null;
+  }
+}
+
+export const KUVERA_SUBCATEGORIES = [
+  'Flexi Cap Fund',
+  'Index Funds',
+  'Large Cap Fund',
+  'Mid Cap Fund',
+  'Small Cap Fund',
+  'ELSS',
+  'Arbitrage Fund',
+  'Liquid Fund',
+  'Corporate Bond Fund',
+  'Gilt Fund',
+  'Multi Asset Allocation',
+] as const;
+
+/**
+ * Fetches & indexes Kuvera's open categorized Mutual Fund Direct-Growth tree
+ * with pre-computed 1Y/3Y/5Y CAGR & volatility per category.
+ */
+export async function fetchKuveraCategoryDirectory(): Promise<KuveraFundEntry[]> {
+  if (kuveraCache) return kuveraCache;
+  try {
+    const res = await fetch(KUVERA_SCHEMES_URL);
+    if (!res.ok) return [];
+    const tree = (await res.json()) as Record<
+      string,
+      Record<
+        string,
+        Record<
+          string,
+          Array<{
+            c?: string;
+            n?: string;
+            v?: number;
+            r?: { '1'?: number; '3'?: number; '5'?: number; date?: string };
+          }>
+        >
+      >
+    >;
+
+    const entries: KuveraFundEntry[] = [];
+    Object.entries(tree).forEach(([topCategory, subMap]) => {
+      if (!subMap || typeof subMap !== 'object') return;
+      Object.entries(subMap).forEach(([subCategory, amcMap]) => {
+        if (!amcMap || typeof amcMap !== 'object') return;
+        Object.values(amcMap).forEach((arr) => {
+          if (!Array.isArray(arr)) return;
+          arr.forEach((item) => {
+            if (!item.n || !/growth/i.test(item.n) || /idcw|dividend|bonus/i.test(item.n)) return;
+            entries.push({
+              code: item.c || item.n,
+              name: item.n,
+              topCategory,
+              subCategory,
+              cagr1y: typeof item.r?.['1'] === 'number' ? item.r['1'] : null,
+              cagr3y: typeof item.r?.['3'] === 'number' ? item.r['3'] : null,
+              cagr5y: typeof item.r?.['5'] === 'number' ? item.r['5'] : null,
+              volatility: typeof item.v === 'number' ? item.v : null,
+              date: item.r?.date || 'Latest',
+            });
+          });
+        });
+      });
+    });
+
+    kuveraCache = entries;
+    return entries;
   } catch {
     return [];
   }

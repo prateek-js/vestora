@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AssetCategory,
   CurrencyCode,
@@ -11,14 +11,27 @@ import { CATEGORY_META } from '../utils/portfolioMetrics';
 import { computePortfolioRiskScore } from '../utils/taxAndDiversification';
 import {
   calculateHomeLoanPrepaymentImpact,
+  fetchKuveraCategoryDirectory,
   fetchLiveUsTreasuryRates,
   fetchMutualFundDetails,
+  KUVERA_SUBCATEGORIES,
+  KuveraFundEntry,
   LISTED_MARKET_INSTRUMENTS,
   ListedMarketInstrument,
   MutualFundMarketDetail,
   MutualFundSearchHit,
   searchMarketMutualFunds,
 } from '../utils/marketDirectory';
+import {
+  AMFI_BENCHMARK_CONFIG,
+  DiversificationGoal,
+  fetchLiveMarketBenchmarks,
+  generateSmartDiversificationPlans,
+  LiveMarketBenchmarks,
+  SmartDiversificationPlan,
+  TARGET_MIX_BY_GOAL,
+  TaxSlabOption,
+} from '../utils/smartDiversification';
 import {
   ArrowRight,
   CheckCircle2,
@@ -27,7 +40,9 @@ import {
   Landmark,
   Loader2,
   Plus,
+  RefreshCw,
   Search,
+  ShieldCheck,
   Shuffle,
   Trash2,
   TrendingUp,
@@ -68,7 +83,7 @@ interface RebalanceTabProps {
   onNavigateToOverview: () => void;
 }
 
-type DestinationExplorerTab = 'MF_API' | 'BONDS_FDS' | 'STOCKS_ETFS' | 'HOME_LOAN';
+type DestinationExplorerTab = 'MF_API' | 'BONDS_FDS' | 'NPS_API' | 'STOCKS_ETFS' | 'HOME_LOAN';
 type MarketGroupFilter = 'ALL' | 'FD' | 'GOVT_BOND' | 'CORP_BOND' | 'GOLD';
 
 const POPULAR_MF_CHIPS = [
@@ -131,8 +146,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   );
 
   const [moveAmountInBase, setMoveAmountInBase] = useState<number>(0);
+  const skipNextDefaultAmountRef = useRef<boolean>(false);
+  const step3Ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    if (skipNextDefaultAmountRef.current) {
+      skipNextDefaultAmountRef.current = false;
+      return;
+    }
     if (sourceValueInBase > 0) {
       // Default to 100% for matured deposits, 50% for active cash/investments so partial move is obvious
       const defaultPct = sourceHolding?.isMatured ? 1 : 0.5;
@@ -146,6 +167,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   const [explorerTab, setExplorerTab] = useState<DestinationExplorerTab>('MF_API');
 
   // Mutual Fund live open API state
+  const [mfMode, setMfMode] = useState<'AMFI_SEARCH' | 'KUVERA_RANKED'>('AMFI_SEARCH');
   const [mfQuery, setMfQuery] = useState('Flexi Cap');
   const [mfSearching, setMfSearching] = useState(false);
   const [mfHits, setMfHits] = useState<MutualFundSearchHit[]>([]);
@@ -153,6 +175,15 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   const [selectedSchemeCode, setSelectedSchemeCode] = useState<number | null>(null);
   const [schemeDetail, setSchemeDetail] = useState<MutualFundMarketDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Kuvera Ranked Category explorer state
+  const [kuveraFunds, setKuveraFunds] = useState<KuveraFundEntry[]>([]);
+  const [kuveraLoading, setKuveraLoading] = useState(false);
+  const [selectedKuveraSubcat, setSelectedKuveraSubcat] = useState<string>('Flexi Cap Fund');
+  const [resolvingKuveraCode, setResolvingKuveraCode] = useState<string | null>(null);
+
+  // NPS asset class filter
+  const [npsClassFilter, setNpsClassFilter] = useState<'ALL' | 'E' | 'C' | 'G'>('ALL');
 
   // Listed Bonds / FDs + live US Treasury API state
   const [marketQuery, setMarketQuery] = useState('');
@@ -187,7 +218,23 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   const [destinations, setDestinations] = useState<RebalanceDestination[]>([]);
   const [executedSummary, setExecutedSummary] = useState<string>('');
 
-  // Load initial Mutual Fund search + Live US Treasury rates
+  // Smart Diversification Engine state (Option 2: Hybrid Client + Open Market APIs)
+  const [smartGoal, setSmartGoal] = useState<DiversificationGoal>('BALANCED');
+  const [taxSlabPct, setTaxSlabPct] = useState<TaxSlabOption>(30);
+  const [hasHomeLoan, setHasHomeLoan] = useState<boolean>(true);
+  const [benchmarks, setBenchmarks] = useState<LiveMarketBenchmarks | null>(null);
+  const [benchmarksLoading, setBenchmarksLoading] = useState<boolean>(true);
+  const [activeSuggestedPlanId, setActiveSuggestedPlanId] = useState<string | null>(null);
+
+  const loadSmartBenchmarks = () => {
+    setBenchmarksLoading(true);
+    fetchLiveMarketBenchmarks().then((snap) => {
+      setBenchmarks(snap);
+      setBenchmarksLoading(false);
+    });
+  };
+
+  // Load initial Mutual Fund search + Live US Treasury rates + Live Benchmark Snapshot
   useEffect(() => {
     let cancelled = false;
     setMfSearching(true);
@@ -210,10 +257,54 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
       }
     });
 
+    setBenchmarksLoading(true);
+    fetchLiveMarketBenchmarks().then((snap) => {
+      if (!cancelled) {
+        setBenchmarks(snap);
+        setBenchmarksLoading(false);
+      }
+    });
+
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const smartReport = useMemo(
+    () =>
+      generateSmartDiversificationPlans(
+        holdings,
+        baseCurrency,
+        {
+          goal: smartGoal,
+          taxSlabPct,
+          hasHomeLoan,
+          homeLoanRatePct: loanRatePct,
+          homeLoanPrincipal: loanPrincipal,
+          homeLoanYearsLeft: loanYearsLeft,
+        },
+        benchmarks
+      ),
+    [holdings, baseCurrency, smartGoal, taxSlabPct, hasHomeLoan, loanRatePct, loanPrincipal, loanYearsLeft, benchmarks]
+  );
+
+  const handleApplySuggestedPlan = (plan: SmartDiversificationPlan) => {
+    const sourceVal = convertCurrency(plan.sourceHolding.currentValue, plan.sourceHolding.currency, baseCurrency);
+    const boundedMove = Math.min(Math.round(sourceVal), Math.max(0, Math.round(plan.moveAmountInBase)));
+
+    if (plan.sourceHolding.id !== sourceHoldingId) {
+      skipNextDefaultAmountRef.current = true;
+      setSourceHoldingId(plan.sourceHolding.id);
+    }
+    setMoveAmountInBase(boundedMove);
+    setDestinations(plan.destinations.map((d) => ({ ...d })));
+    setActiveSuggestedPlanId(plan.id);
+    setExecutedSummary('');
+
+    setTimeout(() => {
+      step3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 60);
+  };
 
   const handleMfSearch = async (queryOverride?: string) => {
     const q = (queryOverride ?? mfQuery).trim();
@@ -227,6 +318,23 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     setMfHasSearched(true);
     setMfSearching(false);
   };
+
+  const handleOpenKuveraRanked = async () => {
+    setMfMode('KUVERA_RANKED');
+    if (kuveraFunds.length > 0 || kuveraLoading) return;
+    setKuveraLoading(true);
+    const list = await fetchKuveraCategoryDirectory();
+    setKuveraFunds(list);
+    setKuveraLoading(false);
+  };
+
+  const rankedKuveraMatches = useMemo(() => {
+    if (kuveraFunds.length === 0) return [];
+    return kuveraFunds
+      .filter((f) => f.subCategory === selectedKuveraSubcat && (f.cagr3y !== null || f.cagr1y !== null))
+      .sort((a, b) => (b.cagr3y ?? b.cagr1y ?? -99) - (a.cagr3y ?? a.cagr1y ?? -99))
+      .slice(0, 20);
+  }, [kuveraFunds, selectedKuveraSubcat]);
 
   const handleInspectMf = async (schemeCode: number) => {
     if (selectedSchemeCode === schemeCode && schemeDetail) {
@@ -287,14 +395,21 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     setDestinations((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // Filtered Bonds / FDs + Stocks
+  // Filtered Bonds / FDs + Live India G-Secs + Live US Treasuries
   const allBondAndFdCatalog = useMemo(
     () => [
+      ...(benchmarks?.indiaGsecs ?? []),
       ...liveTreasuries,
       ...LISTED_MARKET_INSTRUMENTS.filter((item) => item.group !== 'STOCK_ETF'),
     ],
-    [liveTreasuries]
+    [benchmarks?.indiaGsecs, liveTreasuries]
   );
+
+  const filteredNpsSchemes = useMemo(() => {
+    const list = benchmarks?.npsSchemes ?? [];
+    const byClass = npsClassFilter === 'ALL' ? list : list.filter((s) => s.assetClass === npsClassFilter);
+    return [...byClass].sort((a, b) => (b.cagr3yPct ?? 0) - (a.cagr3yPct ?? 0));
+  }, [benchmarks?.npsSchemes, npsClassFilter]);
 
   const filteredBondsAndFds = useMemo(() => {
     const q = marketQuery.trim().toLowerCase();
@@ -463,12 +578,12 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             <h2 className="text-lg font-bold text-white tracking-tight">
               Holistic Rebalance, Market Search &amp; Diversification
             </h2>
-            <span className="text-2xs font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-              Live AMFI + US Treasury Open APIs
+            <span className="text-2xs font-mono text-emerald-400">
+              Live AMFI · NPS · GoI G-Sec · Kuvera · US Treasury APIs
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Break partial or full capital from any holding — Savings Account, Mutual Fund, Stock, FD, or Bond — and re-allocate into 40,000+ live market Mutual Funds, listed Bonds &amp; FDs, Equity ETFs, or Home Loan principal prepayment.
+            Break partial or full capital from any holding — Savings Account, Mutual Fund, Stock, FD, or Bond — and re-allocate into 40,000+ live Mutual Funds, NPS Tier-I pensions, GoI G-Secs &amp; T-Bills, listed Bonds &amp; FDs, Equity ETFs, or Home Loan principal prepayment.
           </p>
         </div>
 
@@ -501,6 +616,360 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         </div>
       )}
 
+      {/* Smart Diversification Suggestions (Hybrid Client Rules + Live AMFI & U.S. Treasury APIs) */}
+      <section
+        aria-label="Smart Diversification Suggestions"
+        className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-5"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <span className="font-semibold text-indigo-300">Smart Diversification Suggestions</span>
+              <span aria-hidden="true">·</span>
+              <span>
+                {benchmarksLoading
+                  ? 'Syncing live AMFI, NPS Tier-I, GoI G-Sec, Gold & U.S. Treasury feeds...'
+                  : benchmarks && (benchmarks.liveFundCount > 0 || benchmarks.npsSchemes.length > 0)
+                  ? `Live AMFI (${benchmarks.liveFundCount}/7) · NPS (${benchmarks.npsSchemes.length}) · GoI G-Sec (${benchmarks.indiaGsecs.length}) · U.S. Treasury synced at ${benchmarks.fetchedAt}`
+                  : 'Rule-based market estimates (offline fallback)'}
+              </span>
+            </div>
+            <h3 className="text-base font-bold text-white">
+              Portfolio-Specific Rebalance Plans Built from Live Market Yields
+            </h3>
+            <p className="text-xs text-slate-400 max-w-3xl">
+              {TARGET_MIX_BY_GOAL[smartGoal].subtitle}. Calculations adjust automatically for your tax bracket and optional home loan rate.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={loadSmartBenchmarks}
+            disabled={benchmarksLoading}
+            className="px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 self-start"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${benchmarksLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh Live Market Data</span>
+          </button>
+        </div>
+
+        {/* Interactive Tuning Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <div className="text-xs font-medium text-slate-300 mb-1.5">Target Allocation Goal</div>
+            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg">
+              {(['CONSERVATIVE', 'BALANCED', 'GROWTH'] as DiversificationGoal[]).map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setSmartGoal(g)}
+                  className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                    smartGoal === g
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {TARGET_MIX_BY_GOAL[g].label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-slate-300 mb-1.5">Income Tax Bracket</div>
+            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg">
+              {([0, 10, 20, 30] as TaxSlabOption[]).map((slab) => (
+                <button
+                  key={slab}
+                  type="button"
+                  onClick={() => setTaxSlabPct(slab)}
+                  className={`px-2 py-1.5 text-xs font-mono font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                    taxSlabPct === slab
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {slab}%
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-slate-300 mb-1.5">Active Home Loan Comparison</div>
+            <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg flex-1">
+                <button
+                  type="button"
+                  onClick={() => setHasHomeLoan(true)}
+                  className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                    hasHomeLoan ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Include Loan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHasHomeLoan(false)}
+                  className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                    !hasHomeLoan ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Debt-Free
+                </button>
+              </div>
+              {hasHomeLoan && (
+                <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 shrink-0">
+                  <input
+                    type="number"
+                    step="0.05"
+                    min={0}
+                    max={25}
+                    value={loanRatePct}
+                    onChange={(e) => setLoanRatePct(Math.max(0, Number(e.target.value) || 0))}
+                    aria-label="Home loan rate percentage"
+                    className="w-12 bg-transparent text-xs font-mono font-bold text-white focus:outline-none tabular-nums text-right"
+                  />
+                  <span className="text-xs font-mono text-slate-400">%</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Current vs Target Portfolio Mix Comparison Bar */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2 border-t border-slate-800/80 text-xs">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300 font-medium">Current Mix vs. {TARGET_MIX_BY_GOAL[smartGoal].label} Target</span>
+              <span className="font-mono text-slate-400 tabular-nums">
+                Total {formatCurrency(smartReport.analysis.totalValuation, baseCurrency, { compact: true })}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              <div className="h-2.5 w-full rounded-sm overflow-hidden flex bg-slate-950">
+                <div
+                  style={{ width: `${smartReport.analysis.currentPct.equity}%` }}
+                  className="bg-indigo-500 transition-all"
+                  title={`Equity: ${smartReport.analysis.currentPct.equity}%`}
+                />
+                <div
+                  style={{ width: `${smartReport.analysis.currentPct.debt}%` }}
+                  className="bg-emerald-500 transition-all"
+                  title={`Debt & FD: ${smartReport.analysis.currentPct.debt}%`}
+                />
+                <div
+                  style={{ width: `${smartReport.analysis.currentPct.gold}%` }}
+                  className="bg-amber-400 transition-all"
+                  title={`Gold: ${smartReport.analysis.currentPct.gold}%`}
+                />
+                <div
+                  style={{ width: `${smartReport.analysis.currentPct.cash}%` }}
+                  className="bg-sky-400 transition-all"
+                  title={`Cash: ${smartReport.analysis.currentPct.cash}%`}
+                />
+              </div>
+              <div className="h-1.5 w-full rounded-sm overflow-hidden flex bg-slate-950 opacity-60">
+                <div style={{ width: `${smartReport.analysis.targetPct.equity}%` }} className="bg-indigo-500" />
+                <div style={{ width: `${smartReport.analysis.targetPct.debt}%` }} className="bg-emerald-500" />
+                <div style={{ width: `${smartReport.analysis.targetPct.gold}%` }} className="bg-amber-400" />
+                <div style={{ width: `${smartReport.analysis.targetPct.cash}%` }} className="bg-sky-400" />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 pt-1 font-mono text-2xs tabular-nums">
+              {(
+                [
+                  { key: 'equity', label: 'Equity', dot: 'bg-indigo-500' },
+                  { key: 'debt', label: 'Debt/FD', dot: 'bg-emerald-500' },
+                  { key: 'gold', label: 'Gold', dot: 'bg-amber-400' },
+                  { key: 'cash', label: 'Cash', dot: 'bg-sky-400' },
+                ] as const
+              ).map((b) => {
+                const curr = smartReport.analysis.currentPct[b.key];
+                const targ = smartReport.analysis.targetPct[b.key];
+                const diff = curr - targ;
+                return (
+                  <div key={b.key} className="text-slate-300">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-xs ${b.dot}`} />
+                      <span>{b.label}</span>
+                    </div>
+                    <div className="text-white font-semibold mt-0.5">
+                      {curr}% <span className="text-slate-500">/ {targ}%</span>
+                    </div>
+                    <div
+                      className={
+                        Math.abs(diff) <= 4
+                          ? 'text-slate-500'
+                          : diff > 0
+                          ? 'text-amber-300'
+                          : 'text-emerald-400'
+                      }
+                    >
+                      {diff > 0 ? `+${diff}% over` : diff < 0 ? `${diff}% under` : 'On target'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Live Market Reference Benchmarks */}
+          <div className="bg-slate-950/70 border border-slate-800 rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between text-2xs text-slate-400">
+              <span className="font-medium text-slate-200">
+                Live Indian &amp; Global Benchmarks (AMFI · GoI G-Sec · NPS · Gold)
+              </span>
+              <span className="font-mono">Yield / 3Y CAGR</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-2xs font-mono tabular-nums">
+              {AMFI_BENCHMARK_CONFIG.slice(0, 4).map((cfg) => {
+                const det = benchmarks?.funds[cfg.id];
+                const cagr = det?.cagr3yPct ?? det?.cagr1yPct;
+                return (
+                  <div key={cfg.id} className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                    <span className="text-slate-400 truncate">{cfg.id.replace('_', ' ')}</span>
+                    <span className="text-emerald-400 font-semibold shrink-0">
+                      {cagr !== null && cagr !== undefined ? `${cagr.toFixed(1)}%` : `${cfg.fallbackYieldPct}%`}
+                      {det?.annualizedVolatilityPct ? (
+                        <span className="text-slate-500 font-normal"> · {det.annualizedVolatilityPct}%v</span>
+                      ) : null}
+                    </span>
+                  </div>
+                );
+              })}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                <span className="text-slate-400 truncate">INDIA G-SEC</span>
+                <span className="text-emerald-400 font-semibold shrink-0">
+                  {benchmarks?.indiaGsecs[0]
+                    ? `${benchmarks.indiaGsecs[0].rateOrYieldPct.toFixed(2)}%`
+                    : '6.78%'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                <span className="text-slate-400 truncate">NPS TOP E</span>
+                <span className="text-emerald-400 font-semibold shrink-0">
+                  {benchmarks?.npsSchemes.length
+                    ? `${Math.max(...benchmarks.npsSchemes.map((s) => s.cagr3yPct ?? 0)).toFixed(1)}%`
+                    : '12.2%'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                <span className="text-slate-400 truncate">24K GOLD</span>
+                <span className="text-amber-300 font-semibold shrink-0">
+                  {benchmarks?.goldInrPer10g
+                    ? `₹${(benchmarks.goldInrPer10g / 1000).toFixed(1)}k/10g`
+                    : '₹116k/10g'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                <span className="text-slate-400 truncate">364D T-BILL</span>
+                <span className="text-emerald-400 font-semibold shrink-0">
+                  {benchmarks?.indiaGsecs.find((g) => /364/i.test(g.name))?.rateOrYieldPct.toFixed(2) ?? '6.54'}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 border-b border-slate-800/60 pb-1">
+                <span className="text-slate-400 truncate">US TREASURY</span>
+                <span className="text-sky-300 font-semibold shrink-0">
+                  {benchmarks?.usTreasuries[0]
+                    ? `${benchmarks.usTreasuries[0].rateOrYieldPct.toFixed(2)}%`
+                    : '4.01%'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recommended Actionable Diversification Plans */}
+        {smartReport.plans.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-400 border-t border-slate-800/80">
+            Your portfolio is already closely aligned with your {TARGET_MIX_BY_GOAL[smartGoal].label} target. Use Steps 1–3 below to customize any manual move.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2 border-t border-slate-800/80">
+            {smartReport.plans.map((plan) => {
+              const isStaged = activeSuggestedPlanId === plan.id && destinations.length > 0;
+              return (
+                <article
+                  key={plan.id}
+                  className={`rounded-xl p-4 border flex flex-col justify-between gap-4 transition-colors ${
+                    isStaged
+                      ? 'bg-indigo-950/30 border-indigo-500'
+                      : 'bg-slate-950/70 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-slate-400">
+                      <span className="font-medium text-indigo-300">{plan.categoryLabel}</span>
+                      <span className="font-mono tabular-nums text-emerald-400 font-semibold">
+                        {plan.benefitSummary}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-white leading-snug">{plan.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{plan.rationale}</p>
+
+                    <div className="pt-2 border-t border-slate-800/80 space-y-1.5 text-2xs">
+                      <div className="flex items-center justify-between text-slate-400 font-mono">
+                        <span>Source: {plan.sourceHolding.name}</span>
+                        <span className="text-slate-200 font-semibold tabular-nums">
+                          -{formatCurrency(plan.moveAmountInBase, baseCurrency, { compact: true })}
+                        </span>
+                      </div>
+                      {plan.destinations.map((dest) => (
+                        <div
+                          key={dest.id}
+                          className="flex items-center justify-between gap-2 text-slate-300 font-mono"
+                        >
+                          <span className="truncate">→ {dest.title}</span>
+                          <span className="text-emerald-300 font-semibold shrink-0 tabular-nums">
+                            +{formatCurrency(dest.allocatedInBase, baseCurrency, { compact: true })}
+                            {dest.expectedRatePct ? ` (${dest.expectedRatePct.toFixed(1)}%)` : ''}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
+                    <div className="text-2xs font-mono text-slate-400 tabular-nums">
+                      Risk Score:{' '}
+                      <span className="text-slate-200 font-semibold">{plan.riskBefore}</span>
+                      {' → '}
+                      <span className="text-indigo-300 font-bold">
+                        {plan.riskAfter} ({plan.postureAfter})
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleApplySuggestedPlan(plan)}
+                      className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                        isStaged
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                      }`}
+                    >
+                      {isStaged ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Staged in Step 3</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Stage Plan in Rebalance</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       {/* Main 2-Column Builder: Step 1 (Source) + Step 2 (Open-API Market Explorer) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* LEFT (5 cols): Step 1 — Select Source Holding & Partial/Full Amount */}
@@ -531,6 +1000,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   onClick={() => {
                     setSourceHoldingId(h.id);
                     setDestinations([]);
+                    setActiveSuggestedPlanId(null);
                   }}
                   className={`w-full text-left p-3 rounded-lg border transition-colors flex items-center justify-between gap-3 ${
                     isSelected
@@ -661,14 +1131,15 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             </div>
           </div>
 
-          {/* 4-Category Explorer Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-lg">
+          {/* 5-Category Explorer Tabs */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg">
             {(
               [
-                { id: 'MF_API', label: 'Mutual Funds (API)', icon: TrendingUp },
+                { id: 'MF_API', label: 'Mutual Funds', icon: TrendingUp },
                 { id: 'BONDS_FDS', label: 'Bonds & FDs', icon: Landmark },
+                { id: 'NPS_API', label: 'NPS (Live)', icon: ShieldCheck },
                 { id: 'STOCKS_ETFS', label: 'Stocks & ETFs', icon: Coins },
-                { id: 'HOME_LOAN', label: 'Home Loan Payoff', icon: Home },
+                { id: 'HOME_LOAN', label: 'Home Loan', icon: Home },
               ] as const
             ).map((tab) => {
               const Icon = tab.icon;
@@ -678,7 +1149,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setExplorerTab(tab.id)}
-                  className={`px-2.5 py-2 text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap ${
+                  className={`px-2 py-2 text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 ${
                     active
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'text-slate-400 hover:text-white hover:bg-slate-900'
@@ -691,9 +1162,162 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             })}
           </div>
 
-          {/* TAB A: Live Open-API Mutual Fund Search (api.mfapi.in) */}
+          {/* TAB A: Live Open-API Mutual Fund Search (api.mfapi.in + api.kuvera.in Ranked Tree) */}
           {explorerTab === 'MF_API' && (
             <div className="space-y-3">
+              {/* Sub-mode Toggle: AMFI Text Search vs Kuvera Ranked by Category */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center p-1 bg-slate-950 border border-slate-800 rounded-lg gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setMfMode('AMFI_SEARCH')}
+                    className={`px-3 py-1.5 text-2xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                      mfMode === 'AMFI_SEARCH'
+                        ? 'bg-slate-800 text-white'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Search 40,000+ (AMFI API)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenKuveraRanked}
+                    className={`px-3 py-1.5 text-2xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
+                      mfMode === 'KUVERA_RANKED'
+                        ? 'bg-slate-800 text-white'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Top Ranked by Category (Kuvera API)
+                  </button>
+                </div>
+                <span className="text-2xs font-mono text-slate-500">
+                  {mfMode === 'AMFI_SEARCH' ? 'Direct NAV + History' : 'Sorted by 3Y CAGR'}
+                </span>
+              </div>
+
+              {mfMode === 'KUVERA_RANKED' ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {KUVERA_SUBCATEGORIES.map((subcat) => (
+                      <button
+                        key={subcat}
+                        type="button"
+                        onClick={() => setSelectedKuveraSubcat(subcat)}
+                        className={`px-2.5 py-1 text-2xs font-medium rounded-md border transition-colors whitespace-nowrap ${
+                          selectedKuveraSubcat === subcat
+                            ? 'bg-indigo-600 border-indigo-500 text-white'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {subcat}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="border border-slate-800 rounded-xl bg-slate-950/60 divide-y divide-slate-800/80 max-h-[340px] overflow-y-auto">
+                    {kuveraLoading ? (
+                      <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                        <span>Loading live categorized Direct-Growth rankings...</span>
+                      </div>
+                    ) : rankedKuveraMatches.length === 0 ? (
+                      <div className="py-10 text-center text-xs text-slate-400">
+                        No Direct-Growth schemes found in this category.
+                      </div>
+                    ) : (
+                      rankedKuveraMatches.map((fund) => {
+                        const destId = `kuv-${fund.code}`;
+                        const alreadyInCart = destinations.some((d) => d.id === destId);
+                        const isResolving = resolvingKuveraCode === fund.code;
+                        return (
+                          <div key={fund.code} className="p-3 flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-semibold text-slate-100 leading-snug">
+                                {fund.name}
+                              </div>
+                              <div className="text-2xs font-mono text-slate-400 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
+                                <span>{fund.topCategory} · {fund.subCategory}</span>
+                                <span>·</span>
+                                <span className="text-emerald-400 font-semibold">
+                                  3Y: {fund.cagr3y !== null ? `${fund.cagr3y.toFixed(1)}%` : '—'}
+                                </span>
+                                <span>1Y: {fund.cagr1y !== null ? `${fund.cagr1y.toFixed(1)}%` : '—'}</span>
+                                {fund.cagr5y !== null && <span>5Y: {fund.cagr5y.toFixed(1)}%</span>}
+                                {fund.volatility !== null && <span>Vol: {fund.volatility.toFixed(1)}%</span>}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              disabled={alreadyInCart || isResolving || moveAmountInBase <= 0}
+                              onClick={async () => {
+                                setResolvingKuveraCode(fund.code);
+                                const cleanQuery = fund.name
+                                  .replace(/Direct Plan|Growth|Option/gi, '')
+                                  .trim()
+                                  .split(/\s+/)
+                                  .slice(0, 4)
+                                  .join(' ');
+                                const amfiHits = await searchMarketMutualFunds(cleanQuery);
+                                const matchedCode = amfiHits[0]?.schemeCode;
+                                const amfiDetail = matchedCode
+                                  ? await fetchMutualFundDetails(matchedCode)
+                                  : null;
+                                const isDebtMf =
+                                  /Debt|Arbitrage|Liquid|Gilt|Money Market|Corporate Bond|Floater/i.test(
+                                    `${fund.topCategory} ${fund.subCategory}`
+                                  );
+
+                                addDestinationToCart({
+                                  id: destId,
+                                  kind: 'MUTUAL_FUND',
+                                  title: fund.name,
+                                  subtitle: amfiDetail
+                                    ? `${amfiDetail.fundHouse} · NAV ₹${amfiDetail.latestNav.toFixed(2)} · 3Y ${fund.cagr3y?.toFixed(1) ?? '—'}%`
+                                    : `${fund.subCategory} · 3Y CAGR ${fund.cagr3y?.toFixed(1) ?? '—'}%`,
+                                  category: 'MUTUAL_FUND',
+                                  institution: amfiDetail?.fundHouse ?? 'AMFI / Kuvera Direct',
+                                  currency: 'INR',
+                                  schemeCode: matchedCode,
+                                  navOrPrice: amfiDetail?.latestNav,
+                                  expectedRatePct: fund.cagr3y ?? fund.cagr1y ?? (isDebtMf ? 7.2 : 13.0),
+                                  taxTag: isDebtMf ? 'SLAB_INCOME' : 'LTCG_EQUITY',
+                                });
+                                setResolvingKuveraCode(null);
+                              }}
+                              className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                                alreadyInCart
+                                  ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
+                                  : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                              }`}
+                            >
+                              {isResolving ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : alreadyInCart ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Added</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-2xs text-slate-500">
+                    <span>Source: Kuvera Categorized MF Tree + AMFI Scheme Resolver</span>
+                    <span className="font-mono">Top {rankedKuveraMatches.length} Direct Growth</span>
+                  </div>
+                </div>
+              ) : (
+                <>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -844,7 +1468,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                   <span className="font-medium">{schemeDetail.fundHouse}</span>
                                   <span className="font-mono text-slate-400">{schemeDetail.schemeCategory}</span>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800 font-mono tabular-nums">
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-800 font-mono tabular-nums">
                                   <div>
                                     <span className="text-slate-500 block">Latest NAV ({schemeDetail.navDate})</span>
                                     <span className="text-white font-bold">₹{schemeDetail.latestNav.toFixed(2)}</span>
@@ -885,6 +1509,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                         : '—'}
                                     </span>
                                   </div>
+                                  <div>
+                                    <span className="text-slate-500 block">1Y Volatility</span>
+                                    <span className="font-semibold text-slate-200">
+                                      {schemeDetail.annualizedVolatilityPct !== null
+                                        ? `${schemeDetail.annualizedVolatilityPct.toFixed(1)}%`
+                                        : '—'}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             ) : (
@@ -901,6 +1533,8 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <span>Source: Open AMFI NAV API (api.mfapi.in) · Keyless live query</span>
                 <span className="font-mono">Showing up to {mfHits.length} matches</span>
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -955,10 +1589,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 </div>
 
                 <span className="text-2xs font-mono text-slate-400">
+                  {benchmarks?.indiaGsecs.length
+                    ? `GoI G-Sec API: Live (${benchmarks.indiaGsecs.length})`
+                    : ''}
+                  {benchmarks?.indiaGsecs.length && treasuryStatus === 'live' ? ' · ' : ''}
                   {treasuryStatus === 'live'
-                    ? `US Treasury API: Live (${liveTreasuries[0]?.asOf})`
+                    ? `US Treasury: Live (${liveTreasuries[0]?.asOf})`
                     : treasuryStatus === 'loading'
-                    ? 'Loading US Treasury rates...'
+                    ? 'Loading Sovereign yields...'
                     : 'Listed market directory'}
                 </span>
               </div>
@@ -1224,6 +1862,118 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             </div>
           )}
 
+          {/* TAB C2: Live NPS Tier-I Pension Schemes (npsnav.in) */}
+          {explorerTab === 'NPS_API' && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  {(
+                    [
+                      { id: 'ALL', label: 'All Schemes' },
+                      { id: 'E', label: 'Equity (E)' },
+                      { id: 'C', label: 'Corp Debt (C)' },
+                      { id: 'G', label: 'Govt Bonds (G)' },
+                    ] as const
+                  ).map((cls) => (
+                    <button
+                      key={cls.id}
+                      type="button"
+                      onClick={() => setNpsClassFilter(cls.id)}
+                      className={`px-2.5 py-1 text-2xs font-medium rounded-md border transition-colors whitespace-nowrap ${
+                        npsClassFilter === cls.id
+                          ? 'bg-indigo-600 border-indigo-500 text-white'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {cls.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-2xs font-mono text-slate-400">
+                  Section 80CCD(1B) · Extra ₹50,000 Deduction
+                </span>
+              </div>
+
+              <div className="border border-slate-800 rounded-xl bg-slate-950/60 divide-y divide-slate-800/80 max-h-[340px] overflow-y-auto">
+                {benchmarksLoading && filteredNpsSchemes.length === 0 ? (
+                  <div className="py-10 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                    <span>Loading live NPS Tier-I NAVs from PFRDA / NPSNAV...</span>
+                  </div>
+                ) : filteredNpsSchemes.length === 0 ? (
+                  <div className="py-10 text-center text-xs text-slate-400">
+                    Could not fetch live NPS NAVs right now. Click Refresh Live Market Data above to retry.
+                  </div>
+                ) : (
+                  filteredNpsSchemes.map((nps) => {
+                    const destId = `nps-${nps.schemeCode}`;
+                    const alreadyInCart = destinations.some((d) => d.id === destId);
+                    return (
+                      <div key={nps.schemeCode} className="p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-slate-100 leading-snug">
+                            {nps.schemeName}
+                          </div>
+                          <div className="text-2xs font-mono text-slate-400 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
+                            <span>{nps.pfmName}</span>
+                            <span>·</span>
+                            <span className="text-slate-200 font-semibold">NAV ₹{nps.nav.toFixed(2)}</span>
+                            <span>({nps.lastUpdated})</span>
+                            <span>·</span>
+                            <span className="text-emerald-400 font-semibold">
+                              3Y: {nps.cagr3yPct !== null ? `${nps.cagr3yPct.toFixed(2)}%` : '—'}
+                            </span>
+                            {nps.cagr5yPct !== null && <span>5Y: {nps.cagr5yPct.toFixed(2)}%</span>}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={alreadyInCart || moveAmountInBase <= 0}
+                          onClick={() =>
+                            addDestinationToCart({
+                              id: destId,
+                              kind: 'CUSTOM_ASSET',
+                              title: nps.schemeName,
+                              subtitle: `${nps.pfmName} · NAV ₹${nps.nav.toFixed(2)} · 3Y ${nps.cagr3yPct?.toFixed(2) ?? '—'}%`,
+                              category: 'NPS',
+                              institution: nps.pfmName,
+                              currency: 'INR',
+                              expectedRatePct: nps.cagr3yPct ?? nps.cagr5yPct ?? 10.5,
+                              navOrPrice: nps.nav,
+                              taxTag: '80CCD',
+                            })
+                          }
+                          className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                            alreadyInCart
+                              ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 text-white'
+                          }`}
+                        >
+                          {alreadyInCart ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Added</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3 h-3" />
+                              <span>Add NPS</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="flex items-center justify-between text-2xs text-slate-500">
+                <span>Source: Open NPSNAV API (npsnav.in) · Keyless live PFRDA NAV query</span>
+                <span className="font-mono">{filteredNpsSchemes.length} schemes</span>
+              </div>
+            </div>
+          )}
+
           {/* TAB D: Home Loan / Debt Prepayment Calculator */}
           {explorerTab === 'HOME_LOAN' && (
             <div className="space-y-3">
@@ -1358,6 +2108,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
       {/* STEP 3: Split Allocation Cart & Live Portfolio Risk Impact */}
       <section
+        ref={step3Ref}
         aria-label="Step 3: Allocation Split and Execution"
         className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4"
       >
