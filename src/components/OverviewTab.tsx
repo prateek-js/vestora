@@ -53,6 +53,7 @@ import {
   TrendingDown,
   Gauge,
   Shuffle,
+  Pencil,
 } from 'lucide-react';
 
 interface TrendChartTooltipProps {
@@ -171,6 +172,7 @@ interface OverviewTabProps {
   onNavigateToTab: (tab: 'radar' | 'rebalance' | 'tax' | 'simulator' | 'overview') => void;
   onSelectHoldingToReinvest: (holding: Holding) => void;
   onRebalanceHolding?: (holding: Holding) => void;
+  onEditHolding?: (holding: Holding) => void;
   onDeleteHolding: (id: string) => void;
   onOpenValidateModal: (tab?: 'excel' | 'manual' | 'reset') => void;
   onOpenAddModal: () => void;
@@ -184,6 +186,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onNavigateToTab,
   onSelectHoldingToReinvest,
   onRebalanceHolding,
+  onEditHolding,
   onDeleteHolding,
   onOpenValidateModal,
   onOpenAddModal,
@@ -1410,18 +1413,40 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             <td className="py-3 px-4 text-center">
                               <div className="inline-flex items-center justify-center gap-1.5">
                                 {isMat ? (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      onRebalanceHolding
-                                        ? onRebalanceHolding(h)
-                                        : onSelectHoldingToReinvest(h)
-                                    }
-                                    className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors whitespace-nowrap"
-                                    title="Reinvest or diversify matured capital across market instruments or debt payoff"
-                                  >
-                                    Reinvest
-                                  </button>
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onRebalanceHolding
+                                          ? onRebalanceHolding(h)
+                                          : onSelectHoldingToReinvest(h)
+                                      }
+                                      className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors whitespace-nowrap"
+                                      title="Reinvest or diversify matured capital across market instruments or debt payoff"
+                                    >
+                                      Reinvest
+                                    </button>
+                                    {onEditHolding && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onEditHolding(h)}
+                                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 rounded transition-colors"
+                                        title="Edit Holding"
+                                        aria-label={`Edit ${h.name}`}
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => onDeleteHolding(h.id)}
+                                      className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                                      title="Delete Holding"
+                                      aria-label={`Delete ${h.name}`}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
                                 ) : (
                                   <>
                                     {onRebalanceHolding && (
@@ -1435,11 +1460,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                         <span>Move</span>
                                       </button>
                                     )}
+                                    {onEditHolding && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onEditHolding(h)}
+                                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 rounded transition-colors"
+                                        title="Edit Holding"
+                                        aria-label={`Edit ${h.name}`}
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() => onDeleteHolding(h.id)}
                                       className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
                                       title="Delete Holding"
+                                      aria-label={`Delete ${h.name}`}
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>

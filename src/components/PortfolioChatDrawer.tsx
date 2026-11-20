@@ -1,0 +1,490 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { CurrencyCode, Holding } from '../types/wealth';
+import {
+  ChatActionItem,
+  ChatActionKind,
+  ChatMetricRow,
+  parseFileForChat,
+  processLocalChatMessage,
+} from '../utils/localChatEngine';
+import {
+  MessageSquareText,
+  Paperclip,
+  Send,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
+import { VestoraLogo } from './VestoraLogo';
+
+interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  title?: string;
+  text: string;
+  metrics?: ChatMetricRow[];
+  actions?: ChatActionItem[];
+  timestamp: string;
+}
+
+interface PortfolioChatDrawerProps {
+  holdings: Holding[];
+  baseCurrency: CurrencyCode;
+  portfolioMode: 'demo' | 'personal';
+  profileName: string;
+  onAddHolding: (holding: Holding) => void;
+  onUpdateHolding: (holding: Holding) => void;
+  onDeleteHolding: (id: string) => void;
+  onReplaceHoldings: (holdings: Holding[], detectedCurrency?: CurrencyCode) => void;
+  onAppendHoldings: (holdings: Holding[]) => void;
+  onSetBaseCurrency: (currency: CurrencyCode) => void;
+  onNavigateToTab: (tab: 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
+  onStartBlank: () => void;
+  onResetToSample: () => void;
+  onExportExcel: () => void;
+  onExportCsv: () => void;
+  onExportPdf: () => void;
+  onExportJson: () => void;
+  onRebalanceHoldingById: (holdingId: string) => void;
+  onOpenEditModal: (holding: Holding) => void;
+}
+
+const QUICK_PROMPTS = [
+  'Portfolio summary',
+  'Add HDFC FD 5L at 7.4% maturing in 45 days',
+  'Simulate 8% inflation and -15% crash over 5 years',
+  'Check maturities',
+  'Export Excel',
+];
+
+function nowTimeLabel(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+const WELCOME_MESSAGE = (): ChatMessage => ({
+  id: 'welcome-msg',
+  sender: 'assistant',
+  title: 'Private Portfolio Chat',
+  text: 'Add, edit, or remove holdings, run 5-year macro stress tests, attach Excel/CSV/JSON files to import, or export reports—processed 100% locally in your browser with zero external API calls.',
+  actions: [
+    { label: 'Portfolio Summary', variant: 'primary', action: { type: 'SUGGEST_PROMPT', prompt: 'Portfolio summary' } },
+    { label: 'Simulate 5Y Stress', variant: 'secondary', action: { type: 'SUGGEST_PROMPT', prompt: 'Simulate 8% inflation and -15% crash over 5 years' } },
+  ],
+  timestamp: nowTimeLabel(),
+});
+
+export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
+  holdings,
+  baseCurrency,
+  portfolioMode,
+  profileName,
+  onAddHolding,
+  onUpdateHolding,
+  onDeleteHolding,
+  onReplaceHoldings,
+  onAppendHoldings,
+  onSetBaseCurrency,
+  onNavigateToTab,
+  onStartBlank,
+  onResetToSample,
+  onExportExcel,
+  onExportCsv,
+  onExportPdf,
+  onExportJson,
+  onRebalanceHoldingById,
+  onOpenEditModal,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [WELCOME_MESSAGE()]);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      } else if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => inputRef.current?.focus(), 80);
+    }
+  }, [isOpen, messages.length]);
+
+  const appendAssistantMessage = (payload: Omit<ChatMessage, 'id' | 'sender' | 'timestamp'>) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `ast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        sender: 'assistant',
+        ...payload,
+        timestamp: nowTimeLabel(),
+      },
+    ]);
+  };
+
+  const handleSendText = (overrideText?: string) => {
+    const trimmed = (overrideText ?? input).trim();
+    if (!trimmed) return;
+
+    const userMsg: ChatMessage = {
+      id: `usr-${Date.now()}`,
+      sender: 'user',
+      text: trimmed,
+      timestamp: nowTimeLabel(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    if (!overrideText) setInput('');
+
+    const reply = processLocalChatMessage(
+      trimmed,
+      { holdings, baseCurrency, portfolioMode, profileName },
+      {
+        onAddHolding,
+        onUpdateHolding,
+        onReplaceHoldings,
+        onAppendHoldings,
+        onDeleteHolding,
+        onSetBaseCurrency,
+        onNavigateToTab,
+        onExportExcel,
+        onExportCsv,
+        onExportPdf,
+        onExportJson,
+      }
+    );
+
+    appendAssistantMessage(reply);
+  };
+
+  const handleFileImport = async (file: File) => {
+    const userMsg: ChatMessage = {
+      id: `usr-file-${Date.now()}`,
+      sender: 'user',
+      text: `Attached file: ${file.name}`,
+      timestamp: nowTimeLabel(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
+
+    try {
+      const reply = await parseFileForChat(file, baseCurrency);
+      appendAssistantMessage(reply);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not parse this file locally.';
+      appendAssistantMessage({
+        title: `Could not read ${file.name}`,
+        text: msg,
+      });
+    }
+  };
+
+  const handleActionClick = (action: ChatActionKind) => {
+    switch (action.type) {
+      case 'SUGGEST_PROMPT':
+        handleSendText(action.prompt);
+        return;
+      case 'UNDO_HOLDINGS':
+        onReplaceHoldings(action.snapshot);
+        appendAssistantMessage({
+          title: 'Action Undone',
+          text: action.label ?? `Restored previous portfolio state (${action.snapshot.length} holdings).`,
+        });
+        return;
+      case 'APPLY_IMPORT':
+        if (action.mode === 'replace') {
+          onReplaceHoldings(action.holdings, action.currency);
+          appendAssistantMessage({
+            title: `Replaced Portfolio from ${action.fileName}`,
+            text: `Loaded ${action.holdings.length} holdings into your private device ledger.`,
+            actions: [{ label: 'Open Overview', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } }],
+          });
+        } else {
+          onAppendHoldings(action.holdings);
+          appendAssistantMessage({
+            title: `Appended ${action.holdings.length} Holdings`,
+            text: `Merged holdings from ${action.fileName} into your active portfolio.`,
+            actions: [{ label: 'Open Overview', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } }],
+          });
+        }
+        return;
+      case 'EXPORT':
+        if (action.format === 'xlsx') onExportExcel();
+        else if (action.format === 'csv') onExportCsv();
+        else if (action.format === 'pdf') onExportPdf();
+        else onExportJson();
+        appendAssistantMessage({
+          title: `Exported ${action.format.toUpperCase()}`,
+          text: `Generated and downloaded your ${holdings.length}-holding ${action.format.toUpperCase()} file locally.`,
+        });
+        return;
+      case 'NAVIGATE':
+        onNavigateToTab(action.tab);
+        return;
+      case 'SET_CURRENCY':
+        onSetBaseCurrency(action.currency);
+        return;
+      case 'START_BLANK':
+        onStartBlank();
+        appendAssistantMessage({
+          title: 'Started Blank Portfolio',
+          text: 'Cleared all holdings locally. Drop a file or type "Add HDFC FD 5L at 7.4%" to begin.',
+        });
+        return;
+      case 'RESET_SAMPLE':
+        onResetToSample();
+        appendAssistantMessage({
+          title: 'Sample Portfolio Loaded',
+          text: 'Restored the built-in multi-asset sample profile.',
+        });
+        return;
+      case 'REBALANCE_HOLDING':
+        onRebalanceHoldingById(action.holdingId);
+        return;
+      case 'OPEN_EDIT_MODAL':
+        setIsOpen(false);
+        onOpenEditModal(action.holding);
+        return;
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Compact Launcher Button */}
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Open on-device portfolio chat"
+          className="fixed bottom-5 right-5 z-40 h-11 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs shadow-lg shadow-slate-950/60 border border-emerald-400/60 inline-flex items-center gap-2 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          <MessageSquareText className="w-4 h-4 shrink-0" />
+          <span className="whitespace-nowrap">Portfolio Chat</span>
+          <span className="hidden sm:inline text-2xs font-mono opacity-75">Ctrl+/</span>
+        </button>
+      )}
+
+      {/* Slide-Over Chat Drawer */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end bg-black/55 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(false);
+          }}
+        >
+          <aside
+            aria-label="On-device Portfolio Chat Assistant"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDraggingFile(true);
+            }}
+            onDragLeave={() => setIsDraggingFile(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDraggingFile(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) handleFileImport(file);
+            }}
+            className="relative w-full max-w-md h-full bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col"
+          >
+            {/* Drag-and-drop overlay */}
+            {isDraggingFile && (
+              <div className="absolute inset-0 z-20 bg-slate-950/90 border-2 border-dashed border-emerald-400 m-3 rounded-xl flex flex-col items-center justify-center text-center p-6 pointer-events-none">
+                <Upload className="w-8 h-8 text-emerald-400 mb-2" />
+                <p className="text-sm font-bold text-white">Drop File to Parse Locally</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Supports .xlsx, .xls, .csv, .tsv, and .json backups
+                </p>
+              </div>
+            )}
+
+            {/* Drawer Header */}
+            <div className="px-4 py-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <VestoraLogo size={28} />
+                <div className="min-w-0">
+                  <h2 className="text-sm font-bold text-white truncate">Portfolio Assistant</h2>
+                  <p className="text-2xs text-emerald-400 flex items-center gap-1 truncate">
+                    <ShieldCheck className="w-3 h-3 shrink-0" />
+                    <span>On-device · Zero external API calls</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMessages([WELCOME_MESSAGE()])}
+                  title="Clear chat history"
+                  aria-label="Clear chat history"
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close chat assistant"
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Command Suggestions Strip */}
+            <div className="px-4 py-2 border-b border-slate-800/80 bg-slate-950/60 flex items-center gap-1.5 overflow-x-auto shrink-0">
+              {QUICK_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => handleSendText(prompt)}
+                  className="px-2.5 py-1 text-2xs font-medium text-slate-300 hover:text-emerald-300 bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-md whitespace-nowrap shrink-0 transition-colors"
+                >
+                  {prompt.length > 28 ? `${prompt.slice(0, 26)}...` : prompt}
+                </button>
+              ))}
+            </div>
+
+            {/* Message Feed */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div
+                    className={`max-w-[92%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-emerald-500 text-slate-950 font-medium'
+                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                    }`}
+                  >
+                    {msg.title && (
+                      <div className="font-bold text-white mb-1">{msg.title}</div>
+                    )}
+                    <div className="whitespace-pre-line">{msg.text}</div>
+
+                    {msg.metrics && msg.metrics.length > 0 && (
+                      <div className="mt-2.5 pt-2.5 border-t border-slate-800/80 grid grid-cols-2 gap-2 font-mono tabular-nums">
+                        {msg.metrics.map((m) => (
+                          <div key={m.label} className="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                            <span className="text-2xs text-slate-500 block">{m.label}</span>
+                            <span
+                              className={`text-xs font-bold ${
+                                m.tone === 'emerald'
+                                  ? 'text-emerald-400'
+                                  : m.tone === 'amber'
+                                  ? 'text-amber-300'
+                                  : m.tone === 'rose'
+                                  ? 'text-rose-400'
+                                  : 'text-slate-100'
+                              }`}
+                            >
+                              {m.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {msg.actions && msg.actions.length > 0 && (
+                      <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                        {msg.actions.map((item, idx) => (
+                          <button
+                            key={`${msg.id}-act-${idx}`}
+                            type="button"
+                            onClick={() => handleActionClick(item.action)}
+                            className={`px-2.5 py-1.5 text-2xs font-semibold rounded-md transition-colors whitespace-nowrap ${
+                              item.variant === 'primary'
+                                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                                : item.variant === 'danger'
+                                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700'
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-2xs text-slate-600 mt-1 px-1 font-mono">{msg.timestamp}</span>
+                </div>
+              ))}
+              <div ref={scrollEndRef} />
+            </div>
+
+            {/* Composer Bar */}
+            <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.json,application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (file) handleFileImport(file);
+                }}
+              />
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendText();
+                }}
+                className="flex items-end gap-2"
+              >
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Attach .xlsx, .csv, or .json to import locally"
+                  aria-label="Attach spreadsheet or JSON file"
+                  className="h-10 w-10 shrink-0 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-emerald-400 flex items-center justify-center transition-colors"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+
+                <textarea
+                  ref={inputRef}
+                  rows={1}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendText();
+                    }
+                  }}
+                  placeholder='Add or edit holding, "Simulate 8% inflation", or drop Excel/CSV...'
+                  className="flex-1 min-h-10 max-h-28 resize-none bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none leading-snug"
+                />
+
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  aria-label="Send message"
+                  className="h-10 w-10 shrink-0 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950 flex items-center justify-center transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
+  );
+};

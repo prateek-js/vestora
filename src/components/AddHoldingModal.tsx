@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
 import { daysBetween, todayIso } from '../utils/maturity';
-import { X, Plus, AlertCircle } from 'lucide-react';
+import { X, Plus, Pencil, AlertCircle } from 'lucide-react';
 
 interface AddHoldingModalProps {
   isOpen: boolean;
   onClose: () => void;
   baseCurrency: CurrencyCode;
+  editingHolding?: Holding | null;
   onAddHolding: (holding: Holding) => void;
+  onUpdateHolding?: (holding: Holding) => void;
 }
 
 export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   isOpen,
   onClose,
   baseCurrency,
+  editingHolding = null,
   onAddHolding,
+  onUpdateHolding,
 }) => {
+  const isEditMode = Boolean(editingHolding);
+
   const [name, setName] = useState('');
   const [category, setCategory] = useState<AssetCategory>('MUTUAL_FUND');
   const [institution, setInstitution] = useState('');
@@ -29,6 +35,40 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   const [taxTag, setTaxTag] = useState<TaxTag>('LTCG_EQUITY');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setError('');
+    if (editingHolding) {
+      setName(editingHolding.name);
+      setCategory(editingHolding.category);
+      setInstitution(editingHolding.institution ?? '');
+      setAccountNumberMask(editingHolding.accountNumberMask ?? '');
+      setInvestedAmount(String(editingHolding.investedAmount));
+      setCurrentValue(String(editingHolding.currentValue));
+      setCurrency(editingHolding.currency);
+      setInterestRatePct(
+        editingHolding.interestRatePct !== undefined ? String(editingHolding.interestRatePct) : ''
+      );
+      setPurchaseDate(editingHolding.purchaseDate || todayIso());
+      setMaturityDate(editingHolding.maturityDate ?? '');
+      setTaxTag(editingHolding.taxTag);
+      setNotes(editingHolding.notes ?? '');
+    } else {
+      setName('');
+      setCategory('MUTUAL_FUND');
+      setInstitution('');
+      setAccountNumberMask('');
+      setInvestedAmount('');
+      setCurrentValue('');
+      setCurrency(baseCurrency);
+      setInterestRatePct('');
+      setPurchaseDate(todayIso());
+      setMaturityDate('');
+      setTaxTag('LTCG_EQUITY');
+      setNotes('');
+    }
+  }, [isOpen, editingHolding, baseCurrency]);
 
   if (!isOpen) return null;
 
@@ -50,8 +90,14 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       return;
     }
 
-    const unGain = currVal - inv;
-    const unGainPct = inv > 0 ? (unGain / inv) * 100 : 0;
+    const parsedRate = interestRatePct.trim() ? parseFloat(interestRatePct) : undefined;
+    if (parsedRate !== undefined && isNaN(parsedRate)) {
+      setError('Please enter a valid annual rate %.');
+      return;
+    }
+
+    const unGain = Number((currVal - inv).toFixed(2));
+    const unGainPct = inv > 0 ? Number(((unGain / inv) * 100).toFixed(2)) : 0;
 
     let daysToMaturity: number | undefined = undefined;
     let isMatured = false;
@@ -63,8 +109,9 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       }
     }
 
-    const newHolding: Holding = {
-      id: `h-custom-${Date.now()}`,
+    const nextHolding: Holding = {
+      ...(editingHolding ?? {}),
+      id: editingHolding ? editingHolding.id : `h-custom-${Date.now()}`,
       name: name.trim(),
       category,
       institution: institution.trim() || 'Direct Account',
@@ -72,8 +119,8 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       investedAmount: inv,
       currentValue: currVal,
       currency,
-      interestRatePct: interestRatePct ? parseFloat(interestRatePct) : undefined,
-      purchaseDate,
+      interestRatePct: parsedRate,
+      purchaseDate: purchaseDate || todayIso(),
       maturityDate: maturityDate || undefined,
       daysToMaturity,
       isMatured,
@@ -83,7 +130,11 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       notes: notes.trim() || undefined,
     };
 
-    onAddHolding(newHolding);
+    if (editingHolding && onUpdateHolding) {
+      onUpdateHolding(nextHolding);
+    } else {
+      onAddHolding(nextHolding);
+    }
     onClose();
   };
 
@@ -92,11 +143,17 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-emerald-400" />
-            <span>Add New Investment Holding</span>
+            {isEditMode ? (
+              <Pencil className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Plus className="w-4 h-4 text-emerald-400" />
+            )}
+            <span>{isEditMode ? 'Edit Investment Holding' : 'Add New Investment Holding'}</span>
           </h3>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close modal"
             className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
@@ -255,20 +312,48 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             </div>
           </div>
 
-          {/* Tax Tag */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Tax Tag */}
+            <div>
+              <label className="block text-slate-400 mb-1 font-medium">Tax Classification</label>
+              <select
+                value={taxTag}
+                onChange={(e) => setTaxTag(e.target.value as TaxTag)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+              >
+                <option value="LTCG_EQUITY">LTCG Equity (12.5% above ₹1.25L)</option>
+                <option value="80C">Section 80C Tax Deduction Eligible (ELSS/PPF)</option>
+                <option value="80CCD">Section 80CCD(1B) Dedicated NPS Deduction</option>
+                <option value="TAX_EXEMPT_EEE">Triple EEE Sovereign Exempt (SGB / PPF / EPF)</option>
+                <option value="SLAB_INCOME">Taxed at Marginal Slab Rate (FD / RD / Debt)</option>
+              </select>
+            </div>
+
+            {/* Account / Folio Mask */}
+            <div>
+              <label className="block text-slate-400 mb-1 font-medium">
+                Account / Folio Ref (Optional)
+              </label>
+              <input
+                type="text"
+                value={accountNumberMask}
+                onChange={(e) => setAccountNumberMask(e.target.value)}
+                placeholder="e.g. FD-8492 or Folio 1234"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Tax Classification</label>
-            <select
-              value={taxTag}
-              onChange={(e) => setTaxTag(e.target.value as TaxTag)}
+            <label className="block text-slate-400 mb-1 font-medium">Notes (Optional)</label>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Auto-renewal disabled, SIP ₹15,000/mo"
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-            >
-              <option value="LTCG_EQUITY">LTCG Equity (12.5% above ₹1.25L)</option>
-              <option value="80C">Section 80C Tax Deduction Eligible (ELSS/PPF)</option>
-              <option value="80CCD">Section 80CCD(1B) Dedicated NPS Deduction</option>
-              <option value="TAX_EXEMPT_EEE">Triple EEE Sovereign Exempt (SGB / PPF / EPF)</option>
-              <option value="SLAB_INCOME">Taxed at Marginal Slab Rate (FD / RD / Debt)</option>
-            </select>
+            />
           </div>
 
           {/* Actions */}
@@ -284,7 +369,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
               type="submit"
               className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors shadow-sm"
             >
-              Save Investment
+              {isEditMode ? 'Save Changes' : 'Save Investment'}
             </button>
           </div>
         </form>

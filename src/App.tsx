@@ -37,6 +37,7 @@ import {
 import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
 import { StreetStoryGame } from './components/StreetStoryGame';
+import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
 import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
 type ActiveTab = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
@@ -131,12 +132,28 @@ export default function App() {
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingHolding, setEditingHolding] = useState<Holding | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isValidateModalOpen, setIsValidateModalOpen] = useState(false);
   const [validateInitialTab, setValidateInitialTab] = useState<'excel' | 'manual' | 'reset'>('excel');
   const [isNavRefreshOpen, setIsNavRefreshOpen] = useState(false);
   const [reinvestHolding, setReinvestHolding] = useState<Holding | null>(null);
   const [reinvestSolution, setReinvestSolution] = useState<ReinvestmentSolution | null>(null);
+
+  const openAddModal = () => {
+    setEditingHolding(null);
+    setIsAddModalOpen(true);
+  };
+
+  const openEditModal = (holding: Holding) => {
+    setEditingHolding(holding);
+    setIsAddModalOpen(true);
+  };
+
+  const closeAddEditModal = () => {
+    setIsAddModalOpen(false);
+    setEditingHolding(null);
+  };
 
   const openValidateModal = (tab: 'excel' | 'manual' | 'reset' = 'excel') => {
     setValidateInitialTab(tab);
@@ -191,6 +208,15 @@ export default function App() {
     setHoldings((prev) => [newHolding, ...prev]);
     setPortfolioMode('personal');
     trackEvent('holding_added', { category: newHolding.category, currency: newHolding.currency });
+  };
+
+  // Update Existing Holding
+  const handleUpdateHolding = (updatedHolding: Holding) => {
+    setHoldings((prev) =>
+      prev.map((h) => (h.id === updatedHolding.id ? updatedHolding : h))
+    );
+    setPortfolioMode('personal');
+    trackEvent('holding_updated', { category: updatedHolding.category, currency: updatedHolding.currency });
   };
 
   // Delete Holding
@@ -509,7 +535,7 @@ export default function App() {
         currentProfile={currentProfile}
         setProfile={handleProfileSwitch}
         holdingsCount={holdings.length}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={openAddModal}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
         onOpenValidateModal={() => openValidateModal('excel')}
         onOpenNavRefresh={() => setIsNavRefreshOpen(true)}
@@ -573,9 +599,10 @@ export default function App() {
               setRebalanceSourceId(h.id);
               setActiveTab('rebalance');
             }}
+            onEditHolding={openEditModal}
             onDeleteHolding={handleDeleteHolding}
             onOpenValidateModal={openValidateModal}
-            onOpenAddModal={() => setIsAddModalOpen(true)}
+            onOpenAddModal={openAddModal}
           />
         )}
 
@@ -658,9 +685,11 @@ export default function App() {
 
       <AddHoldingModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={closeAddEditModal}
         baseCurrency={baseCurrency}
+        editingHolding={editingHolding}
         onAddHolding={handleAddHolding}
+        onUpdateHolding={handleUpdateHolding}
       />
 
       <UploadStatementModal
@@ -800,6 +829,36 @@ export default function App() {
         isOpen={isTourOpen}
         onClose={handleCloseTour}
         onEnsureOverviewTab={() => setActiveTab('overview')}
+      />
+
+      <PortfolioChatDrawer
+        holdings={holdings}
+        baseCurrency={baseCurrency}
+        portfolioMode={portfolioMode}
+        profileName={currentProfile.name}
+        onAddHolding={handleAddHolding}
+        onUpdateHolding={handleUpdateHolding}
+        onDeleteHolding={handleDeleteHolding}
+        onReplaceHoldings={(nextHoldings, detectedCurrency) => {
+          setHoldings(nextHoldings);
+          if (detectedCurrency) setBaseCurrency(detectedCurrency);
+          setPortfolioMode('personal');
+          setCurrentProfileId('custom');
+        }}
+        onAppendHoldings={handleImportHoldings}
+        onSetBaseCurrency={setBaseCurrency}
+        onNavigateToTab={setActiveTab}
+        onStartBlank={handleStartBlank}
+        onResetToSample={handleResetToSample}
+        onExportExcel={handleExportExcel}
+        onExportCsv={handleExportCsv}
+        onExportPdf={handleExportPdf}
+        onExportJson={handleExportPortfolio}
+        onRebalanceHoldingById={(holdingId) => {
+          setRebalanceSourceId(holdingId);
+          setActiveTab('rebalance');
+        }}
+        onOpenEditModal={openEditModal}
       />
     </div>
   );
