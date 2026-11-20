@@ -27,7 +27,7 @@ interface StreetStoryGameProps {
 }
 
 type StoryMode = 'GAME' | 'MOVIE';
-type StopId = 'START' | 'BANK' | 'GOVT' | 'MF_OFFICE' | 'VESTORA_DOOR' | 'VESTORA_INSIDE';
+type StopId = 'START' | 'SITES' | 'ADVISOR' | 'WEALTH_MGR' | 'VESTORA_DOOR' | 'VESTORA_INSIDE';
 
 interface StreetBuilding {
   id: Exclude<StopId, 'START' | 'VESTORA_INSIDE'>;
@@ -52,76 +52,76 @@ const INVESTOR_MAX_X = 2240;
 
 const BUILDINGS: StreetBuilding[] = [
   {
-    id: 'BANK',
+    id: 'SITES',
     x: 340,
-    width: 270,
+    width: 275,
     height: 210,
-    name: 'Metro National Bank',
-    signTop: 'NATIONAL BANK',
-    signSub: 'FD DESK · COUNTER 4',
-    badgeText: 'STOP 01 · BANK BRANCH',
+    name: 'Finance Websites & Forums',
+    signTop: 'FINANCE SITES',
+    signSub: '47 OPEN TABS · GENERIC TIPS',
+    badgeText: 'STOP 01 · FINANCE SITES',
     accentColor: '#64748b',
     visitedStress: 68,
-    speaker: 'Bank Relationship Officer',
+    speaker: 'Conflicting Blogs & Calculators',
     dialogue:
-      '"Your ₹6.92L Fixed Deposit matured 15 days ago. We can only auto-renew it at 6.5%—which leaves ~4.55% after your 30% tax slab. We cannot compare equity funds, NPS, or prepaying your home loan."',
+      '"Article 1 screams 100% Small-Cap Equity. Article 2 warns Stick to Safe FDs. None of these calculators see your existing mutual funds, matured deposits, tax slab, or active 8.55% home loan together."',
     investorThought:
-      '"4.55% post-tax doesn’t even beat inflation... where else do I put this money?"',
-    paperSlip: 'Bank Renewal Slip (4.55% post-tax)',
+      '"47 open tabs and five spreadsheets later, I still don’t know where to rebalance MY money."',
+    paperSlip: '47 Contradictory Web Articles',
   },
   {
-    id: 'GOVT',
-    x: 880,
-    width: 290,
-    height: 230,
-    name: 'Govt. Bonds & Pension Office',
-    signTop: 'GOVT SECURITIES & NPS',
-    signSub: 'ROOM 12 · PHYSICAL FORMS',
-    badgeText: 'STOP 02 · GOVT OFFICE',
-    accentColor: '#94a3b8',
-    visitedStress: 84,
-    speaker: 'Counter Clerk',
-    dialogue:
-      '"G-Sec rates, T-Bills, and Section 80CCD(1B) NPS Tier-I forms are in three separate ledgers. Come back Tuesday with notarized copies—and no, we don’t track your mutual funds or bank FDs."',
-    investorThought:
-      '"Three offices, five paper folders, and still zero clarity on how my whole wealth fits together."',
-    paperSlip: 'Triplicate 80CCD & G-Sec Form',
-  },
-  {
-    id: 'MF_OFFICE',
-    x: 1440,
-    width: 270,
-    height: 205,
-    name: 'Apex Mutual Fund Distributors',
-    signTop: 'MUTUAL FUND SHOP',
-    signSub: 'NEW NFO · REGULAR PLANS',
-    badgeText: 'STOP 03 · FUND HOUSE',
+    id: 'ADVISOR',
+    x: 885,
+    width: 285,
+    height: 220,
+    name: 'Commission Sales Advisors',
+    signTop: 'SALES ADVISOR',
+    signSub: 'REGULAR PLANS · HIGH COMMISSION',
+    badgeText: 'STOP 02 · COMMISSION ADVISOR',
     accentColor: '#f59e0b',
-    visitedStress: 96,
-    speaker: 'Commission Agent',
+    visitedStress: 84,
+    speaker: 'Commission-Driven Advisor',
     dialogue:
-      '"Don’t worry about your 8.55% home loan or tax slabs! Put 100% of your cash into our new Sectoral Regular Plan NFO today—only 1.8% annual commission."',
+      '"Forget comparing your old FDs or paying down your 8.55% home loan—put fresh cash into our brand-new Sectoral Regular Plan NFO today! (1.8% hidden annual commission built in.)"',
     investorThought:
-      '"Wait... paying 1.8% extra while carrying an 8.55% home loan makes no sense. I’m completely stuck."',
-    paperSlip: 'High-Fee Regular NFO Brochure',
+      '"He didn’t even review my loans or tax drag—he’s just pushing whatever pays him the highest commission."',
+    paperSlip: 'Biased Regular NFO Pitch',
+  },
+  {
+    id: 'WEALTH_MGR',
+    x: 1445,
+    width: 280,
+    height: 225,
+    name: 'Traditional Wealth Managers',
+    signTop: 'WEALTH MANAGER',
+    signSub: '1.5% AUM FEE · SILOED VIEW',
+    badgeText: 'STOP 03 · WEALTH MANAGER',
+    accentColor: '#94a3b8',
+    visitedStress: 96,
+    speaker: 'Private Wealth Desk',
+    dialogue:
+      '"We only advise on assets moved into our platform—not your outside bank FDs, EPF, PPF, or loans. And we require a 1.5% annual AUM fee plus uploading all statements to our servers."',
+    investorThought:
+      '"Partial advice, steep fees, and zero privacy. I’m completely exhausted—why isn’t there ONE fair place for everything?"',
+    paperSlip: 'Partial Siloed Pitch + 1.5% Fee',
   },
   {
     id: 'VESTORA_DOOR',
     x: 2020,
-    width: 310,
+    width: 315,
     height: 235,
     name: 'Vestora Wealth',
     signTop: 'VESTORA WEALTH',
-    signSub: 'UNIFIED REBALANCE & OPEN MARKET STUDIO',
-    badgeText: 'STOP 04 · THE SOLUTION',
+    signSub: 'FULL & FAIR ADVICE · 100% ON-DEVICE',
+    badgeText: 'STOP 04 · VESTORA ARRIVES',
     accentColor: '#10b981',
-    visitedStress: 12,
-    speaker: 'Vestora Wealth Desk',
+    visitedStress: 14,
+    speaker: 'Vestora Wealth Portal',
     dialogue:
-      '"Welcome in. No agents, no server uploads—everything stays on your device. Let’s plug your matured FD, savings, 8.55% home loan, and tax slab into live AMFI, NPS, and GoI G-Sec markets right now."',
+      '"Take a breath—bring every investment and loan onto one unbiased portal. Zero commissions, zero server uploads. We evaluate your FDs, MFs, stocks, gold, taxes, and 8.55% home loan fairly using live markets."',
     investorThought:
-      '"Wait—all 40,000+ Direct MFs, live NPS, GoI bonds, and my home loan math in ONE place?"',
-    paperSlip: 'Unified Actionable Rebalance Plan',
+      '"Finally—complete, unbiased clarity across every investment and loan I own, right on my own device!"',
+    paperSlip: 'Unified Fair Rebalance Plan',
   },
 ];
 
@@ -605,43 +605,54 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
         ctx.strokeRect(bx, by, b.width, b.height);
 
         // Architectural details per building
-        if (b.id === 'BANK') {
-          // Bank classical columns
-          ctx.fillStyle = '#273449';
-          for (let c = 0; c < 4; c++) {
-            ctx.fillRect(bx + 22 + c * 68, by + 62, 16, b.height - 62);
-          }
-          // Flickering dim counter window
-          ctx.fillStyle = '#334155';
-          ctx.fillRect(bx + 46, by + 84, 52, 42);
-          ctx.fillRect(bx + 172, by + 84, 52, 42);
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.25)';
-          ctx.fillRect(bx + 48, by + 86, 48, 38);
-        } else if (b.id === 'GOVT') {
-          // Pediment triangle
-          ctx.fillStyle = '#1e293b';
-          ctx.beginPath();
-          ctx.moveTo(bx - 10, by);
-          ctx.lineTo(bx + b.width / 2, by - 34);
-          ctx.lineTo(bx + b.width + 10, by);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          // Tall narrow archive windows
-          for (let w = 0; w < 3; w++) {
-            ctx.fillStyle = w === 1 ? 'rgba(148, 163, 184, 0.24)' : '#0f172a';
-            ctx.fillRect(bx + 36 + w * 86, by + 76, 44, 56);
-          }
-        } else if (b.id === 'MF_OFFICE') {
-          // Glossy sales glass & bright amber promo strip
+        if (b.id === 'SITES') {
+          // Multi-screen noisy finance websites / forums wall
+          const screens = [
+            { dx: 20, label: 'BUY NOW!', col: '#34d399' },
+            { dx: 102, label: 'CRASH?!', col: '#fb7185' },
+            { dx: 184, label: 'TOP 10?', col: '#fbbf24' },
+          ];
+          screens.forEach((sc) => {
+            ctx.fillStyle = '#090f1d';
+            ctx.fillRect(bx + sc.dx, by + 74, 72, 54);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+            ctx.strokeRect(bx + sc.dx, by + 74, 72, 54);
+            ctx.fillStyle = sc.col;
+            ctx.font = 'bold 9px JetBrains Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(sc.label, bx + sc.dx + 36, by + 105);
+          });
+        } else if (b.id === 'ADVISOR') {
+          // Flashy commission sales booth
           ctx.fillStyle = 'rgba(245, 158, 11, 0.14)';
-          ctx.fillRect(bx + 20, by + 72, b.width - 40, 62);
+          ctx.fillRect(bx + 20, by + 74, b.width - 40, 60);
           ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
-          ctx.strokeRect(bx + 20, by + 72, b.width - 40, 62);
+          ctx.strokeRect(bx + 20, by + 74, b.width - 40, 60);
           ctx.fillStyle = '#fbbf24';
           ctx.font = 'bold 10px JetBrains Mono, monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('1.8% COMMISSION NFO!', bx + b.width / 2, by + 108);
+          ctx.fillText('HOT NFO · 1.8% COMMISSION', bx + b.width / 2, by + 109);
+        } else if (b.id === 'WEALTH_MGR') {
+          // Exclusive marble VIP desk with velvet barrier
+          ctx.fillStyle = '#1e293b';
+          ctx.beginPath();
+          ctx.moveTo(bx - 8, by);
+          ctx.lineTo(bx + b.width / 2, by - 28);
+          ctx.lineTo(bx + b.width + 8, by);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#273449';
+          for (let c = 0; c < 4; c++) {
+            ctx.fillRect(bx + 22 + c * 74, by + 64, 14, b.height - 64);
+          }
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.16)';
+          ctx.fillRect(bx + 46, by + 84, b.width - 92, 42);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = 'bold 9.5px JetBrains Mono, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('1.5% AUM FEE · SILOED', bx + b.width / 2, by + 109);
         } else if (isVestora) {
           // Glass executive interior preview through wide windows
           const winGrad = ctx.createLinearGradient(bx, by + 75, bx, by + b.height);
@@ -822,10 +833,10 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
   );
 
   const stressMeta = useMemo(() => {
-    if (stressLevel >= 80) return { label: 'Overwhelmed', color: 'text-rose-400', bar: 'bg-rose-500' };
-    if (stressLevel >= 55) return { label: 'Tensed & Unclear', color: 'text-amber-300', bar: 'bg-amber-400' };
+    if (stressLevel >= 80) return { label: 'Exhausted', color: 'text-rose-400', bar: 'bg-rose-500' };
+    if (stressLevel >= 55) return { label: 'Confused & Drained', color: 'text-amber-300', bar: 'bg-amber-400' };
     if (stressLevel >= 20) return { label: 'Relieved', color: 'text-emerald-300', bar: 'bg-emerald-400' };
-    return { label: 'Clear & Diversified', color: 'text-emerald-400', bar: 'bg-emerald-500' };
+    return { label: 'Clear & Unbiased', color: 'text-emerald-400', bar: 'bg-emerald-500' };
   }, [stressLevel]);
 
   const collectedPapers = useMemo(() => {
@@ -843,13 +854,13 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-semibold text-emerald-400">Interactive Wealth Story</span>
               <span aria-hidden="true">·</span>
-              <span>Why fragmented bank visits leave you stuck — and how Vestora solves it in 30 seconds</span>
+              <span>From biased advice exhaustion to complete, fair clarity on one portal</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight text-balance">
-              Walk the Street From Bank Confusion to One Unified Wealth Plan
+              Multiple Investments. Active Loans. Zero Fair Advice — Until Vestora Arrives.
             </h1>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Play as an investor carrying a matured <span className="text-slate-200 font-medium">{portfolioSnapshot.maturedAmount}</span> deposit, tax forms, and an 8.55% home loan. Visit the bank, government office, and mutual fund shop—or watch the short animated story—until you step inside <span className="text-emerald-400 font-semibold">Vestora Wealth</span>.
+              Play as an investor juggling <span className="text-slate-200 font-medium">{portfolioSnapshot.count} investments</span>, a matured <span className="text-slate-200 font-medium">{portfolioSnapshot.maturedAmount}</span> deposit, and an 8.55% home loan. Visit generic finance sites, commission advisors, and wealth managers—or watch the short movie—until <span className="text-emerald-400 font-semibold">Vestora Wealth</span> solves every piece fairly on one screen.
             </p>
           </div>
 
@@ -904,7 +915,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800 text-xs">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between font-mono">
-              <span className="text-slate-400">Investor Stress Meter</span>
+              <span className="text-slate-400">Advice Exhaustion Meter</span>
               <span className={`font-semibold tabular-nums ${stressMeta.color}`}>
                 {stressLevel}% · {stressMeta.label}
               </span>
@@ -919,15 +930,15 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
 
           <div className="flex items-center justify-between md:justify-center gap-4 font-mono">
             <div>
-              <span className="text-slate-500 block text-2xs">Street Progress</span>
+              <span className="text-slate-500 block text-2xs">Journey Progress</span>
               <span className="text-slate-200 font-semibold tabular-nums">
                 {visitedStops.size} / 4 Stops · {Math.round((playerXState / 2175) * 100)}% Avenue
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block text-2xs">Conflicting Papers</span>
+              <span className="text-slate-500 block text-2xs">Half-Baked Advice</span>
               <span className={`font-semibold tabular-nums ${officeSolved ? 'text-emerald-400' : 'text-amber-300'}`}>
-                {officeSolved ? '0 (Unified Plan)' : `${collectedPapers.length} folders`}
+                {officeSolved ? '0 (Full & Fair Plan)' : `${collectedPapers.length} biased pitches`}
               </span>
             </div>
           </div>
@@ -977,13 +988,13 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
               <VestoraLogo size={40} className="mt-0.5 hidden sm:block" />
               <div>
                 <div className="text-2xs font-mono text-emerald-400 font-semibold">
-                  INSIDE VESTORA WEALTH · PRIVATE ADVISORY DESK
+                  INSIDE VESTORA WEALTH · UNBIASED ON-DEVICE PORTAL
                 </div>
                 <h2 className="text-xl font-bold text-white mt-1">
-                  Every Street Problem Solved on One Screen — Private on Your Device
+                  Full &amp; Fair Wealth Clarity Across Every Investment and Loan — On One Portal
                 </h2>
                 <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                  Instead of running across banks, pension windows, and commission agents, Vestora pulls live Indian &amp; global yields alongside your real holdings and solves your split automatically.
+                  No biased commissions, no generic web noise, and no siloed wealth managers. Vestora evaluates all your holdings, taxes, and loans fairly against live open markets—strictly on your device.
                 </p>
               </div>
             </div>
@@ -998,29 +1009,29 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* Left: The Messy Clutter Brought From the Street */}
+            {/* Left: The Exhausting Puzzle Brought From the Street */}
             <div className="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white">What You Walked In With</h3>
-                <span className="text-2xs font-mono text-amber-300">Fragmented Clutter</span>
+                <h3 className="text-sm font-bold text-white">Why You Felt Exhausted</h3>
+                <span className="text-2xs font-mono text-amber-300">Partial &amp; Biased Advice</span>
               </div>
               <div className="space-y-3 text-xs">
                 <div className="pb-3 border-b border-slate-800/80">
-                  <div className="font-semibold text-slate-200">1. {portfolioSnapshot.maturedName}</div>
+                  <div className="font-semibold text-slate-200">1. Conflicting Finance Sites &amp; Generic Tips</div>
                   <div className="text-slate-400 mt-0.5">
-                    Sitting at {portfolioSnapshot.maturedAmount} — Bank offered 4.55% post-tax renewal.
+                    47 browser tabs couldn&apos;t see your {portfolioSnapshot.count} actual holdings or matured {portfolioSnapshot.maturedAmount} deposit together.
                   </div>
                 </div>
                 <div className="pb-3 border-b border-slate-800/80">
-                  <div className="font-semibold text-slate-200">2. Unchecked Govt &amp; NPS 80CCD(1B) Room</div>
+                  <div className="font-semibold text-slate-200">2. Commission-Driven Advisors</div>
                   <div className="text-slate-400 mt-0.5">
-                    No single view comparing live GoI G-Sec yields vs. NPS Tier-I 3Y CAGRs.
+                    Pushed high-fee Regular NFOs while ignoring your 8.55% home loan interest drain and tax slabs.
                   </div>
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-200">3. 8.55% Home Loan + Commission NFO Pitch</div>
+                  <div className="font-semibold text-slate-200">3. Siloed Wealth Managers</div>
                   <div className="text-slate-400 mt-0.5">
-                    Agent ignored guaranteed 8.55% tax-free interest savings from principal prepayment.
+                    Charged 1.5% AUM fees while ignoring outside bank FDs, EPF/NPS, and active loans.
                   </div>
                 </div>
               </div>
@@ -1030,17 +1041,17 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
             <div className="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-bold text-white">
-                  Vestora Instant Diagnosis &amp; Split Plan
+                  Vestora Full &amp; Fair Rebalance Diagnosis
                 </h3>
                 <span className="text-2xs font-mono text-emerald-400">
-                  AMFI · NPSNAV · GoI G-Sec · US Treasury Live
+                  AMFI · NPSNAV · GoI G-Sec · Loan Math Live
                 </span>
               </div>
 
               {!officeSolved ? (
                 <div className="py-6 text-center space-y-4">
                   <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                    Click below to let Vestora compare your matured deposit, 30% tax bracket, 8.55% home loan rate, and live market yields in real time.
+                    Click below to let Vestora evaluate every investment, tax bracket, and active loan together with zero bias or commissions.
                   </p>
                   <button
                     type="button"
@@ -1048,7 +1059,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                     className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-2"
                   >
                     <TrendingUp className="w-4 h-4" />
-                    <span>Solve My Portfolio Split Now</span>
+                    <span>Solve My Investments &amp; Loans Fairly</span>
                   </button>
                 </div>
               ) : (
@@ -1131,7 +1142,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                 );
               }}
               className="w-full h-[360px] sm:h-[390px] block cursor-pointer"
-              aria-label="Interactive street animation showing Bank, Government Office, Mutual Fund Office, and Vestora Wealth"
+              aria-label="Interactive street animation showing Finance Sites, Commission Advisor, Wealth Manager, and Vestora Wealth"
             />
 
             {/* Controls & Quick Jump Street Bar */}
@@ -1292,8 +1303,8 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                   </div>
                   <p className="text-sm text-slate-200 font-medium">
                     {nearbyBuilding
-                      ? `You are standing outside ${nearbyBuilding.name}. Step up to the counter or keep walking down the street.`
-                      : 'You just left home with a matured FD notice, tax sheets, and a home loan statement. Walk right to visit the Bank, Govt Office, Mutual Fund Shop — and look out for the Vestora Wealth sign.'}
+                      ? `You are standing outside ${nearbyBuilding.name}. Step up to see what advice they give, or keep walking down the street.`
+                      : 'You’re juggling multiple investments, bank deposits, and an 8.55% home loan with no clear rebalance plan. Walk right to consult Finance Sites, Commission Advisors, and Wealth Managers — until you reach Vestora Wealth.'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -1310,8 +1321,8 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                       <DoorOpen className="w-3.5 h-3.5" />
                       <span>
                         {nearbyBuilding.id === 'VESTORA_DOOR'
-                          ? 'Enter Vestora Office'
-                          : `Talk to ${nearbyBuilding.signTop}`}
+                          ? 'Enter Vestora Portal'
+                          : `Consult ${nearbyBuilding.signTop}`}
                       </span>
                     </button>
                   ) : (
@@ -1320,7 +1331,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
                       onClick={() => walkToStop(BUILDINGS[0])}
                       className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
-                      <span>Walk to Bank Branch</span>
+                      <span>Start Journey · Finance Sites</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -1331,7 +1342,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
         </section>
       )}
 
-      {/* Marketing Proof Section: Fragmented Offices vs Vestora Wealth */}
+      {/* Marketing Proof Section: Biased & Siloed Advice vs Vestora Wealth */}
       <section
         id="why-vestora"
         aria-label="Why Vestora Wealth"
@@ -1340,10 +1351,10 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-800 pb-4">
           <div>
             <h2 className="text-lg font-bold text-white">
-              Why Investors Walk Away From Siloed Counters Into Vestora
+              Why Exhausted Investors Leave Conflicting Advice Behind for Vestora
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              One private workspace connecting Indian &amp; global open market APIs with your real holdings, taxes, and liabilities.
+              One private, commission-free portal connecting your real investments, taxes, and active loans with live open markets.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -1361,40 +1372,40 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 font-semibold text-slate-200">
               <Building2 className="w-4 h-4 text-slate-400" />
-              <span>Traditional Bank</span>
+              <span>Finance Sites &amp; Forums</span>
             </div>
             <p className="text-slate-400 leading-relaxed">
-              Locks matured savings into ~6.5% FDs taxed at up to 30% slab without checking debt payoff or equity LTCG.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-200">
-              <Landmark className="w-4 h-4 text-slate-400" />
-              <span>Govt &amp; Pension Windows</span>
-            </div>
-            <p className="text-slate-400 leading-relaxed">
-              Separate ledgers for G-Secs, T-Bills, and NPS 80CCD(1B) with zero comparison against mutual funds.
+              Contradictory articles and generic checklists that never account for your actual holdings, tax slabs, or loans.
             </p>
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 font-semibold text-slate-200">
               <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span>Commission Distributors</span>
+              <span>Commission Advisors</span>
             </div>
             <p className="text-slate-400 leading-relaxed">
-              Push Regular NFOs with hidden annual trail commissions while ignoring your 8.55% home loan interest drain.
+              Push high-commission Regular plans and NFOs while ignoring 8.55% home loan interest savings and tax drag.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 font-semibold text-slate-200">
+              <Landmark className="w-4 h-4 text-slate-400" />
+              <span>Wealth Managers</span>
+            </div>
+            <p className="text-slate-400 leading-relaxed">
+              Charge steep AUM fees, ignore external bank FDs, EPF, or loans, and require storing sensitive records on their servers.
             </p>
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Vestora Wealth</span>
+              <span>Vestora Wealth Portal</span>
             </div>
             <p className="text-slate-300 leading-relaxed">
-              Live AMFI Direct MFs, NPS Tier-I, GoI G-Secs, Gold &amp; Home Loan math in one place — private on your device.
+              Full, fair rebalancing across Direct MFs, NPS, GoI G-Secs, Gold &amp; Home Loans — 100% private on your device.
             </p>
           </div>
         </div>

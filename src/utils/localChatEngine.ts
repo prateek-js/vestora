@@ -32,6 +32,9 @@ export type ChatActionKind =
   | { type: 'RESET_SAMPLE' }
   | { type: 'REBALANCE_HOLDING'; holdingId: string }
   | { type: 'OPEN_EDIT_MODAL'; holding: Holding }
+  | { type: 'OPEN_ADD_MODAL'; draft?: Holding }
+  | { type: 'CONFIRM_ADD_HOLDING'; holding: Holding }
+  | { type: 'CONFIRM_UPDATE_HOLDING'; updated: Holding; snapshot: Holding[]; summary: string }
   | { type: 'SUGGEST_PROMPT'; prompt: string };
 
 export interface ChatActionItem {
@@ -80,7 +83,15 @@ function parseNumericToken(rawNum: string, unitRaw?: string): number | null {
   if (!Number.isFinite(base) || base <= 0) return null;
   const unit = (unitRaw ?? '').toLowerCase();
   if (unit === 'cr' || unit === 'crore' || unit === 'crores') return base * 10_000_000;
-  if (unit === 'l' || unit === 'lac' || unit === 'lacs' || unit === 'lakh' || unit === 'lakhs') {
+  if (
+    unit === 'l' ||
+    unit === 'lk' ||
+    unit === 'lks' ||
+    unit === 'lac' ||
+    unit === 'lacs' ||
+    unit === 'lakh' ||
+    unit === 'lakhs'
+  ) {
     return base * 100_000;
   }
   if (unit === 'm' || unit === 'mn' || unit === 'million') return base * 1_000_000;
@@ -88,9 +99,83 @@ function parseNumericToken(rawNum: string, unitRaw?: string): number | null {
   return base;
 }
 
+interface ExtractedAccountRef {
+  mask?: string;
+  digits?: string;
+  cleanedInput: string;
+}
+
+function extractAccountReference(input: string): ExtractedAccountRef {
+  // 1. "ending with 1093", "ending in xxxx1093", "ends with 1093", "last 4 digits 1093"
+  const endingRx =
+    /\b(?:ending\s*(?:with|in)?|ends?\s*(?:with|in)?|last\s*\d*\s*digits?)\s*(?:no\.?|number|#)?\s*[xX*•-]*(\d{3,8})\b/i;
+  const endingMatch = input.match(endingRx);
+  if (endingMatch) {
+    const digits = endingMatch[1];
+    return {
+      mask: `••••${digits.slice(-4)}`,
+      digits,
+      cleanedInput: input.replace(endingRx, ' ').replace(/\s+/g, ' ').trim(),
+    };
+  }
+
+  // 2. "account no 1093", "a/c 1093", "folio #4821", "account xxxx1093"
+  const acctRx =
+    /\b(a\/c|ac|acct|account|folio|fd|rd|policy|demat)\s*(?:no\.?|number|num|#)?\s*(?:ending\s*(?:with|in)?\s*)?[xX*•-]*(\d{3,8})\b/i;
+  const acctMatch = input.match(acctRx);
+  if (acctMatch) {
+    const label = acctMatch[1];
+    const digits = acctMatch[2];
+    const replacement = /^(?:a\/c|ac|acct|account|fd|rd)$/i.test(label) ? label : ' ';
+    return {
+      mask: `••••${digits.slice(-4)}`,
+      digits,
+      cleanedInput: input.replace(acctRx, replacement).replace(/\s+/g, ' ').trim(),
+    };
+  }
+
+  // 3. Masked patterns like "xxxx1093", "••••8492", "**1093"
+  const maskRx = /(?:x{2,}|•{2,}|\*{2,})[- ]?(\d{3,6})\b/i;
+  const maskMatch = input.match(maskRx);
+  if (maskMatch) {
+    const digits = maskMatch[1];
+    return {
+      mask: `••••${digits.slice(-4)}`,
+      digits,
+      cleanedInput: input.replace(maskRx, ' ').replace(/\s+/g, ' ').trim(),
+    };
+  }
+
+  // 4. "#1093" or "no. 1093"
+  const hashRx = /(?:#|\bno\.?\s+)(\d{3,8})\b/i;
+  const hashMatch = input.match(hashRx);
+  if (hashMatch) {
+    const digits = hashMatch[1];
+    return {
+      mask: `••••${digits.slice(-4)}`,
+      digits,
+      cleanedInput: input.replace(hashRx, ' ').replace(/\s+/g, ' ').trim(),
+    };
+  }
+
+  return { cleanedInput: input };
+}
+
 interface ExtractedAmounts {
   currency: CurrencyCode;
   amounts: number[];
+}
+
+function stripNonMoneyNumbers(input: string): string {
+  return input
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ')
+    .replace(/\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/g, ' ')
+    .replace(/\b20\d{2}[-/]\d{2,4}\b/g, ' ')
+    .replace(/[+-]?\d+(?:\.\d+)?\s*(?:%|(?:bps|bp)\b)/gi, ' ')
+    .replace(/\b\d+(?:\.\d+)?[\s-]*(?:d|days?|mos?|months?|yrs?|years?)\b/gi, ' ')
+    .replace(/\b(?:sec(?:tion)?\s*)?(?:80c|80ccd(?:\(1b\))?|ltcg|stcg|24k|401\s*\(?k\)?)\b/gi, ' ')
+    .replace(/\b(?:nifty|sensex|s&p|midcap|smallcap|largecap|next|top|bse|nse|tier|series|fy)\s*[-]?\s*\d+\b/gi, ' ')
+    .replace(/\b(?:in|by|from|since|until|till)\s+(?:19|20)\d{2}\b/gi, ' ');
 }
 
 function extractAmounts(input: string, fallbackCurrency: CurrencyCode): ExtractedAmounts {
@@ -99,15 +184,11 @@ function extractAmounts(input: string, fallbackCurrency: CurrencyCode): Extracte
   else if (/\bEUR\b|€/i.test(input)) currency = 'EUR';
   else if (/\bINR\b|₹|\bRS\.?\b/i.test(input)) currency = 'INR';
 
-  // Strip rates (e.g. 7.4%) and durations (e.g. 45 days, 5 years, 12 months, YYYY-MM-DD) before scanning money amounts
-  const sanitized = input
-    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ')
-    .replace(/[+-]?\d+(?:\.\d+)?\s*(?:%|bps|bp)\b/gi, ' ')
-    .replace(/\b\d+(?:\.\d+)?\s*(?:d|days?|mos?|months?|yrs?|years?)\b/gi, ' ')
-    .replace(/\b(?:sec(?:tion)?\s*)?(?:80c|80ccd(?:\(1b\))?|ltcg|stcg|24k|50|n50)\b/gi, ' ');
+  const { cleanedInput } = extractAccountReference(input);
+  const sanitized = stripNonMoneyNumbers(cleanedInput);
 
   const pattern =
-    /(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*(\d[\d,]*(?:\.\d+)?)\s*(crores?|cr|lakhs?|lacs?|l|million|mn|m|k)?\b/gi;
+    /(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*(\d[\d,]*(?:\.\d+)?)\s*(crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?\b/gi;
 
   const amounts: number[] = [];
   let match: RegExpExecArray | null;
@@ -123,21 +204,30 @@ function extractAmounts(input: string, fallbackCurrency: CurrencyCode): Extracte
 
 function inferCategoryFromText(text: string): { category: AssetCategory; taxTag: TaxTag; defaultRate?: number } {
   const lower = text.toLowerCase();
-  if (/\b(fd|fixed deposit)\b/.test(lower)) return { category: 'FIXED_DEPOSIT', taxTag: 'SLAB_INCOME', defaultRate: 7.25 };
+  if (/\b(fd|fixed deposit|term deposit)\b/.test(lower)) return { category: 'FIXED_DEPOSIT', taxTag: 'SLAB_INCOME', defaultRate: 7.25 };
   if (/\b(rd|recurring deposit)\b/.test(lower)) return { category: 'RECURRING_DEPOSIT', taxTag: 'SLAB_INCOME', defaultRate: 7.0 };
   if (/\b(sgb|sovereign gold|gold bond|24k gold|gold etf)\b/.test(lower)) return { category: 'SOVEREIGN_GOLD_BOND', taxTag: 'TAX_EXEMPT_EEE', defaultRate: 2.5 };
-  if (/\b(g-sec|gsec|govt bond|government bond|t-bill|tbill|treasury|rbi bond)\b/.test(lower)) return { category: 'GOVT_BOND', taxTag: 'SLAB_INCOME', defaultRate: 6.9 };
+  if (/\b(g-sec|gsec|govt bond|government bond|t-bill|tbill|treasury|rbi bond|frsb)\b/.test(lower)) return { category: 'GOVT_BOND', taxTag: 'SLAB_INCOME', defaultRate: 6.9 };
   if (/\b(corp bond|corporate bond|ncd|debenture)\b/.test(lower)) return { category: 'CORP_BOND', taxTag: 'SLAB_INCOME', defaultRate: 8.6 };
   if (/\b(epf|provident fund|pf)\b/.test(lower)) return { category: 'EPF', taxTag: 'TAX_EXEMPT_EEE', defaultRate: 8.25 };
   if (/\b(ppf)\b/.test(lower)) return { category: 'PPF', taxTag: 'TAX_EXEMPT_EEE', defaultRate: 7.1 };
-  if (/\b(nps|national pension)\b/.test(lower)) return { category: 'NPS', taxTag: '80CCD' };
-  if (/\b(savings|cash|bank balance|checking|liquid cash)\b/.test(lower)) return { category: 'SAVINGS_CASH', taxTag: 'SLAB_INCOME', defaultRate: 3.5 };
+  if (/\b(nps|national pension|401\s*\(?k\)?|pension)\b/.test(lower)) return { category: 'NPS', taxTag: '80CCD' };
+  if (
+    /\b(savings?|cash|bank\s*(?:account|a\/c|ac|acct|balance)|salary\s*(?:account|a\/c|ac)|current\s*(?:account|a\/c|ac)|checking|liquid\s*cash)\b/.test(
+      lower
+    )
+  ) {
+    return { category: 'SAVINGS_CASH', taxTag: 'SLAB_INCOME', defaultRate: 3.5 };
+  }
   if (/\b(elss|tax saver)\b/.test(lower)) return { category: 'MUTUAL_FUND', taxTag: '80C' };
-  if (/\b(mf|mutual fund|sip|flexi cap|index fund|nifty|liquid fund|arbitrage|gilt)\b/.test(lower)) {
+  if (/\b(mf|mutual fund|sip|flexi cap|index fund|nifty|liquid fund|arbitrage|gilt|hybrid|midcap|smallcap|largecap)\b/.test(lower)) {
     return { category: 'MUTUAL_FUND', taxTag: 'LTCG_EQUITY' };
   }
-  if (/\b(stock|equity|shares?|etf|tcs|reliance|infy|hdfcbank|aapl|apple|nvda|msft|voo|qqq|niftybees)\b/.test(lower)) {
+  if (/\b(stock|equity|shares?|etf|tcs|reliance|infy|hdfcbank|aapl|apple|nvda|msft|voo|qqq|s&p|niftybees)\b/.test(lower)) {
     return { category: 'EQUITY_STOCK', taxTag: 'LTCG_EQUITY' };
+  }
+  if (/\b(account|a\/c|acct|bank)\b/.test(lower)) {
+    return { category: 'SAVINGS_CASH', taxTag: 'SLAB_INCOME', defaultRate: 3.5 };
   }
   return { category: 'MUTUAL_FUND', taxTag: 'LTCG_EQUITY' };
 }
@@ -149,6 +239,9 @@ function inferInstitutionFromText(text: string, category: AssetCategory): string
     [/\bicici\b/i, 'ICICI Bank'],
     [/\baxis\b/i, 'Axis Bank'],
     [/\bkotak\b/i, 'Kotak Mahindra'],
+    [/\bidfc\b/i, 'IDFC FIRST Bank'],
+    [/\bindusind\b/i, 'IndusInd Bank'],
+    [/\byes bank\b/i, 'YES Bank'],
     [/\bparag parikh|ppfas\b/i, 'PPFAS Mutual Fund'],
     [/\bnippon\b/i, 'Nippon India MF'],
     [/\bmirae\b/i, 'Mirae Asset'],
@@ -157,6 +250,7 @@ function inferInstitutionFromText(text: string, category: AssetCategory): string
     [/\bgroww\b/i, 'Groww'],
     [/\bvanguard\b/i, 'Vanguard'],
     [/\bfidelity\b/i, 'Fidelity'],
+    [/\bchase\b/i, 'Chase Bank'],
     [/\brbi\b/i, 'Reserve Bank of India'],
     [/\bepfo\b/i, 'EPFO India'],
     [/\bnps|pfrda\b/i, 'PFRDA NPS Trust'],
@@ -181,32 +275,101 @@ function inferInstitutionFromText(text: string, category: AssetCategory): string
   }
 }
 
-function deriveCleanHoldingName(rawInput: string, category: AssetCategory): string {
-  let cleaned = rawInput
-    .replace(/^(?:please\s+)?(?:add|create|log|enter|record|buy|invest(?:\s+in)?|new)\s+(?:a|an|the)?\s*/i, '')
-    .replace(/\b(?:worth|of|for|amount|value|invested|current(?:ly)?|now|at|rate|yield|maturing|mature[sd]?|in|over|on)\b[^,.;]*/gi, ' ')
-    .replace(/[₹$€]\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|l|million|mn|m|k)?/gi, ' ')
-    .replace(/\b\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|l|million|mn|m|k)\b/gi, ' ')
-    .replace(/\d+(?:\.\d+)?\s*%/g, ' ')
+const UPPERCASE_ACRONYMS = new Set([
+  'HDFC',
+  'SBI',
+  'ICICI',
+  'IDFC',
+  'PPF',
+  'EPF',
+  'NPS',
+  'FD',
+  'RD',
+  'SGB',
+  'MF',
+  'ETF',
+  'ELSS',
+  'NRE',
+  'NRO',
+  'RBI',
+  'US',
+  'USA',
+  'UK',
+  'TCS',
+  'ITC',
+  'NCD',
+  'SIP',
+  'INR',
+  'USD',
+  'EUR',
+  'S&P',
+  'A/C',
+  'FRSB',
+  'AAA',
+]);
+
+function formatTitleWord(word: string): string {
+  const upper = word.toUpperCase();
+  if (UPPERCASE_ACRONYMS.has(upper)) return upper;
+  if (word.includes('-')) {
+    return word
+      .split('-')
+      .map((part) => (part ? formatTitleWord(part) : ''))
+      .join('-');
+  }
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+function deriveCleanHoldingName(cleanedWithoutAccountRef: string, category: AssetCategory): string {
+  let cleaned = cleanedWithoutAccountRef
+    .replace(
+      /^(?:please\s+)?(?:i\s+have|add|create|log|enter|record|buy|bought|invest(?:ed)?(?:\s+in)?|put|deposit(?:ed)?|save|track|new)\s+/i,
+      ''
+    )
+    // Remove maturity clauses without eating unrelated nouns
+    .replace(
+      /\b(?:matur(?:es?|ing)|matured|due|expir(?:es?|ing)|tenure|lock-?in)\s*(?:in|on|after|of)?\s*(?:\d{4}-\d{2}-\d{2}|\d+(?:\.\d+)?\s*(?:d|days?|mos?|months?|yrs?|years?))\b/gi,
+      ' '
+    )
+    .replace(/\balready\s+matured\b/gi, ' ')
+    // Remove rate / yield clauses
+    .replace(/\b(?:at|@|with|rate|yield|interest|earning|paying)?\s*\d+(?:\.\d+)?\s*%(?:\s*(?:p\.?a\.?|per\s+annum|interest|yield|rate))?/gi, ' ')
+    // Remove explicit amount clauses with units (e.g. "of 8lakh", "invested 3L", "now 3.6L")
+    .replace(
+      /\b(?:invested(?:\s+capital|\s+amount)?|current(?:\s+val(?:ue|uation))?|worth|amount|value|cost|principal|now|today|of|for|by)?\s*(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)\b/gi,
+      ' '
+    )
+    // Remove currency-prefixed bare numbers (e.g. "₹50000", "$15,000", "Rs 800000")
+    .replace(/(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)\s*\d[\d,]*(?:\.\d+)?\b/gi, ' ')
+    // Remove labeled bare numbers (e.g. "invested 500000", "worth 80000", "of 50000")
+    .replace(
+      /\b(?:invested(?:\s+capital|\s+amount)?|current(?:\s+val(?:ue|uation))?|worth|amount|value|cost|principal|now|of|for)\s+\d[\d,]*(?:\.\d+)?\b/gi,
+      ' '
+    )
+    // Remove leading bare number right after verb (e.g. "50000 to nifty 50 index fund"), but keep durations like "2-year"
+    .replace(/^\d[\d,]*(?:\.\d+)?(?![\s-]*(?:d|days?|mos?|months?|yrs?|years?)\b)\b\s*/i, ' ')
     .replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
-  // If stripping was too aggressive, try taking words before "of / worth / @"
-  if (cleaned.length < 3) {
-    const preClause = rawInput
-      .replace(/^(?:please\s+)?(?:add|create|log|enter|record|buy|invest(?:\s+in)?|new)\s+/i, '')
-      .split(/\b(?:of|worth|@|at|invested|maturing|for)\b|[₹$€]/i)[0]
-      .trim();
-    cleaned = preClause;
+  // Trim leading/trailing dangling prepositions, articles, and punctuation
+  const leadingFillerRx =
+    /^(?:to|into|in|on|for|of|at|@|with|from|my|a|an|the|new|worth|amount|value|balance|currently|now|today|and|&|[-,:;])+\s+/i;
+  const trailingFillerRx =
+    /\s+(?:to|into|in|on|for|of|at|@|with|from|my|a|an|the|worth|amount|value|currently|now|today|and|&|ending|ends|[-,:;])+$/i;
+
+  for (let i = 0; i < 4; i++) {
+    cleaned = cleaned.replace(leadingFillerRx, '').replace(trailingFillerRx, '').trim();
   }
+  cleaned = cleaned.replace(/^[-,:;\s]+|[-,:;\s]+$/g, '').trim();
 
   if (cleaned.length < 2) {
     return CATEGORY_META[category]?.label ?? 'Custom Holding';
   }
+
   return cleaned
-    .split(' ')
-    .map((w) => (w.length <= 4 && w === w.toUpperCase() ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .split(/\s+/)
+    .map((w) => formatTitleWord(w))
     .join(' ')
     .slice(0, 64);
 }
@@ -215,19 +378,21 @@ function extractMaturityDate(input: string): string | undefined {
   const isoMatch = input.match(/\b(\d{4}-\d{2}-\d{2})\b/);
   if (isoMatch) return isoMatch[1];
 
-  const daysMatch = input.match(/(?:matur(?:es?|ing)|due|tenure|in)\s*(?:in\s*)?(\d+)\s*(?:d|days?)\b/i);
+  const daysMatch = input.match(/(?:matur(?:es?|ing)|due|tenure|for|in)\s*(?:in\s*)?(\d+)\s*(?:d|days?)\b/i);
   if (daysMatch) {
     const days = parseInt(daysMatch[1], 10);
     if (Number.isFinite(days)) return isoFromToday(days);
   }
 
-  const monthsMatch = input.match(/(?:matur(?:es?|ing)|due|tenure|in)\s*(?:in\s*)?(\d+)\s*(?:mos?|months?)\b/i);
+  const monthsMatch = input.match(/(?:matur(?:es?|ing)|due|tenure|for|in)\s*(?:in\s*)?(\d+)\s*(?:mos?|months?)\b/i);
   if (monthsMatch) {
     const months = parseInt(monthsMatch[1], 10);
     if (Number.isFinite(months)) return isoFromToday(months * 30);
   }
 
-  const yearsMatch = input.match(/(?:matur(?:es?|ing)|due|tenure|in)\s*(?:in\s*)?(\d+(?:\.\d+)?)\s*(?:yrs?|years?)\b/i);
+  const yearsMatch = input.match(
+    /(?:matur(?:es?|ing)|due|tenure|for|in)\s*(?:in\s*)?(\d+(?:\.\d+)?)\s*(?:yrs?|years?)\b/i
+  );
   if (yearsMatch) {
     const years = parseFloat(yearsMatch[1]);
     if (Number.isFinite(years)) return isoFromToday(Math.round(years * 365));
@@ -240,35 +405,59 @@ function extractMaturityDate(input: string): string | undefined {
   return undefined;
 }
 
-function parseAddHoldingCommand(input: string, fallbackCurrency: CurrencyCode): Holding | null {
-  const { category, taxTag, defaultRate } = inferCategoryFromText(input);
-  const { currency, amounts } = extractAmounts(input, fallbackCurrency);
+interface ParsedAddHoldingResult {
+  holding: Holding;
+  accountDigits?: string;
+}
 
-  if (amounts.length === 0) return null;
+function parseAddHoldingCommand(input: string, fallbackCurrency: CurrencyCode): ParsedAddHoldingResult | null {
+  const { mask, digits, cleanedInput } = extractAccountReference(input);
+  const { category, taxTag, defaultRate } = inferCategoryFromText(cleanedInput);
+  const { currency, amounts } = extractAmounts(cleanedInput, fallbackCurrency);
 
-  // Determine invested vs current value if two amounts were provided
-  let investedAmount = amounts[0];
-  let currentValue = amounts[0];
-  if (amounts.length >= 2) {
-    investedAmount = amounts[0];
-    currentValue = amounts[1];
+  // Check for explicit invested / current clauses first
+  const investedClause = cleanedInput.match(
+    /\b(?:invested(?:\s+capital|\s+amount)?|cost|principal|bought(?:\s+for|\s+at)?)\s*(?:of|for|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?)/i
+  );
+  const currentClause = cleanedInput.match(
+    /\b(?:current(?:\s+val(?:ue|uation))?|val(?:ue|uation)|worth|now|today)\s*(?:is|of|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?)/i
+  );
+
+  let investedAmount: number | null = investedClause ? parseAmountInText(investedClause[1]) : null;
+  let currentValue: number | null = currentClause ? parseAmountInText(currentClause[1]) : null;
+
+  if (investedAmount !== null && currentValue === null) {
+    currentValue = investedAmount;
+  } else if (currentValue !== null && investedAmount === null) {
+    investedAmount = currentValue;
+  } else if (investedAmount === null && currentValue === null) {
+    if (amounts.length === 0) return null;
+    if (amounts.length >= 2) {
+      investedAmount = amounts[0];
+      currentValue = amounts[1];
+    } else {
+      investedAmount = amounts[0];
+      currentValue = amounts[0];
+    }
   }
 
-  const rateMatch = input.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (investedAmount === null || currentValue === null) return null;
+
+  const rateMatch = cleanedInput.match(/(\d+(?:\.\d+)?)\s*%/);
   const interestRatePct = rateMatch ? parseFloat(rateMatch[1]) : defaultRate;
-  const maturityDate = extractMaturityDate(input);
-  const name = deriveCleanHoldingName(input, category);
-  const institution = inferInstitutionFromText(input, category);
+  const maturityDate = extractMaturityDate(cleanedInput);
+  const name = deriveCleanHoldingName(cleanedInput, category);
+  const institution = inferInstitutionFromText(cleanedInput, category);
 
   const gain = Number((currentValue - investedAmount).toFixed(2));
   const gainPct = investedAmount > 0 ? Number(((gain / investedAmount) * 100).toFixed(2)) : 0;
 
-  return withDerivedMaturity<Holding>({
+  const holding = withDerivedMaturity<Holding>({
     id: `h-chat-${Date.now()}`,
     name,
     category,
     institution,
-    accountNumberMask: `CHT-${Date.now().toString().slice(-4)}`,
+    accountNumberMask: mask ?? `CHT-${Date.now().toString().slice(-4)}`,
     investedAmount,
     currentValue,
     currency,
@@ -280,6 +469,8 @@ function parseAddHoldingCommand(input: string, fallbackCurrency: CurrencyCode): 
     taxTag,
     notes: 'Added privately via on-device Chat Assistant',
   });
+
+  return { holding, accountDigits: digits };
 }
 
 const EDIT_STOPWORDS = new Set([
@@ -290,10 +481,30 @@ const EDIT_STOPWORDS = new Set([
   'rename',
   'set',
   'adjust',
+  'add',
+  'deposit',
+  'put',
+  'top',
+  'up',
+  'topup',
+  'credit',
+  'withdraw',
+  'deduct',
+  'subtract',
+  'redeem',
+  'remove',
+  'delete',
+  'drop',
   'please',
   'holding',
   'entry',
   'investment',
+  'account',
+  'bank',
+  'ending',
+  'ends',
+  'digits',
+  'last',
   'value',
   'valuation',
   'amount',
@@ -307,6 +518,7 @@ const EDIT_STOPWORDS = new Set([
   'maturity',
   'maturing',
   'to',
+  'into',
   'at',
   'by',
   'as',
@@ -315,27 +527,74 @@ const EDIT_STOPWORDS = new Set([
   'in',
   'on',
   'with',
+  'from',
   'my',
   'the',
+  'lakh',
+  'lakhs',
+  'lac',
+  'lacs',
+  'crore',
+  'crores',
+  'thousand',
+  'million',
+  'inr',
+  'usd',
+  'eur',
 ]);
+
+function extractHoldingMaskDigits(holding: Holding): string | null {
+  if (!holding.accountNumberMask) return null;
+  const digits = holding.accountNumberMask.replace(/\D/g, '');
+  return digits.length >= 3 ? digits : null;
+}
 
 function findMatchingHoldingsForEdit(input: string, holdings: Holding[]): Holding[] {
   const lower = input.toLowerCase();
+
+  // 1. Check account number / last-4 digits match first (highest precision)
+  const { digits: refDigits } = extractAccountReference(input);
+  const candidateDigits = new Set<string>();
+  if (refDigits) candidateDigits.add(refDigits.slice(-4));
+  const standaloneDigits = input.match(/\b\d{4}\b/g);
+  if (standaloneDigits) {
+    standaloneDigits.forEach((d) => candidateDigits.add(d));
+  }
+
+  if (candidateDigits.size > 0) {
+    const maskMatches = holdings.filter((h) => {
+      const hDigits = extractHoldingMaskDigits(h);
+      if (!hDigits) return false;
+      for (const d of candidateDigits) {
+        if (hDigits.endsWith(d) || hDigits === d) return true;
+      }
+      return false;
+    });
+    if (maskMatches.length > 0) return maskMatches;
+  }
+
+  // 2. Full holding name substring match
   const fullMatches = holdings
     .filter((h) => lower.includes(h.name.toLowerCase()))
     .sort((a, b) => b.name.length - a.name.length);
   if (fullMatches.length > 0) return fullMatches;
 
+  // 3. Token overlap scoring across name + institution + mask
   const queryTokens = lower
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
-    .filter((w) => w.length >= 2 && !EDIT_STOPWORDS.has(w) && !/^\d+$/.test(w));
+    .filter(
+      (w) =>
+        w.length >= 2 &&
+        !EDIT_STOPWORDS.has(w) &&
+        !/^\d+(?:k|l|lk|lks|cr|m|mn|lakh|lakhs|lac|lacs|crore|crores)?$/i.test(w)
+    );
 
   if (queryTokens.length === 0) return [];
 
   const scored = holdings
     .map((h) => {
-      const targetLower = `${h.name} ${h.institution}`.toLowerCase();
+      const targetLower = `${h.name} ${h.institution} ${h.accountNumberMask ?? ''}`.toLowerCase();
       let score = 0;
       for (const tok of queryTokens) {
         if (targetLower.includes(tok)) score += tok.length;
@@ -352,10 +611,31 @@ function findMatchingHoldingsForEdit(input: string, holdings: Holding[]): Holdin
 
 function parseAmountInText(fragment: string): number | null {
   const m = fragment.match(
-    /(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*(\d[\d,]*(?:\.\d+)?)\s*(crores?|cr|lakhs?|lacs?|l|million|mn|m|k)?\b/i
+    /(?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*(\d[\d,]*(?:\.\d+)?)\s*(crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?\b/i
   );
   if (!m) return null;
   return parseNumericToken(m[1], m[2]);
+}
+
+function stripTargetIdentifierNumbers(input: string, target: Holding): string {
+  let cleaned = extractAccountReference(input).cleanedInput;
+  const maskDigits = extractHoldingMaskDigits(target);
+  if (maskDigits) {
+    const tail = maskDigits.slice(-4);
+    cleaned = cleaned.replace(new RegExp(`\\b${tail}\\b`, 'g'), ' ');
+    if (maskDigits !== tail) {
+      cleaned = cleaned.replace(new RegExp(`\\b${maskDigits}\\b`, 'g'), ' ');
+    }
+  }
+  const nameNums = target.name.match(/\b\d+\b/g);
+  if (nameNums) {
+    nameNums.forEach((n) => {
+      if (n.length <= 4) {
+        cleaned = cleaned.replace(new RegExp(`\\b${n}\\b`, 'g'), ' ');
+      }
+    });
+  }
+  return cleaned.replace(/\s+/g, ' ').trim();
 }
 
 function parseEditHoldingPatch(
@@ -369,20 +649,33 @@ function parseEditHoldingPatch(
   let interestRatePct = target.interestRatePct;
   let maturityDate = target.maturityDate;
   let name = target.name;
+  let accountNumberMask = target.accountNumberMask;
 
-  if (/\bUSD\b|\$/i.test(input)) currency = 'USD';
-  else if (/\bEUR\b|€/i.test(input)) currency = 'EUR';
-  else if (/\bINR\b|₹|\bRS\.?\b/i.test(input)) currency = 'INR';
+  const refInfo = extractAccountReference(input);
+  const existingMaskDigits = extractHoldingMaskDigits(target);
+  if (refInfo.mask && refInfo.digits && (!existingMaskDigits || !existingMaskDigits.endsWith(refInfo.digits.slice(-4)))) {
+    // Only treat as an account mask update if user explicitly wrote ending/account/folio/mask with a new number
+    if (/\b(change|set|update)\b.*\b(account|a\/c|folio|mask|ending)\b/i.test(input)) {
+      accountNumberMask = refInfo.mask;
+      changedLabels.push(`ref → ${refInfo.mask}`);
+    }
+  }
+
+  const scrubbed = stripTargetIdentifierNumbers(input, target);
+
+  if (/\bUSD\b|\$/i.test(scrubbed)) currency = 'USD';
+  else if (/\bEUR\b|€/i.test(scrubbed)) currency = 'EUR';
+  else if (/\bINR\b|₹|\bRS\.?\b/i.test(scrubbed)) currency = 'INR';
   if (currency !== target.currency) {
     changedLabels.push(`currency → ${currency}`);
   }
 
   // Extract explicit invested vs current values first
-  const investedClause = input.match(
-    /\b(?:invested(?:\s+capital|\s+amount)?|cost|principal)\s*(?:to|as|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|l|million|mn|m|k)?)/i
+  const investedClause = scrubbed.match(
+    /\b(?:invested(?:\s+capital|\s+amount)?|cost|principal)\s*(?:to|as|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?)/i
   );
-  const currentClause = input.match(
-    /\b(?:current(?:\s+val(?:ue|uation))?|val(?:ue|uation)|worth|now)\s*(?:to|as|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|l|million|mn|m|k)?)/i
+  const currentClause = scrubbed.match(
+    /\b(?:current(?:\s+val(?:ue|uation))?|val(?:ue|uation)|worth|now|balance)\s*(?:to|as|at|=|:)?\s*((?:₹|\$|€|\bINR\b|\bUSD\b|\bEUR\b|\bRs\.?\b)?\s*\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?|lks?|l|million|mn|m|k|thousand)?)/i
   );
 
   let matchedExplicitInvested = false;
@@ -406,7 +699,7 @@ function parseEditHoldingPatch(
   }
 
   if (!matchedExplicitInvested && !matchedExplicitCurrent) {
-    const { amounts } = extractAmounts(input, currency);
+    const { amounts } = extractAmounts(scrubbed, currency);
     if (amounts.length >= 2) {
       investedAmount = amounts[0];
       currentValue = amounts[1];
@@ -417,7 +710,7 @@ function parseEditHoldingPatch(
     }
   }
 
-  const rateMatch = input.match(/(\d+(?:\.\d+)?)\s*%/);
+  const rateMatch = scrubbed.match(/(\d+(?:\.\d+)?)\s*%/);
   if (rateMatch) {
     const nextRate = parseFloat(rateMatch[1]);
     if (Number.isFinite(nextRate)) {
@@ -426,11 +719,11 @@ function parseEditHoldingPatch(
     }
   }
 
-  if (/\b(?:open[- ]?ended|clear maturity|no maturity|remove maturity)\b/i.test(input)) {
+  if (/\b(?:open[- ]?ended|clear maturity|no maturity|remove maturity)\b/i.test(scrubbed)) {
     maturityDate = undefined;
     changedLabels.push('maturity cleared');
   } else {
-    const nextMaturity = extractMaturityDate(input);
+    const nextMaturity = extractMaturityDate(scrubbed);
     if (nextMaturity) {
       maturityDate = nextMaturity;
       changedLabels.push(`maturity → ${nextMaturity}`);
@@ -455,6 +748,7 @@ function parseEditHoldingPatch(
   const updated = withDerivedMaturity<Holding>({
     ...target,
     name,
+    accountNumberMask,
     investedAmount,
     currentValue,
     currency,
@@ -838,11 +1132,11 @@ export function processLocalChatMessage(
   // 6. Delete / Remove specific holding
   if (/^(?:please\s+)?(?:delete|remove|drop)\s+/i.test(lower)) {
     const query = lower.replace(/^(?:please\s+)?(?:delete|remove|drop)\s+(?:holding\s+)?/i, '').trim();
-    const matches = holdings.filter((h) => h.name.toLowerCase().includes(query));
+    const matches = findMatchingHoldingsForEdit(input, holdings);
     if (matches.length === 0) {
       return {
         title: 'Holding Not Found',
-        text: `No active holding matched "${query}". Try asking "List holdings" to see exact names.`,
+        text: `No active holding matched "${query}". Try asking "List holdings" to see exact names or account numbers.`,
       };
     }
     if (matches.length === 1) {
@@ -863,7 +1157,7 @@ export function processLocalChatMessage(
     }
     return {
       title: `Multiple matches for "${query}"`,
-      text: `Found ${matches.length} holdings matching "${query}": ${matches.slice(0, 4).map((m) => m.name).join(', ')}. Specify a fuller name to remove one.`,
+      text: `Found ${matches.length} holdings matching "${query}": ${matches.slice(0, 4).map((m) => m.name).join(', ')}. Specify a fuller name or account digits to remove one.`,
     };
   }
 
@@ -875,20 +1169,23 @@ export function processLocalChatMessage(
     if (holdings.length === 0) {
       return {
         title: 'No Holdings to Edit',
-        text: 'Your portfolio is blank right now. Add a holding first (e.g., "Add HDFC FD 5L at 7.4%") or import a spreadsheet.',
+        text: 'Your portfolio is blank right now. Add a holding via form or type "Add 8 lakh to HDFC bank account ending with 1093".',
+        actions: [
+          { label: 'Open Add Form', variant: 'primary', action: { type: 'OPEN_ADD_MODAL' } },
+        ],
       };
     }
 
     const matches = findMatchingHoldingsForEdit(input, holdings);
     if (matches.length === 0) {
-      const topQuickActions: ChatActionItem[] = holdings.slice(0, 3).map((h) => ({
-        label: `Edit ${h.name.slice(0, 18)}`,
+      const topQuickActions: ChatActionItem[] = holdings.slice(0, 6).map((h) => ({
+        label: `Edit ${h.name.slice(0, 20)}`,
         variant: 'secondary',
         action: { type: 'OPEN_EDIT_MODAL', holding: h },
       }));
       return {
         title: 'Select a Holding to Edit',
-        text: 'Tell me which holding to update (e.g., "Update HDFC FD value to 6L" or "Edit Parag Parikh invested 3.5L current 4.2L"), or click a holding below to open the edit form:',
+        text: 'Click any holding below to open the edit form, or type a command like "Update HDFC 1093 value to 10L":',
         actions: topQuickActions,
       };
     }
@@ -896,8 +1193,8 @@ export function processLocalChatMessage(
     if (matches.length > 1) {
       return {
         title: `Multiple Matches (${matches.length})`,
-        text: `Matched: ${matches.slice(0, 4).map((m) => m.name).join(', ')}. Pick one below to open the edit form, or specify a fuller name:`,
-        actions: matches.slice(0, 3).map((h) => ({
+        text: `Matched: ${matches.slice(0, 4).map((m) => m.name).join(', ')}. Pick one below to open the edit form:`,
+        actions: matches.slice(0, 4).map((h) => ({
           label: `Edit ${h.name.slice(0, 20)}`,
           variant: 'primary',
           action: { type: 'OPEN_EDIT_MODAL', holding: h },
@@ -911,10 +1208,13 @@ export function processLocalChatMessage(
     if (changedLabels.length === 0) {
       return {
         title: `Edit ${target.name}`,
-        text: `Current values are shown below. Click "Open Edit Form" to modify any field, or reply like: "Update ${target.name} value to 6L" or "Set ${target.name} invested 4L current 4.8L at 7.5%".`,
+        text: `Current values are shown below. Click "Open Edit Form" to modify any field, or reply like: "Update ${target.name} value to 6L".`,
         metrics: [
           { label: 'Invested', value: formatCurrency(target.investedAmount, target.currency), tone: 'neutral' },
           { label: 'Current Value', value: formatCurrency(target.currentValue, target.currency), tone: 'emerald' },
+          ...(target.accountNumberMask
+            ? [{ label: 'Account Ref', value: target.accountNumberMask, tone: 'neutral' as const }]
+            : []),
           ...(target.interestRatePct !== undefined
             ? [{ label: 'Rate', value: `${target.interestRatePct}% p.a.`, tone: 'neutral' as const }]
             : []),
@@ -967,57 +1267,202 @@ export function processLocalChatMessage(
     };
   }
 
-  // 7. Add / Entry command
-  if (/^(?:please\s+)?(?:add|create|log|enter|record|buy|invest)\b/i.test(lower)) {
-    const parsed = parseAddHoldingCommand(input, baseCurrency);
-    if (!parsed) {
+  // 6c. Withdraw / Deduct from an existing holding
+  if (/^(?:please\s+)?(?:withdraw|deduct|subtract|take\s+out|redeem)\b/i.test(lower)) {
+    const matches = findMatchingHoldingsForEdit(input, holdings);
+    if (matches.length === 1) {
+      const target = matches[0];
+      const scrubbed = stripTargetIdentifierNumbers(input, target);
+      const { amounts } = extractAmounts(scrubbed, target.currency);
+      if (amounts.length > 0) {
+        const delta = amounts[0];
+        const nextCurrent = Math.max(0, Number((target.currentValue - delta).toFixed(2)));
+        const nextInvested = Math.max(0, Number((target.investedAmount - delta).toFixed(2)));
+        const gain = Number((nextCurrent - nextInvested).toFixed(2));
+        const gainPct = nextInvested > 0 ? Number(((gain / nextInvested) * 100).toFixed(2)) : 0;
+        const updated: Holding = {
+          ...target,
+          investedAmount: nextInvested,
+          currentValue: nextCurrent,
+          unrealizedGain: gain,
+          unrealizedGainPct: gainPct,
+        };
+        const snapshot = [...holdings];
+        return {
+          title: `Confirm Withdrawal from ${target.name}`,
+          text: `Subtract ${formatCurrency(delta, target.currency)} from ${target.name}${target.accountNumberMask ? ` (${target.accountNumberMask})` : ''}?`,
+          metrics: [
+            { label: 'Current Balance', value: formatCurrency(target.currentValue, target.currency), tone: 'neutral' },
+            { label: 'New Balance', value: formatCurrency(nextCurrent, target.currency), tone: 'amber' },
+          ],
+          actions: [
+            {
+              label: `Confirm (-${formatCurrency(delta, target.currency, { compact: true })})`,
+              variant: 'primary',
+              action: {
+                type: 'CONFIRM_UPDATE_HOLDING',
+                updated,
+                snapshot,
+                summary: `Withdrew ${formatCurrency(delta, target.currency)} from ${target.name}.`,
+              },
+            },
+            {
+              label: 'Edit in Form',
+              variant: 'secondary',
+              action: { type: 'OPEN_EDIT_MODAL', holding: target },
+            },
+          ],
+        };
+      }
+    }
+  }
+
+  // 7. Add / Deposit / Entry command (with safe 1-click confirmation & top-up detection)
+  if (
+    /^(?:please\s+)?(?:i\s+have\s+|add|create|log|enter|record|buy|bought|invest(?:ed)?|put|deposit(?:ed)?|top\s*up|credit|save|track)\b/i.test(
+      lower
+    )
+  ) {
+    const parsedResult = parseAddHoldingCommand(input, baseCurrency);
+    if (!parsedResult) {
       return {
-        title: 'Specify an Amount to Add Holding',
-        text: 'Include an instrument name and amount—for example: "Add HDFC FD of 5L at 7.4% maturing in 45 days" or "Add Parag Parikh MF invested 3L now 3.6L".',
+        title: 'Add Holding — Form or Plain Text',
+        text: 'Include an amount and instrument—for example: "Add 8 lakh to HDFC bank account ending with 1093" or "Add HDFC FD 5L at 7.4% maturing in 45 days"—or open the structured form directly:',
         actions: [
           {
-            label: 'Try Sample FD Entry',
+            label: 'Open Add Holding Form',
             variant: 'primary',
-            action: { type: 'SUGGEST_PROMPT', prompt: 'Add HDFC FD of 5L at 7.4% maturing in 45 days' },
+            action: { type: 'OPEN_ADD_MODAL' },
           },
           {
-            label: 'Try Sample MF Entry',
+            label: 'Try Sample FD Entry',
             variant: 'secondary',
-            action: { type: 'SUGGEST_PROMPT', prompt: 'Add Parag Parikh Flexi Cap MF invested 3L now 3.6L' },
+            action: { type: 'SUGGEST_PROMPT', prompt: 'Add HDFC FD of 5L at 7.4% maturing in 45 days' },
           },
         ],
       };
     }
 
-    const snapshot = [...holdings];
-    cb.onAddHolding(parsed);
-
+    const { holding: parsed, accountDigits } = parsedResult;
     const catLabel = CATEGORY_META[parsed.category]?.shortLabel ?? parsed.category;
+
+    // Check if the user is topping up an already existing holding (via account digits or "add X to <existing>")
+    const existingByDigits = accountDigits
+      ? holdings.find((h) => {
+          const d = extractHoldingMaskDigits(h);
+          return Boolean(d && d.endsWith(accountDigits.slice(-4)));
+        })
+      : undefined;
+
+    const existingByName =
+      !existingByDigits && /\b(?:to|into|top\s*up|credit|deposit)\b/i.test(lower)
+        ? (() => {
+            const matches = findMatchingHoldingsForEdit(input, holdings);
+            if (matches.length !== 1) return undefined;
+            const candidate = matches[0];
+            // Only treat as top-up if category matches or name strongly overlaps
+            return candidate.category === parsed.category ||
+              lower.includes(candidate.name.toLowerCase())
+              ? candidate
+              : undefined;
+          })()
+        : undefined;
+
+    const matchedExisting = existingByDigits ?? existingByName;
+    if (matchedExisting) {
+      const addedInTargetCcy = Number(
+        convertCurrency(parsed.currentValue, parsed.currency, matchedExisting.currency).toFixed(2)
+      );
+      const nextInvested = Number((matchedExisting.investedAmount + addedInTargetCcy).toFixed(2));
+      const nextCurrent = Number((matchedExisting.currentValue + addedInTargetCcy).toFixed(2));
+      const gain = Number((nextCurrent - nextInvested).toFixed(2));
+      const gainPct = nextInvested > 0 ? Number(((gain / nextInvested) * 100).toFixed(2)) : 0;
+      const toppedUp: Holding = {
+        ...matchedExisting,
+        investedAmount: nextInvested,
+        currentValue: nextCurrent,
+        unrealizedGain: gain,
+        unrealizedGainPct: gainPct,
+      };
+      const snapshot = [...holdings];
+
+      return {
+        title: `Existing Holding Matched: ${matchedExisting.name}`,
+        text: `Found ${matchedExisting.name}${matchedExisting.accountNumberMask ? ` (${matchedExisting.accountNumberMask})` : ''} in your portfolio. Do you want to add ${formatCurrency(addedInTargetCcy, matchedExisting.currency)} to it, or create a separate entry?`,
+        metrics: [
+          {
+            label: 'Current Balance',
+            value: formatCurrency(matchedExisting.currentValue, matchedExisting.currency),
+            tone: 'neutral',
+          },
+          {
+            label: 'New Balance',
+            value: formatCurrency(nextCurrent, matchedExisting.currency),
+            tone: 'emerald',
+          },
+          ...(matchedExisting.accountNumberMask
+            ? [{ label: 'Account Ref', value: matchedExisting.accountNumberMask, tone: 'neutral' as const }]
+            : []),
+          { label: 'Category', value: CATEGORY_META[matchedExisting.category]?.shortLabel ?? matchedExisting.category, tone: 'neutral' },
+        ],
+        actions: [
+          {
+            label: `Top Up (+${formatCurrency(addedInTargetCcy, matchedExisting.currency, { compact: true })})`,
+            variant: 'primary',
+            action: {
+              type: 'CONFIRM_UPDATE_HOLDING',
+              updated: toppedUp,
+              snapshot,
+              summary: `Added ${formatCurrency(addedInTargetCcy, matchedExisting.currency)} to ${matchedExisting.name}. New balance: ${formatCurrency(nextCurrent, matchedExisting.currency)}.`,
+            },
+          },
+          {
+            label: 'Add as New Entry',
+            variant: 'secondary',
+            action: { type: 'CONFIRM_ADD_HOLDING', holding: parsed },
+          },
+          {
+            label: 'Edit in Form',
+            variant: 'secondary',
+            action: { type: 'OPEN_EDIT_MODAL', holding: matchedExisting },
+          },
+        ],
+      };
+    }
+
+    // New holding: present a clean 1-click confirmation preview so plain text is always verified before saving
+    const previewMetrics: ChatMetricRow[] = [
+      { label: 'Instrument', value: parsed.name, tone: 'neutral' },
+      { label: 'Category', value: catLabel, tone: 'neutral' },
+      ...(parsed.investedAmount !== parsed.currentValue
+        ? [{ label: 'Invested', value: formatCurrency(parsed.investedAmount, parsed.currency), tone: 'neutral' as const }]
+        : []),
+      { label: 'Amount / Value', value: formatCurrency(parsed.currentValue, parsed.currency), tone: 'emerald' },
+      ...(parsed.accountNumberMask && !parsed.accountNumberMask.startsWith('CHT-')
+        ? [{ label: 'Account Ref', value: parsed.accountNumberMask, tone: 'neutral' as const }]
+        : []),
+      ...(parsed.interestRatePct !== undefined
+        ? [{ label: 'Rate / Yield', value: `${parsed.interestRatePct}% p.a.`, tone: 'emerald' as const }]
+        : []),
+      ...(parsed.maturityDate
+        ? [{ label: 'Maturity', value: parsed.maturityDate, tone: 'amber' as const }]
+        : []),
+    ];
+
     return {
-      title: `Added ${parsed.name}`,
-      text: `Saved locally to your ${catLabel} holdings${parsed.maturityDate ? ` · Maturing ${parsed.maturityDate}` : ''}.`,
-      metrics: [
-        { label: 'Current Value', value: formatCurrency(parsed.currentValue, parsed.currency), tone: 'emerald' },
-        { label: 'Category', value: catLabel, tone: 'neutral' },
-        ...(parsed.interestRatePct
-          ? [{ label: 'Rate / Yield', value: `${parsed.interestRatePct}% p.a.`, tone: 'emerald' as const }]
-          : []),
-      ],
+      title: `Confirm New Holding`,
+      text: `Parsed locally from your message (${parsed.institution}). Confirm to save to your device ledger, or open the form to adjust any field:`,
+      metrics: previewMetrics,
       actions: [
         {
-          label: 'View in Overview',
+          label: 'Confirm & Save',
           variant: 'primary',
-          action: { type: 'NAVIGATE', tab: 'overview' },
+          action: { type: 'CONFIRM_ADD_HOLDING', holding: parsed },
         },
         {
-          label: 'Edit Details',
+          label: 'Adjust in Form',
           variant: 'secondary',
-          action: { type: 'OPEN_EDIT_MODAL', holding: parsed },
-        },
-        {
-          label: 'Undo Entry',
-          variant: 'secondary',
-          action: { type: 'UNDO_HOLDINGS', snapshot, label: `Reverted adding ${parsed.name}` },
+          action: { type: 'OPEN_ADD_MODAL', draft: parsed },
         },
       ],
     };

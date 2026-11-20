@@ -8,6 +8,7 @@ interface AddHoldingModalProps {
   onClose: () => void;
   baseCurrency: CurrencyCode;
   editingHolding?: Holding | null;
+  draftHolding?: Holding | null;
   onAddHolding: (holding: Holding) => void;
   onUpdateHolding?: (holding: Holding) => void;
 }
@@ -17,6 +18,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   onClose,
   baseCurrency,
   editingHolding = null,
+  draftHolding = null,
   onAddHolding,
   onUpdateHolding,
 }) => {
@@ -39,21 +41,22 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setError('');
-    if (editingHolding) {
-      setName(editingHolding.name);
-      setCategory(editingHolding.category);
-      setInstitution(editingHolding.institution ?? '');
-      setAccountNumberMask(editingHolding.accountNumberMask ?? '');
-      setInvestedAmount(String(editingHolding.investedAmount));
-      setCurrentValue(String(editingHolding.currentValue));
-      setCurrency(editingHolding.currency);
+    const source = editingHolding ?? draftHolding;
+    if (source) {
+      setName(source.name);
+      setCategory(source.category);
+      setInstitution(source.institution ?? '');
+      setAccountNumberMask(source.accountNumberMask ?? '');
+      setInvestedAmount(String(source.investedAmount));
+      setCurrentValue(String(source.currentValue));
+      setCurrency(source.currency);
       setInterestRatePct(
-        editingHolding.interestRatePct !== undefined ? String(editingHolding.interestRatePct) : ''
+        source.interestRatePct !== undefined ? String(source.interestRatePct) : ''
       );
-      setPurchaseDate(editingHolding.purchaseDate || todayIso());
-      setMaturityDate(editingHolding.maturityDate ?? '');
-      setTaxTag(editingHolding.taxTag);
-      setNotes(editingHolding.notes ?? '');
+      setPurchaseDate(source.purchaseDate || todayIso());
+      setMaturityDate(source.maturityDate ?? '');
+      setTaxTag(source.taxTag);
+      setNotes(source.notes ?? '');
     } else {
       setName('');
       setCategory('MUTUAL_FUND');
@@ -68,7 +71,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       setTaxTag('LTCG_EQUITY');
       setNotes('');
     }
-  }, [isOpen, editingHolding, baseCurrency]);
+  }, [isOpen, editingHolding, draftHolding, baseCurrency]);
 
   if (!isOpen) return null;
 

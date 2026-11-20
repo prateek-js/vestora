@@ -133,6 +133,7 @@ export default function App() {
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null);
+  const [draftHolding, setDraftHolding] = useState<Holding | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isValidateModalOpen, setIsValidateModalOpen] = useState(false);
   const [validateInitialTab, setValidateInitialTab] = useState<'excel' | 'manual' | 'reset'>('excel');
@@ -140,12 +141,14 @@ export default function App() {
   const [reinvestHolding, setReinvestHolding] = useState<Holding | null>(null);
   const [reinvestSolution, setReinvestSolution] = useState<ReinvestmentSolution | null>(null);
 
-  const openAddModal = () => {
+  const openAddModal = (draft?: Holding) => {
     setEditingHolding(null);
+    setDraftHolding(draft ?? null);
     setIsAddModalOpen(true);
   };
 
   const openEditModal = (holding: Holding) => {
+    setDraftHolding(null);
     setEditingHolding(holding);
     setIsAddModalOpen(true);
   };
@@ -153,6 +156,7 @@ export default function App() {
   const closeAddEditModal = () => {
     setIsAddModalOpen(false);
     setEditingHolding(null);
+    setDraftHolding(null);
   };
 
   const openValidateModal = (tab: 'excel' | 'manual' | 'reset' = 'excel') => {
@@ -535,7 +539,7 @@ export default function App() {
         currentProfile={currentProfile}
         setProfile={handleProfileSwitch}
         holdingsCount={holdings.length}
-        onOpenAddModal={openAddModal}
+        onOpenAddModal={() => openAddModal()}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
         onOpenValidateModal={() => openValidateModal('excel')}
         onOpenNavRefresh={() => setIsNavRefreshOpen(true)}
@@ -602,7 +606,7 @@ export default function App() {
             onEditHolding={openEditModal}
             onDeleteHolding={handleDeleteHolding}
             onOpenValidateModal={openValidateModal}
-            onOpenAddModal={openAddModal}
+            onOpenAddModal={() => openAddModal()}
           />
         )}
 
@@ -688,6 +692,7 @@ export default function App() {
         onClose={closeAddEditModal}
         baseCurrency={baseCurrency}
         editingHolding={editingHolding}
+        draftHolding={draftHolding}
         onAddHolding={handleAddHolding}
         onUpdateHolding={handleUpdateHolding}
       />
@@ -859,6 +864,7 @@ export default function App() {
           setActiveTab('rebalance');
         }}
         onOpenEditModal={openEditModal}
+        onOpenAddModal={openAddModal}
       />
     </div>
   );

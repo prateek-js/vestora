@@ -48,14 +48,22 @@ interface PortfolioChatDrawerProps {
   onExportJson: () => void;
   onRebalanceHoldingById: (holdingId: string) => void;
   onOpenEditModal: (holding: Holding) => void;
+  onOpenAddModal: (draft?: Holding) => void;
 }
 
-const QUICK_PROMPTS = [
-  'Portfolio summary',
-  'Add HDFC FD 5L at 7.4% maturing in 45 days',
-  'Simulate 8% inflation and -15% crash over 5 years',
-  'Check maturities',
-  'Export Excel',
+interface QuickChip {
+  label: string;
+  kind: 'prompt' | 'add_form' | 'import_file';
+  prompt?: string;
+}
+
+const QUICK_CHIPS: QuickChip[] = [
+  { label: '+ Add Form', kind: 'add_form' },
+  { label: 'Edit Holding', kind: 'prompt', prompt: 'Edit holding' },
+  { label: 'Summary', kind: 'prompt', prompt: 'Portfolio summary' },
+  { label: '5Y Stress', kind: 'prompt', prompt: 'Simulate 8% inflation and -15% crash over 5 years' },
+  { label: 'Import File', kind: 'import_file' },
+  { label: 'Export', kind: 'prompt', prompt: 'Export' },
 ];
 
 function nowTimeLabel(): string {
@@ -66,9 +74,10 @@ const WELCOME_MESSAGE = (): ChatMessage => ({
   id: 'welcome-msg',
   sender: 'assistant',
   title: 'Private Portfolio Chat',
-  text: 'Add, edit, or remove holdings, run 5-year macro stress tests, attach Excel/CSV/JSON files to import, or export reports—processed 100% locally in your browser with zero external API calls.',
+  text: 'Use the guided chips above or type naturally (e.g., "Add 8 lakh to HDFC bank account ending with 1093")—all entries preview for 1-click confirmation and stay 100% on your device.',
   actions: [
-    { label: 'Portfolio Summary', variant: 'primary', action: { type: 'SUGGEST_PROMPT', prompt: 'Portfolio summary' } },
+    { label: '+ Add via Form', variant: 'primary', action: { type: 'OPEN_ADD_MODAL' } },
+    { label: 'Portfolio Summary', variant: 'secondary', action: { type: 'SUGGEST_PROMPT', prompt: 'Portfolio summary' } },
     { label: 'Simulate 5Y Stress', variant: 'secondary', action: { type: 'SUGGEST_PROMPT', prompt: 'Simulate 8% inflation and -15% crash over 5 years' } },
   ],
   timestamp: nowTimeLabel(),
@@ -94,6 +103,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
   onExportJson,
   onRebalanceHoldingById,
   onOpenEditModal,
+  onOpenAddModal,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -257,6 +267,48 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         setIsOpen(false);
         onOpenEditModal(action.holding);
         return;
+      case 'OPEN_ADD_MODAL':
+        setIsOpen(false);
+        onOpenAddModal(action.draft);
+        return;
+      case 'CONFIRM_ADD_HOLDING': {
+        const snapshot = [...holdings];
+        const holdingToSave: Holding = {
+          ...action.holding,
+          id: `h-chat-${Date.now()}`,
+        };
+        onAddHolding(holdingToSave);
+        appendAssistantMessage({
+          title: `Saved ${holdingToSave.name}`,
+          text: `Added to your local portfolio${holdingToSave.accountNumberMask && !holdingToSave.accountNumberMask.startsWith('CHT-') ? ` (${holdingToSave.accountNumberMask})` : ''}.`,
+          actions: [
+            { label: 'View in Overview', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } },
+            { label: 'Edit Details', variant: 'secondary', action: { type: 'OPEN_EDIT_MODAL', holding: holdingToSave } },
+            {
+              label: 'Undo Entry',
+              variant: 'secondary',
+              action: { type: 'UNDO_HOLDINGS', snapshot, label: `Reverted adding ${holdingToSave.name}` },
+            },
+          ],
+        });
+        return;
+      }
+      case 'CONFIRM_UPDATE_HOLDING':
+        onUpdateHolding(action.updated);
+        appendAssistantMessage({
+          title: `Updated ${action.updated.name}`,
+          text: action.summary,
+          actions: [
+            { label: 'View in Overview', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } },
+            { label: 'Edit Details', variant: 'secondary', action: { type: 'OPEN_EDIT_MODAL', holding: action.updated } },
+            {
+              label: 'Undo Change',
+              variant: 'secondary',
+              action: { type: 'UNDO_HOLDINGS', snapshot: action.snapshot, label: `Reverted change to ${action.updated.name}` },
+            },
+          ],
+        });
+        return;
     }
   };
 
@@ -344,16 +396,29 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
               </div>
             </div>
 
-            {/* Quick Command Suggestions Strip */}
+            {/* Guided Action Chips Strip */}
             <div className="px-4 py-2 border-b border-slate-800/80 bg-slate-950/60 flex items-center gap-1.5 overflow-x-auto shrink-0">
-              {QUICK_PROMPTS.map((prompt) => (
+              {QUICK_CHIPS.map((chip) => (
                 <button
-                  key={prompt}
+                  key={chip.label}
                   type="button"
-                  onClick={() => handleSendText(prompt)}
-                  className="px-2.5 py-1 text-2xs font-medium text-slate-300 hover:text-emerald-300 bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-md whitespace-nowrap shrink-0 transition-colors"
+                  onClick={() => {
+                    if (chip.kind === 'add_form') {
+                      setIsOpen(false);
+                      onOpenAddModal();
+                    } else if (chip.kind === 'import_file') {
+                      fileInputRef.current?.click();
+                    } else if (chip.prompt) {
+                      handleSendText(chip.prompt);
+                    }
+                  }}
+                  className={`px-2.5 py-1 text-2xs font-medium rounded-md whitespace-nowrap shrink-0 transition-colors ${
+                    chip.kind === 'add_form'
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
+                      : 'text-slate-300 hover:text-emerald-300 bg-slate-900 border border-slate-800 hover:border-emerald-500/40'
+                  }`}
                 >
-                  {prompt.length > 28 ? `${prompt.slice(0, 26)}...` : prompt}
+                  {chip.label}
                 </button>
               ))}
             </div>
