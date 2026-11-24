@@ -19,6 +19,7 @@ export default defineConfig(() => {
           mutualFundRebalance: path.resolve(__dirname, 'mutual-fund-rebalance-india/index.html'),
           fdMaturityReinvestment: path.resolve(__dirname, 'fd-maturity-reinvestment-guide/index.html'),
           ltcgTaxHarvesting: path.resolve(__dirname, 'ltcg-tax-harvesting-india/index.html'),
+          demo: path.resolve(__dirname, 'demo/index.html'),
         },
       },
     },

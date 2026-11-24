@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme static {
+  --color-ink: #14213d;
+  --color-mist: #eef2f6;
+  --color-paper: #ffffff;
+  --color-level: #02a26d;
+  /* Same green, a step deeper, for thin strokes: the brand green is 2.9:1 on Mist, this is 3.2:1. */
+  --color-level-line: #029a67;
+  --color-tilt: #e8a33d;
+  --color-risk: #d8454b;
+
+  --color-equity: #4c5ce6;
+  --color-debt: #1f8a9e;
+  --color-gold: #c99a2e;
+  --color-cash: #6b7a90;
+
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-mist);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-mist);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    /* Bricolage Grotesque's width axis: a slightly condensed cut reads as a headline, not a UI label. */
+    font-stretch: 88%;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
