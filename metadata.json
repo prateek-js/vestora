@@ -1,6 +1,6 @@
 {
   "name": "Vestora - Unified Wealth & Reinvestment OS",
-  "description": "Multi-asset portfolio tracker aggregating Mutual Funds, Demat, FD/RD, SGB, Bonds, PF, and NPS with automated maturity reinvestment across 4 risk tiers, tax harvesting audit, and interactive macroeconomic stress simulations.",
+  "description": "Rebalance Mutual Funds, FDs, NPS, RBI G-Secs, Gold & Home Loans in one unbiased portal. Live yields, tax audit & stress tests — 0% fees, 100% on-device.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

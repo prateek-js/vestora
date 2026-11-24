@@ -38,6 +38,7 @@ import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
 import { StreetStoryGame } from './components/StreetStoryGame';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
+import { syncDocumentSeo } from './utils/seo';
 import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
 type ActiveTab = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
@@ -97,6 +98,7 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    syncDocumentSeo(activeTab);
     const currentHash = window.location.hash.toLowerCase();
     if (activeTab === 'story') {
       if (currentHash && currentHash !== '#street-stage' && currentHash !== '#why-vestora' && currentHash !== '#story') {

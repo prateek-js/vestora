@@ -1410,6 +1410,54 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Search-Indexable FAQ Section (Synced with FAQPage JSON-LD) */}
+      <section
+        id="faq"
+        aria-label="Frequently Asked Questions"
+        className="bg-slate-900/75 border border-slate-800 rounded-xl p-6 space-y-4"
+      >
+        <div className="border-b border-slate-800 pb-3">
+          <h2 className="text-base font-bold text-white">
+            Frequently Asked Questions about Vestora Wealth
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Straight answers on unbiased rebalancing, home loan vs FD math, and on-device privacy.
+          </p>
+        </div>
+        <div className="divide-y divide-slate-800/80 text-xs">
+          {[
+            {
+              q: 'Should I prepay my home loan or reinvest a matured FD?',
+              a: 'Prepaying an 8.55% home loan delivers a guaranteed, tax-free 8.55% effective return—often outperforming a 6.5% FD that yields roughly 4.55% after 30% income tax. Vestora Wealth compares your exact loan interest rate, tax bracket, and live Direct Mutual Fund, NPS, and RBI G-Sec yields side by side so you can split capital fairly.',
+            },
+            {
+              q: 'How does Vestora Wealth keep my financial data private?',
+              a: 'Vestora Wealth runs 100% on your device inside browser localStorage with zero account registration, zero cloud database, and zero external AI data sharing. You can import or export Excel, CSV, JSON, and PDF files directly on your machine.',
+            },
+            {
+              q: 'Does Vestora Wealth charge commissions or push regular mutual fund plans?',
+              a: 'No. Vestora Wealth is 0% commission and completely free to use. It highlights zero-commission Direct-Growth mutual funds, NPS Tier-I schemes, sovereign RBI G-Secs, and debt prepayment math with no sales bias or AUM fees.',
+            },
+            {
+              q: 'Which investments and liabilities can I track in Vestora Wealth?',
+              a: 'You can track and rebalance Bank Savings, Fixed Deposits (FD/RD), Direct & Regular Mutual Funds, Demat Equities, Sovereign Gold Bonds (SGB) & 24K Gold, RBI G-Secs & Corporate Bonds, EPF, PPF, NPS Tier-I, US Treasuries, and active Home or Personal Loans across INR, USD, EUR, GBP, SGD, and AED.',
+            },
+            {
+              q: 'Can I import my existing portfolio or edit entries quickly?',
+              a: 'Yes. You can upload Excel (.xlsx), CSV, or CAMS/KFintech statements, edit any holding inline, or use the built-in local portfolio chatbox to add, update, simulate, import, or export entries without sending data to any external server.',
+            },
+          ].map((item) => (
+            <details key={item.q} className="group py-3">
+              <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-slate-200 hover:text-emerald-300 transition-colors">
+                <span>{item.q}</span>
+                <span className="text-slate-500 group-open:rotate-45 transition-transform text-base leading-none">+</span>
+              </summary>
+              <p className="mt-2 text-slate-400 leading-relaxed pr-6">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Allow major search engine & social preview crawlers explicitly
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+Sitemap: https://vestora-wealth.ai.studio/sitemap.xml
