@@ -5,4 +5,24 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://vestora-wealth.ai.studio/home-loan-vs-fd-calculator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vestora-wealth.ai.studio/mutual-fund-rebalance-india/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vestora-wealth.ai.studio/fd-maturity-reinvestment-guide/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vestora-wealth.ai.studio/ltcg-tax-harvesting-india/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>

@@ -665,15 +665,37 @@ export default function App() {
         )}
       </main>
 
-      {/* Compliance & Privacy Footer */}
+      {/* Compliance, SEO Guides & Privacy Footer */}
       <footer className="border-t border-slate-800/80 bg-slate-950">
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <p className="text-2xs text-slate-500 leading-relaxed max-w-3xl">
-            We don&apos;t store your data with us — all spreadsheets and manual entries stay strictly on your device. Figures are illustrative / self-reported and not investment or tax advice.
-          </p>
-          <span className="text-2xs text-slate-600 font-mono whitespace-nowrap">
-            © {new Date().getFullYear()} Vestora · Private by design
-          </span>
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-3">
+          <nav
+            aria-label="Free Wealth Calculators and Guides"
+            className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400 border-b border-slate-800/70 pb-3"
+          >
+            <span className="text-2xs font-mono uppercase tracking-wider text-slate-500">
+              Free Calculators &amp; Guides:
+            </span>
+            <a href="/home-loan-vs-fd-calculator/" className="hover:text-emerald-300 transition-colors">
+              Home Loan vs FD Calculator
+            </a>
+            <a href="/mutual-fund-rebalance-india/" className="hover:text-emerald-300 transition-colors">
+              Mutual Fund Rebalance &amp; Direct Plan
+            </a>
+            <a href="/fd-maturity-reinvestment-guide/" className="hover:text-emerald-300 transition-colors">
+              Matured FD Reinvestment Guide
+            </a>
+            <a href="/ltcg-tax-harvesting-india/" className="hover:text-emerald-300 transition-colors">
+              LTCG Tax Harvesting &amp; 80CCD(1B)
+            </a>
+          </nav>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <p className="text-2xs text-slate-500 leading-relaxed max-w-3xl">
+              We don&apos;t store your data with us — all spreadsheets and manual entries stay strictly on your device. Figures are illustrative / self-reported and not investment or tax advice.
+            </p>
+            <span className="text-2xs text-slate-600 font-mono whitespace-nowrap">
+              © {new Date().getFullYear()} Vestora · Private by design
+            </span>
+          </div>
         </div>
       </footer>
 
