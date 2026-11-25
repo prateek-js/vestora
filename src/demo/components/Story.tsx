@@ -11,7 +11,10 @@ interface StoryProps {
   portfolio: DemoPortfolio;
   savedAvailable: boolean;
   onUseSaved: () => void;
+  /** Choose the sample and move on to the next chapter. */
   onUseSample: () => void;
+  hasPersonal: boolean;
+  onAddMine: () => void;
   onDone: () => void;
 }
 
@@ -26,6 +29,7 @@ const VOICES = [
 
 const primaryButton =
   'rounded-full bg-ink px-6 py-3 font-semibold text-paper transition-colors hover:bg-ink/90 disabled:opacity-40';
+const secondaryButton = 'rounded-full border border-ink px-6 py-3 font-semibold text-ink hover:bg-ink/5';
 const quietButton = 'rounded-full px-4 py-3 font-semibold text-ink underline underline-offset-4 hover:bg-ink/5';
 
 function WeightButton({ token, onMove }: { token: Token; onMove: (id: string) => void }) {
@@ -91,7 +95,7 @@ function Tray({
   );
 }
 
-export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, onDone }: StoryProps) {
+export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, hasPersonal, onAddMine, onDone }: StoryProps) {
   const [beat, setBeat] = useState(0);
   const [tokens, setTokens] = useState<Token[]>(startingTokens);
   const [lastMoved, setLastMoved] = useState<string | null>(null);
@@ -204,10 +208,14 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, onDo
         {beat === 3 && (
           <>
             <h1 ref={headingRef} tabIndex={-1} className="text-4xl font-bold md:text-6xl">
-              {portfolio.source === 'saved' ? 'Try it on your portfolio.' : 'Try it on a sample portfolio.'}
+              {portfolio.source === 'sample' ? 'Try it on a sample portfolio.' : 'Try it on your portfolio.'}
             </h1>
             <p className="mt-5 max-w-[46ch] text-lg">
-              {portfolio.source === 'saved' ? 'You are using your saved portfolio, with ' : 'We will use a sample with '}
+              {portfolio.source === 'saved'
+                ? 'You are using your saved portfolio, with '
+                : portfolio.source === 'personal'
+                  ? 'You are using the portfolio you built, with '
+                  : 'We will use a sample with '}
               {portfolio.holdings.length} investments worth{' '}
               <span className="num font-semibold">{formatCurrency(total, portfolio.baseCurrency, { compact: true })}</span>.
               You can change anything. Your numbers stay on this device.
@@ -261,10 +269,7 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, onDo
             <>
               <button
                 type="button"
-                onClick={() => {
-                  onUseSample();
-                  onDone();
-                }}
+                onClick={onUseSample}
                 className={primaryButton}
               >
                 Use the sample portfolio
@@ -272,15 +277,15 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, onDo
               {savedAvailable && (
                 <button
                   type="button"
-                  onClick={() => {
-                    onUseSaved();
-                    onDone();
-                  }}
-                  className="rounded-full border border-ink px-6 py-3 font-semibold text-ink hover:bg-ink/5"
+                  onClick={onUseSaved}
+                  className={secondaryButton}
                 >
                   Use my saved portfolio
                 </button>
               )}
+              <button type="button" onClick={onAddMine} className={secondaryButton}>
+                {hasPersonal ? 'Edit my investments' : 'Add my investments'}
+              </button>
             </>
           )}
         </div>

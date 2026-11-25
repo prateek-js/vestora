@@ -39,9 +39,9 @@ export function ChapterBar({ chapters, chapter, reached, onGo }: ChapterBarProps
       </ol>
       <div className="sm:hidden">
         <p className="m-0 text-center text-sm font-semibold">
-          {chapters[activeIndex].label}{' '}
+          {(chapters[activeIndex] ?? chapters[0]).label}{' '}
           <span className="num font-normal text-ink/70">
-            ({activeIndex + 1} of {chapters.length})
+            ({Math.max(activeIndex, 0) + 1} of {chapters.length})
           </span>
         </p>
         <div className="mt-1 flex gap-1" aria-hidden>

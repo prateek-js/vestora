@@ -1,20 +1,48 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { VestoraLogo } from '../components/VestoraLogo';
+import type { CurrencyCode, Holding } from '../types/wealth';
 import { loadPersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
 import { ChapterBar } from './components/ChapterBar';
+import { PersonalBanner } from './components/PersonalBanner';
 import { PlanSummary } from './components/PlanSummary';
 import { Play } from './components/Play';
 import { SeeIt } from './components/SeeIt';
 import { Story } from './components/Story';
-import { loadBenchmarks, pickPortfolio, type BenchmarkStatus, type DemoPortfolio } from './demoData';
-import { CHAPTERS, useJourney, type Chapter } from './journeyState';
+import {
+  loadBenchmarks,
+  personalPortfolio,
+  pickPortfolio,
+  portfolioTotal,
+  type BenchmarkStatus,
+  type DemoPortfolio,
+} from './demoData';
+import { nextChapter, useJourney, visibleChapters, type Chapter } from './journeyState';
 import { useSplit } from './useSplit';
+
+// The spreadsheet code stays out of the first load.
+const Editor = lazy(() => import('./components/Editor').then((m) => ({ default: m.Editor })));
+
+type Choice = 'sample' | 'saved' | 'personal';
+interface PersonalData {
+  holdings: Holding[];
+  baseCurrency: CurrencyCode;
+}
+
+/** Lands on the page heading once a lazily loaded chapter has appeared. */
+function FocusHeading() {
+  useEffect(() => {
+    document.querySelector<HTMLElement>('main h1')?.focus();
+  }, []);
+  return null;
+}
 
 export default function DemoApp() {
   const { state, set } = useJourney();
-  const [maxIndex, setMaxIndex] = useState(0);
-  const [useSaved, setUseSaved] = useState(false);
+  const [reached, setReached] = useState<Chapter[]>(['story']);
+  const [choice, setChoice] = useState<Choice>('sample');
+  // The visitor's own investments. Once created it is never reset to null, so 'mine' is always a visible chapter.
+  const [personal, setPersonal] = useState<PersonalData | null>(null);
   const [benchmarks, setBenchmarks] = useState<LiveMarketBenchmarks | null>(null);
   const [benchmarkStatus, setBenchmarkStatus] = useState<BenchmarkStatus>('loading');
 
@@ -22,7 +50,11 @@ export default function DemoApp() {
   const sample = useMemo<DemoPortfolio>(() => pickPortfolio(null), []);
   const saved = useMemo<DemoPortfolio>(() => pickPortfolio(loadPersistedPortfolio()), []);
   const savedAvailable = saved.source === 'saved';
-  const portfolio = useSaved && savedAvailable ? saved : sample;
+  const portfolio = useMemo<DemoPortfolio>(() => {
+    if (choice === 'personal' && personal) return personalPortfolio(personal.holdings, personal.baseCurrency);
+    if (choice === 'saved' && savedAvailable) return saved;
+    return sample;
+  }, [choice, personal, sample, saved, savedAvailable]);
 
   const split = useSplit(portfolio, benchmarks, state);
 
@@ -53,16 +85,42 @@ export default function DemoApp() {
     document.querySelector<HTMLElement>('main h1')?.focus();
   }, [state.chapter]);
 
-  const reached = CHAPTERS.slice(0, maxIndex + 1).map((c) => c.id);
+  // A personal portfolio with nothing in it has nothing to look at yet: only the story and the editor open.
+  const emptyPersonal = choice === 'personal' && portfolioTotal(portfolio) <= 0;
+  const openChapters = emptyPersonal ? reached.filter((c) => c === 'story' || c === 'mine') : reached;
+
   const go = (chapter: Chapter) => {
-    const index = CHAPTERS.findIndex((c) => c.id === chapter);
-    setMaxIndex((m) => Math.max(m, index));
+    if (emptyPersonal && chapter !== 'story' && chapter !== 'mine') return;
+    if (chapter === 'mine') {
+      setPersonal((p) => p ?? { holdings: [], baseCurrency: 'INR' });
+      setChoice('personal');
+    }
+    setReached((r) => (r.includes(chapter) ? r : [...r, chapter]));
     set({ chapter });
     window.scrollTo({ top: 0 });
   };
   const next = () => {
-    const index = CHAPTERS.findIndex((c) => c.id === state.chapter);
-    if (index < CHAPTERS.length - 1) go(CHAPTERS[index + 1].id);
+    const to = nextChapter(state.chapter);
+    if (to) go(to);
+  };
+
+  // Every change to the visitor's investments starts from a copy of whatever portfolio is on screen, so a saved one is never touched.
+  const updatePersonal = (fn: (p: PersonalData) => PersonalData) =>
+    setPersonal((p) => fn(p ?? { holdings: [...portfolio.holdings], baseCurrency: portfolio.baseCurrency }));
+  const editPersonal = (fn: (h: Holding[]) => Holding[]) => {
+    setChoice('personal');
+    updatePersonal((p) => ({ ...p, holdings: fn(p.holdings) }));
+  };
+  const addMine = () => {
+    setPersonal((p) => p ?? { holdings: [], baseCurrency: 'INR' });
+    setChoice('personal');
+    go('mine');
+  };
+  const chooseAndContinue = (picked: Choice) => {
+    setChoice(picked);
+    setReached((r) => (r.includes('see') ? r : [...r, 'see']));
+    set({ chapter: 'see' });
+    window.scrollTo({ top: 0 });
   };
 
   return (
@@ -73,21 +131,46 @@ export default function DemoApp() {
             <VestoraLogo size={32} />
             <span className="font-display text-xl font-semibold max-sm:sr-only">Vestora</span>
           </div>
-          <ChapterBar chapter={state.chapter} reached={reached} onGo={go} />
+          <ChapterBar
+            chapters={visibleChapters(personal !== null)}
+            chapter={state.chapter}
+            reached={openChapters}
+            onGo={go}
+          />
           <a href="/#overview" className="shrink-0 text-sm font-medium underline underline-offset-4">
             Full app
           </a>
         </div>
       </header>
       <main className="mx-auto max-w-[1120px] px-5 py-8">
+        {choice === 'personal' && personal && personal.holdings.length > 0 && (
+          <PersonalBanner holdings={personal.holdings} baseCurrency={personal.baseCurrency} />
+        )}
         {state.chapter === 'story' && (
           <Story
             portfolio={portfolio}
             savedAvailable={savedAvailable}
-            onUseSaved={() => setUseSaved(true)}
-            onUseSample={() => setUseSaved(false)}
-            onDone={next}
+            onUseSaved={() => chooseAndContinue('saved')}
+            onUseSample={() => chooseAndContinue('sample')}
+            hasPersonal={personal !== null}
+            onAddMine={addMine}
+            onDone={() => (emptyPersonal ? go('mine') : next())}
           />
+        )}
+        {state.chapter === 'mine' && personal && (
+          <Suspense fallback={<p className="py-10 text-lg">Loading your investments</p>}>
+            <Editor
+              holdings={personal.holdings}
+              baseCurrency={personal.baseCurrency}
+              onChange={(nextHoldings) => editPersonal(() => nextHoldings)}
+              onImported={(imported) =>
+                updatePersonal(() => ({ holdings: imported.holdings, baseCurrency: imported.baseCurrency }))
+              }
+              onBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
+              onContinue={next}
+            />
+            <FocusHeading />
+          </Suspense>
         )}
         {state.chapter === 'see' && (
           <SeeIt

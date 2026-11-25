@@ -13,7 +13,7 @@ export const CHAPTERS: { id: Chapter; label: string }[] = [
 
 /** The core chapters, with "Your numbers" after the story once the visitor has built a portfolio. */
 export function visibleChapters(hasPersonal: boolean): { id: Chapter; label: string }[] {
-  if (!hasPersonal) return CHAPTERS;
+  if (!hasPersonal) return [...CHAPTERS];
   return [CHAPTERS[0], { id: 'mine', label: 'Your numbers' }, ...CHAPTERS.slice(1)];
 }
 

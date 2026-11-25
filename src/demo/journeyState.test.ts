@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { nextChapter, visibleChapters, type Chapter } from './journeyState';
+import { CHAPTERS, nextChapter, visibleChapters, type Chapter } from './journeyState';
 
 test('without a personal portfolio the journey has four chapters', () => {
   assert.deepEqual(
@@ -27,4 +27,11 @@ test('nextChapter walks the journey and ends at the plan', () => {
     ['plan', null],
   ];
   for (const [from, to] of expected) assert.equal(nextChapter(from), to, from);
+});
+
+test('changing the list visibleChapters returns does not change CHAPTERS', () => {
+  const result = visibleChapters(false);
+  result.push({ id: 'mine', label: 'Extra' });
+  assert.equal(CHAPTERS.length, 4);
+  assert.equal(visibleChapters(false).length, 4);
 });
