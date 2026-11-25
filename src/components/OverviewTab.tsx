@@ -78,27 +78,27 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
     const data = payload[0].payload;
     const isPositive = data.unrealizedGain >= 0;
     return (
-      <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3.5 shadow-2xl backdrop-blur-md min-w-[205px]">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
-          <span className="font-semibold text-white">{data.fullDate || label}</span>
-          {data.isCurrent && <span className="text-2xs font-mono text-emerald-400">Current</span>}
+      <div className="bg-paper border border-slate-700 rounded-xl p-3.5 shadow-ink/10 shadow-lg min-w-[205px]">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-700 text-xs">
+          <span className="font-semibold text-ink">{data.fullDate || label}</span>
+          {data.isCurrent && <span className="text-2xs font-mono text-emerald-700">Current</span>}
         </div>
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-400">Avg Valuation</span>
-            <span className="font-mono font-semibold text-white tabular-nums">
+            <span className="text-ink/60">Avg Valuation</span>
+            <span className="font-mono font-semibold text-ink tabular-nums">
               {formatCurrency(data.valuation, baseCurrency, { compact: false, showDecimals: false })}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-400">Invested Base</span>
-            <span className="font-mono text-slate-300 tabular-nums">
+            <span className="text-ink/60">Invested Base</span>
+            <span className="font-mono text-ink/70 tabular-nums">
               {formatCurrency(data.invested, baseCurrency, { compact: false, showDecimals: false })}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80">
-            <span className="text-slate-400">Net Gain</span>
-            <span className={`font-mono font-medium tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700/60">
+            <span className="text-ink/60">Net Gain</span>
+            <span className={`font-mono font-medium tabular-nums ${isPositive ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isPositive ? '+' : ''}
               {formatCurrency(data.unrealizedGain, baseCurrency, { compact: true })} ({formatPercent(data.gainPct)})
             </span>
@@ -122,38 +122,38 @@ const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, la
     const data = payload[0].payload;
     const isPositive = data.netGrowth >= 0;
     return (
-      <div className="bg-slate-950/95 border border-slate-700/80 rounded-xl p-3.5 shadow-2xl backdrop-blur-md min-w-[220px]">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
-          <span className="font-semibold text-white">{data.fullDate || label}</span>
-          <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+      <div className="bg-paper border border-slate-700 rounded-xl p-3.5 shadow-ink/10 shadow-lg min-w-[220px]">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-700 text-xs">
+          <span className="font-semibold text-ink">{data.fullDate || label}</span>
+          <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-rose-600'}`}>
             {isPositive ? '+' : ''}
             {formatPercent(data.netGrowthPct)}
           </span>
         </div>
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-400">Net Growth (MoM)</span>
-            <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <span className="text-ink/60">Net Growth (MoM)</span>
+            <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isPositive ? '+' : ''}
               {formatCurrency(data.netGrowth, baseCurrency, { compact: false, showDecimals: false })}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-400">Market Return</span>
-            <span className={`font-mono tabular-nums ${data.marketGain >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+            <span className="text-ink/60">Market Return</span>
+            <span className={`font-mono tabular-nums ${data.marketGain >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
               {data.marketGain >= 0 ? '+' : ''}
               {formatCurrency(data.marketGain, baseCurrency, { compact: true })}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-400">Capital Added</span>
-            <span className="font-mono text-slate-300 tabular-nums">
+            <span className="text-ink/60">Capital Added</span>
+            <span className="font-mono text-ink/70 tabular-nums">
               +{formatCurrency(data.capitalFlow, baseCurrency, { compact: true })}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/80">
-            <span className="text-slate-400">Month-End Value</span>
-            <span className="font-mono text-white tabular-nums">
+          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700/60">
+            <span className="text-ink/60">Month-End Value</span>
+            <span className="font-mono text-ink tabular-nums">
               {formatCurrency(data.endingValuation, baseCurrency, { compact: true })}
             </span>
           </div>
@@ -349,7 +349,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       const meta = CATEGORY_META[h.category] || {
         label: h.category.replace('_', ' '),
         shortLabel: h.category.replace('_', ' '),
-        color: '#94a3b8',
+        color: '#6b7a90',
       };
       const existing = map.get(h.category);
       if (existing) {
@@ -378,14 +378,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       .map(([key, data]) => {
         const color =
           key === 'EQUITY'
-            ? '#6366f1'
+            ? '#4c5ce6'
             : key === 'FIXED_INCOME'
-            ? '#0ea5e9'
+            ? '#1f8a9e'
             : key === 'GOLD'
-            ? '#f59e0b'
+            ? '#c99a2e'
             : key === 'RETIREMENT'
-            ? '#10b981'
-            : '#94a3b8';
+            ? '#02a26d'
+            : '#6b7a90';
 
         return {
           key: key as AssetCategory,
@@ -465,21 +465,21 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <section aria-label="Portfolio Quick Actions" className="space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight text-balance">
+            <h1 className="text-xl sm:text-2xl font-bold text-ink tracking-tight text-balance">
               {portfolioMode === 'demo'
                 ? 'Simulate your own portfolio'
                 : 'Your simulated portfolio'}
             </h1>
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-300 mt-1">
-              <span className="text-slate-400">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-ink/70 mt-1">
+              <span className="text-ink/60">
                 {portfolioMode === 'demo'
                   ? `Viewing sample data (${profileName.split(' ')[0]})`
                   : 'Custom personal session'}
               </span>
-              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span aria-hidden="true" className="text-ink/40">·</span>
               <span
                 data-tour="privacy-badge"
-                className="inline-flex items-center gap-1.5 text-emerald-400 px-1.5 py-0.5 rounded"
+                className="inline-flex items-center gap-1.5 text-emerald-700 px-1.5 py-0.5 rounded"
               >
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                 We don&apos;t store your data with us
@@ -491,26 +491,26 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => onOpenValidateModal('manual')}
-              className="px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="px-3.5 py-2 text-xs font-medium text-ink bg-paper hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
-              <Table2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <Table2 className="w-3.5 h-3.5 text-debt shrink-0" />
               <span>Batch Manual Entry</span>
             </button>
             <button
               type="button"
               onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
-              className="px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="px-3.5 py-2 text-xs font-medium text-ink bg-paper hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <Download className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
               <span>Sample Template</span>
             </button>
             <button
               type="button"
               onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
               disabled={holdings.length === 0}
-              className="px-3.5 py-2 text-xs font-medium text-emerald-300 bg-emerald-950/35 hover:bg-emerald-950/55 disabled:opacity-45 disabled:cursor-not-allowed border border-emerald-500/40 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="px-3.5 py-2 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-45 disabled:cursor-not-allowed border border-emerald-500/40 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
               <span>Export Excel (.xlsx)</span>
             </button>
             <button
@@ -524,9 +524,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 })
               }
               disabled={holdings.length === 0}
-              className="px-3.5 py-2 text-xs font-medium text-slate-100 bg-slate-900 hover:bg-slate-800 disabled:opacity-45 disabled:cursor-not-allowed border border-slate-700 hover:border-rose-400/60 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="px-3.5 py-2 text-xs font-medium text-ink bg-paper hover:bg-ink/5 disabled:opacity-45 disabled:cursor-not-allowed border border-slate-700 hover:border-rose-600/60 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
             >
-              <FileText className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <FileText className="w-3.5 h-3.5 text-rose-600 shrink-0" />
               <span>Export PDF Report</span>
             </button>
           </div>
@@ -537,22 +537,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Net Worth Summary Widget */}
           <div
             aria-label="Net Worth Summary"
-            className="xl:col-span-4 bg-slate-900 border border-slate-700/90 rounded-xl p-5 flex flex-col justify-between gap-4"
+            className="xl:col-span-4 bg-paper border border-slate-700 rounded-xl p-5 flex flex-col justify-between gap-4"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="font-medium text-slate-300">Net Worth Summary</span>
-                <span className="text-slate-400">30-day change</span>
+                <span className="font-medium text-ink/70">Net Worth Summary</span>
+                <span className="text-ink/60">30-day change</span>
               </div>
 
-              <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-white tabular-nums">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-ink tabular-nums">
                 {formatCurrency(totalValuation, baseCurrency, { compact: false, showDecimals: false })}
               </div>
 
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono tabular-nums">
                 <span
                   className={`inline-flex items-center gap-1 font-semibold ${
-                    thirtyDayStats.changeAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    thirtyDayStats.changeAmount >= 0 ? 'text-emerald-700' : 'text-rose-600'
                   }`}
                 >
                   {thirtyDayStats.changeAmount >= 0 ? (
@@ -565,14 +565,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     {formatPercent(thirtyDayStats.changePct)}
                   </span>
                 </span>
-                <span className="text-slate-400">
+                <span className="text-ink/60">
                   ({thirtyDayStats.changeAmount >= 0 ? '+' : ''}
                   {formatCurrency(thirtyDayStats.changeAmount, baseCurrency, { compact: true })} last 30d)
                 </span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-400 font-mono tabular-nums">
+            <div className="pt-3 border-t border-slate-700 flex items-center justify-between gap-3 text-xs text-ink/60 font-mono tabular-nums">
               <span>Invested {formatCurrency(totalInvested, baseCurrency, { compact: true })}</span>
               <span>
                 {holdings.length} {holdings.length === 1 ? 'holding' : 'holdings'}
@@ -586,26 +586,26 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               type="button"
               data-tour="import-card"
               onClick={() => onOpenValidateModal('excel')}
-              className="group text-left bg-emerald-500 hover:bg-emerald-400 border border-emerald-300/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-emerald-950/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="group text-left bg-emerald-500 hover:bg-emerald-600 border border-emerald-600/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-ink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-mist"
             >
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-950">
-                    <FileSpreadsheet className="w-4 h-4 text-slate-950 shrink-0" />
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-white">
+                    <FileSpreadsheet className="w-4 h-4 text-white shrink-0" />
                     <span>Excel or CSV</span>
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-950/75">01</span>
+                  <span className="text-xs font-mono font-bold text-white/75">01</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-950 tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                   Import or Restore Portfolio
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-950/85 font-medium leading-relaxed">
+                <p className="text-xs sm:text-sm text-white/85 font-medium leading-relaxed">
                   {portfolioMode === 'demo'
                     ? 'Upload your own .xlsx / .csv or re-import a file you previously saved from Vestora.'
                     : 'Upload a fresh sheet or re-import an earlier Vestora export to restore your progress.'}
                 </p>
               </div>
-              <div className="pt-3 border-t border-slate-950/15 flex items-center justify-between text-xs font-bold text-slate-950 whitespace-nowrap">
+              <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs font-bold text-white whitespace-nowrap">
                 <span>Upload or restore file</span>
                 <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </div>
@@ -615,24 +615,24 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               type="button"
               data-tour="add-card"
               onClick={onOpenAddModal}
-              className="group text-left bg-slate-900 hover:bg-slate-800/95 border border-slate-700 hover:border-emerald-400/70 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="group text-left bg-paper hover:bg-ink/5 border border-slate-700 hover:border-emerald-600/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-mist"
             >
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-xs font-medium text-emerald-400">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700">
                     <PlusCircle className="w-4 h-4 shrink-0" />
                     <span>Quick entry</span>
                   </span>
-                  <span className="text-xs font-mono text-slate-500">02</span>
+                  <span className="text-xs font-mono text-ink/60">02</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-ink tracking-tight">
                   Add Single Holding
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-ink/70 leading-relaxed">
                   Log a mutual fund, direct stock, fixed deposit, bond, or cash account in seconds.
                 </p>
               </div>
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-emerald-300 whitespace-nowrap">
+              <div className="pt-3 border-t border-slate-700 flex items-center justify-between text-xs font-semibold text-emerald-700 whitespace-nowrap">
                 <span>Add holding</span>
                 <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </div>
@@ -641,24 +641,24 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => onNavigateToTab('simulator')}
-              className="group text-left bg-slate-900 hover:bg-slate-800/95 border border-slate-700 hover:border-amber-400/70 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="group text-left bg-paper hover:bg-ink/5 border border-slate-700 hover:border-amber-600/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 focus-visible:ring-offset-mist"
             >
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-xs font-medium text-amber-400">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-amber-700">
                     <Sliders className="w-4 h-4 shrink-0" />
                     <span>Scenario lab</span>
                   </span>
-                  <span className="text-xs font-mono text-slate-500">03</span>
+                  <span className="text-xs font-mono text-ink/60">03</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-ink tracking-tight">
                   Run Stress Test
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-ink/70 leading-relaxed">
                   Simulate rate hikes, market shocks, inflation, and shuffle asset weights dynamically.
                 </p>
               </div>
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-amber-300 whitespace-nowrap">
+              <div className="pt-3 border-t border-slate-700 flex items-center justify-between text-xs font-semibold text-amber-700 whitespace-nowrap">
                 <span>Open Stress Lab</span>
                 <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </div>
@@ -669,20 +669,20 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Slim Single-Line Matured Alert Ribbon (only when action needed) */}
       {(maturedHoldings.length > 0 || maturingSoonHoldings.length > 0) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 text-xs">
-          <div className="flex items-center gap-2 text-amber-200">
-            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+          <div className="flex items-center gap-2 text-ink">
+            <Clock className="w-4 h-4 text-amber-700 shrink-0" />
             <span>
               {maturedHoldings.length > 0 ? (
                 <>
-                  <strong className="font-semibold text-amber-300">
+                  <strong className="font-semibold text-amber-700">
                     {maturedHoldings.length} matured holding{maturedHoldings.length > 1 ? 's' : ''}
                   </strong>{' '}
                   ({formatCurrency(totalMaturedAmount, baseCurrency, { compact: true })}) sitting idle.
                 </>
               ) : (
                 <>
-                  <strong className="font-semibold text-amber-300">
+                  <strong className="font-semibold text-amber-700">
                     {maturingSoonHoldings[0]?.name}
                   </strong>{' '}
                   matures in {maturingSoonHoldings[0]?.daysToMaturity} days.
@@ -693,7 +693,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <button
             type="button"
             onClick={() => onNavigateToTab('radar')}
-            className="text-xs font-semibold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
+            className="text-xs font-semibold text-amber-700 hover:text-amber-600 inline-flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
           >
             <span>Open Maturity Radar</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -706,15 +706,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <div
           role="status"
           aria-label="30-day high gainers notification"
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/35 text-xs"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/35 text-xs"
         >
-          <div className="flex items-start sm:items-center gap-2 text-emerald-100 min-w-0">
-            <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />
+          <div className="flex items-start sm:items-center gap-2 text-ink min-w-0">
+            <TrendingUp className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5 sm:mt-0" />
             <span className="leading-relaxed">
-              <strong className="font-semibold text-emerald-300">
+              <strong className="font-semibold text-emerald-700">
                 {surgeHoldings30d.length} holding{surgeHoldings30d.length > 1 ? 's' : ''} gained &gt;15% in 30 days:
               </strong>{' '}
-              <span className="font-mono text-emerald-200/90 tabular-nums">
+              <span className="font-mono text-ink/80 tabular-nums">
                 {surgeHoldings30d
                   .slice(0, 2)
                   .map((item) => `${item.holding.name} (+${item.gain30d.toFixed(1)}%)`)
@@ -730,7 +730,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               setWorkspaceView('ledger');
               setSelectedCategory((prev) => (prev === 'SURGE_30D' ? 'ALL' : 'SURGE_30D'));
             }}
-            className="text-xs font-semibold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
+            className="text-xs font-semibold text-emerald-700 hover:text-emerald-600 inline-flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
           >
             <span>{selectedCategory === 'SURGE_30D' ? 'Show All Holdings' : 'Filter Top Gainers'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -740,61 +740,61 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* 2. Clean 4-Card KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
-          <div className="text-xs text-slate-400">Invested Capital</div>
-          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white mt-1.5 tabular-nums">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
+          <div className="text-xs text-ink/60">Invested Capital</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-ink mt-1.5 tabular-nums">
             {formatCurrency(totalInvested, baseCurrency, { compact: false, showDecimals: false })}
           </div>
-          <div className="text-xs text-slate-500 mt-1.5 font-mono tabular-nums">
+          <div className="text-xs text-ink/60 mt-1.5 font-mono tabular-nums">
             {totalInvested > 0
               ? `${(totalValuation / totalInvested).toFixed(2)}x current value`
               : 'Total cost basis'}
           </div>
         </div>
 
-        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
-          <div className="text-xs text-slate-400">Unrealized Gain</div>
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
+          <div className="text-xs text-ink/60">Unrealized Gain</div>
           <div
             className={`text-xl sm:text-2xl font-bold font-mono tracking-tight mt-1.5 tabular-nums ${
-              totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              totalGain >= 0 ? 'text-emerald-700' : 'text-rose-600'
             }`}
           >
             {totalGain >= 0 ? '+' : ''}
             {formatCurrency(totalGain, baseCurrency, { compact: false, showDecimals: false })}
           </div>
           <div className="text-xs mt-1.5 font-mono tabular-nums">
-            <span className={totalGain >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>
+            <span className={totalGain >= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold'}>
               {formatPercent(totalGainPct)}
             </span>{' '}
-            <span className="text-slate-500">overall return</span>
+            <span className="text-ink/60">overall return</span>
           </div>
         </div>
 
-        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5">
-          <div className="text-xs text-slate-400">Matured / Due 30d</div>
-          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-amber-400 mt-1.5 tabular-nums">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
+          <div className="text-xs text-ink/60">Matured / Due 30d</div>
+          <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-amber-700 mt-1.5 tabular-nums">
             {formatCurrency(totalMaturedAmount, baseCurrency, { compact: false, showDecimals: false })}
           </div>
-          <div className="text-xs text-slate-500 mt-1.5">
+          <div className="text-xs text-ink/60 mt-1.5">
             {maturedHoldings.length} matured · {maturingSoonHoldings.length} upcoming
           </div>
         </div>
 
-        <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="text-slate-400">Portfolio Risk Score</span>
+              <span className="text-ink/60">Portfolio Risk Score</span>
               <span
                 className={`inline-flex items-center gap-1 font-medium ${
                   riskScore.score === 0
-                    ? 'text-slate-500'
+                    ? 'text-ink/60'
                     : riskScore.score >= 75
-                    ? 'text-rose-400'
+                    ? 'text-rose-600'
                     : riskScore.score >= 55
-                    ? 'text-amber-400'
+                    ? 'text-amber-700'
                     : riskScore.score >= 30
-                    ? 'text-sky-400'
-                    : 'text-emerald-400'
+                    ? 'text-debt'
+                    : 'text-emerald-700'
                 }`}
               >
                 <Gauge className="w-3.5 h-3.5 shrink-0" />
@@ -803,16 +803,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             <div className="flex items-baseline gap-1.5 mt-1.5">
-              <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white tabular-nums">
+              <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-ink tabular-nums">
                 {riskScore.score > 0 ? riskScore.score : '—'}
               </span>
               {riskScore.score > 0 && (
-                <span className="text-xs font-mono text-slate-500 tabular-nums">/ 100</span>
+                <span className="text-xs font-mono text-ink/60 tabular-nums">/ 100</span>
               )}
             </div>
 
             <div
-              className="mt-2.5 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden"
+              className="mt-2.5 h-1.5 w-full rounded-full bg-mist overflow-hidden"
               role="progressbar"
               aria-label="Portfolio Risk Score"
               aria-valuenow={riskScore.score}
@@ -822,19 +822,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   riskScore.score >= 75
-                    ? 'bg-rose-400'
+                    ? 'bg-rose-500'
                     : riskScore.score >= 55
-                    ? 'bg-amber-400'
+                    ? 'bg-amber-500'
                     : riskScore.score >= 30
-                    ? 'bg-sky-400'
-                    : 'bg-emerald-400'
+                    ? 'bg-debt'
+                    : 'bg-emerald-500'
                 }`}
                 style={{ width: `${riskScore.score}%` }}
               />
             </div>
           </div>
 
-          <div className="text-xs text-slate-500 mt-2 font-mono tabular-nums">
+          <div className="text-xs text-ink/60 mt-2 font-mono tabular-nums">
             {riskScore.score > 0
               ? `${riskScore.annualizedVolatilityPct}% est. vol · ${riskScore.equityExposurePct}% equity`
               : 'Add holdings to assess risk'}
@@ -846,21 +846,21 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       {holdings.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           {/* Left (7 cols): 12-Month Historical Value Trend */}
-          <div className="lg:col-span-7 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="lg:col-span-7 bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold text-white">Portfolio Value Trend</h3>
-                <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                <h3 className="text-sm font-semibold text-ink">Portfolio Value Trend</h3>
+                <div className="flex items-center gap-2 text-xs text-ink/60 mt-0.5">
                   <span>Monthly average valuation</span>
                   <span aria-hidden="true">·</span>
-                  <span className={`font-mono font-semibold ${trendStats.diff >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className={`font-mono font-semibold ${trendStats.diff >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                     {trendStats.diff >= 0 ? '+' : ''}
                     {formatPercent(trendStats.diffPct)} ({trendHorizon})
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 w-fit">
+              <div className="flex items-center bg-mist border border-slate-700 rounded-lg p-0.5 w-fit">
                 {(['3M', '6M', '12M'] as const).map((period) => (
                   <button
                     key={period}
@@ -868,8 +868,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     onClick={() => setTrendHorizon(period)}
                     className={`px-2.5 py-1 text-2xs font-mono font-semibold rounded-md transition-colors ${
                       trendHorizon === period
-                        ? 'bg-emerald-500 text-slate-950'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-ink text-paper'
+                        : 'text-ink/70 hover:text-ink'
                     }`}
                   >
                     {period}
@@ -883,22 +883,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <AreaChart data={visibleTrendData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                   <defs>
                     <linearGradient id="trendValuationGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#02c37e" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#02c37e" stopOpacity={0.02} />
+                      <stop offset="5%" stopColor="#02A26D" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="#02A26D" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#26334a" opacity={0.35} vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D8E0EA" vertical={false} />
                   <XAxis
                     dataKey="month"
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    stroke="#14213d"
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
-                    axisLine={{ stroke: '#26334a' }}
+                    axisLine={{ stroke: "#D8E0EA" }}
                     dy={6}
                   />
                   <YAxis
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    stroke="#14213d"
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
@@ -909,16 +909,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <Area
                     type="monotone"
                     dataKey="valuation"
-                    stroke="#02c37e"
+                    stroke="#02A26D"
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#trendValuationGradient)"
-                    activeDot={{ r: 5, fill: '#34d99b', stroke: '#06281d', strokeWidth: 2 }}
+                    activeDot={{ r: 5, fill: "#02A26D", stroke: "#ffffff", strokeWidth: 2 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="invested"
-                    stroke="#94a3b8"
+                    stroke="#6b7a90"
                     strokeWidth={1.5}
                     strokeDasharray="4 4"
                     dot={false}
@@ -927,32 +927,32 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </ResponsiveContainer>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-700/60 text-xs text-ink/60">
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-2">
                   <span className="w-3 h-0.5 bg-emerald-500 rounded" />
                   Portfolio Valuation
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <span className="w-3 h-0.5 border-b border-dashed border-slate-400" />
+                  <span className="w-3 h-0.5 border-b border-dashed border-ink/50" />
                   Invested Capital
                 </span>
               </div>
-              <span className="font-mono text-2xs text-slate-500">{baseCurrency}</span>
+              <span className="font-mono text-2xs text-ink/60">{baseCurrency}</span>
             </div>
           </div>
 
           {/* Right (5 cols): Portfolio Allocation Donut */}
-          <div className="lg:col-span-5 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="lg:col-span-5 bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-semibold text-white">Asset Allocation</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h3 className="text-sm font-semibold text-ink">Asset Allocation</h3>
+                <p className="text-xs text-ink/60 mt-0.5">
                   {activeDonutData.length} {chartViewMode === 'CATEGORY' ? 'categories' : 'asset classes'}
                 </p>
               </div>
 
-              <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+              <div className="flex items-center bg-mist border border-slate-700 rounded-lg p-0.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -961,8 +961,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   }}
                   className={`px-2.5 py-1 text-2xs font-semibold rounded-md transition-colors ${
                     chartViewMode === 'CATEGORY'
-                      ? 'bg-emerald-500 text-slate-950'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-ink text-paper'
+                      : 'text-ink/70 hover:text-ink'
                   }`}
                 >
                   Category
@@ -975,8 +975,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   }}
                   className={`px-2.5 py-1 text-2xs font-semibold rounded-md transition-colors ${
                     chartViewMode === 'BROAD'
-                      ? 'bg-emerald-500 text-slate-950'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-ink text-paper'
+                      : 'text-ink/70 hover:text-ink'
                   }`}
                 >
                   Class
@@ -993,9 +993,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         const data = payload[0].payload;
                         const pct = totalValuation > 0 ? (data.value / totalValuation) * 100 : 0;
                         return (
-                          <div className="bg-slate-950/95 border border-slate-700/80 px-3 py-2 rounded-lg shadow-xl text-xs font-mono">
-                            <div className="font-semibold text-white">{data.label}</div>
-                            <div className="text-slate-200 mt-0.5 tabular-nums">
+                          <div className="bg-paper border border-slate-700 px-3 py-2 rounded-lg shadow-ink/10 text-xs font-mono">
+                            <div className="font-semibold text-ink">{data.label}</div>
+                            <div className="text-ink mt-0.5 tabular-nums">
                               {formatCurrency(data.value, baseCurrency, { compact: false, showDecimals: false })} ({pct.toFixed(1)}%)
                             </div>
                           </div>
@@ -1014,7 +1014,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     dataKey="value"
                     onMouseEnter={(_, index) => setHoveredSliceIndex(index)}
                     onMouseLeave={() => setHoveredSliceIndex(null)}
-                    stroke="#0f172a"
+                    stroke="#ffffff"
                     strokeWidth={2}
                   >
                     {activeDonutData.map((entry, index) => (
@@ -1038,10 +1038,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     >
                       {activeDonutData[hoveredSliceIndex].shortLabel}
                     </span>
-                    <span className="text-sm font-bold font-mono text-white tabular-nums mt-0.5">
+                    <span className="text-sm font-bold font-mono text-ink tabular-nums mt-0.5">
                       {formatCurrency(activeDonutData[hoveredSliceIndex].value, baseCurrency, { compact: true })}
                     </span>
-                    <span className="text-2xs font-mono text-slate-400">
+                    <span className="text-2xs font-mono text-ink/60">
                       {totalValuation > 0
                         ? `${((activeDonutData[hoveredSliceIndex].value / totalValuation) * 100).toFixed(1)}%`
                         : '0%'}
@@ -1049,8 +1049,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   </>
                 ) : (
                   <>
-                    <span className="text-2xs text-slate-400">Total</span>
-                    <span className="text-sm font-bold font-mono text-white tabular-nums mt-0.5">
+                    <span className="text-2xs text-ink/60">Total</span>
+                    <span className="text-sm font-bold font-mono text-ink tabular-nums mt-0.5">
                       {formatCurrency(totalValuation, baseCurrency, { compact: true })}
                     </span>
                   </>
@@ -1059,7 +1059,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             {/* Clean Top Categories List (no nested boxes) */}
-            <div className="space-y-2 max-h-[125px] overflow-y-auto pr-1 pt-2 border-t border-slate-800/60">
+            <div className="space-y-2 max-h-[125px] overflow-y-auto pr-1 pt-2 border-t border-slate-700/60">
               {activeDonutData.map((item, index) => {
                 const pct = totalValuation > 0 ? (item.value / totalValuation) * 100 : 0;
                 return (
@@ -1074,13 +1074,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-slate-300 truncate">{item.label}</span>
+                      <span className="text-ink/70 truncate">{item.label}</span>
                     </div>
                     <div className="flex items-center gap-2.5 shrink-0 font-mono tabular-nums">
-                      <span className="text-slate-200">
+                      <span className="text-ink">
                         {formatCurrency(item.value, baseCurrency, { compact: true })}
                       </span>
-                      <span className="text-slate-400 w-11 text-right">{pct.toFixed(1)}%</span>
+                      <span className="text-ink/60 w-11 text-right">{pct.toFixed(1)}%</span>
                     </div>
                   </div>
                 );
@@ -1089,34 +1089,34 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
 
           {/* Month-over-Month Net Growth Bar Chart (Full Width below Line & Donut Row) */}
-          <div className="lg:col-span-12 bg-slate-900/75 border border-slate-800/80 rounded-xl p-5 space-y-4">
+          <div className="lg:col-span-12 bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold text-white">Month-over-Month Net Growth</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h3 className="text-sm font-semibold text-ink">Month-over-Month Net Growth</h3>
+                <p className="text-xs text-ink/60 mt-0.5">
                   Monthly portfolio value delta showing expansion months vs. pullbacks ({trendHorizon} horizon)
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs font-mono tabular-nums">
                 <div>
-                  <span className="text-slate-500">Avg MoM: </span>
-                  <span className={`font-semibold ${momSummary.avgMonthlyGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className="text-ink/60">Avg MoM: </span>
+                  <span className={`font-semibold ${momSummary.avgMonthlyGrowth >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                     {momSummary.avgMonthlyGrowth >= 0 ? '+' : ''}
                     {formatCurrency(momSummary.avgMonthlyGrowth, baseCurrency, { compact: true })}
                   </span>
                 </div>
                 {momSummary.bestMonth && (
                   <div>
-                    <span className="text-slate-500">Best ({momSummary.bestMonth.month}): </span>
-                    <span className="font-semibold text-emerald-400">
+                    <span className="text-ink/60">Best ({momSummary.bestMonth.month}): </span>
+                    <span className="font-semibold text-emerald-700">
                       +{formatPercent(momSummary.bestMonth.netGrowthPct)}
                     </span>
                   </div>
                 )}
                 <div>
-                  <span className="text-slate-500">Positive: </span>
-                  <span className="font-semibold text-slate-200">
+                  <span className="text-ink/60">Positive: </span>
+                  <span className="font-semibold text-ink">
                     {momSummary.positiveMonths}/{visibleMomData.length} mo
                   </span>
                 </div>
@@ -1126,33 +1126,33 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={visibleMomData} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D8E0EA" vertical={false} />
                   <XAxis
                     dataKey="month"
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    stroke="#14213d"
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
-                    axisLine={{ stroke: '#334155' }}
+                    axisLine={{ stroke: "#D8E0EA" }}
                     dy={6}
                   />
                   <YAxis
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}
+                    stroke="#14213d"
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
                     width={64}
                   />
-                  <ReferenceLine y={0} stroke="#475569" strokeWidth={1.25} />
+                  <ReferenceLine y={0} stroke="#14213d" strokeWidth={1.25} />
                   <Tooltip
-                    cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }}
+                    cursor={{ fill: "rgba(20, 33, 61, 0.05)" }}
                     content={<MomGrowthTooltip baseCurrency={baseCurrency} />}
                   />
                   <Bar dataKey="netGrowth" maxBarSize={42} radius={[4, 4, 4, 4]}>
                     {visibleMomData.map((entry) => (
                       <Cell
                         key={`mom-${entry.month}`}
-                        fill={entry.netGrowth >= 0 ? '#10b981' : '#f43f5e'}
+                        fill={entry.netGrowth >= 0 ? "#02A26D" : "#d8454b"}
                       />
                     ))}
                   </Bar>
@@ -1160,35 +1160,35 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </ResponsiveContainer>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-700/60 text-xs text-ink/60">
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 shrink-0" />
                   Net Monthly Gain
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-rose-500 shrink-0" />
+                  <span className="w-2.5 h-2.5 rounded-sm bg-risk shrink-0" />
                   Monthly Pullback
                 </span>
               </div>
-              <span className="font-mono text-2xs text-slate-500">Hover bars for market vs. capital breakdown</span>
+              <span className="font-mono text-2xs text-ink/60">Hover bars for market vs. capital breakdown</span>
             </div>
           </div>
         </div>
       )}
 
       {/* 4. Focused Lower Workspace: Segmented Toggle between Holdings Ledger & Smart Insights */}
-      <div className="bg-slate-900/75 border border-slate-800/80 rounded-xl overflow-hidden">
+      <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 sm:px-5 border-b border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-lg w-fit">
+        <div className="p-4 sm:px-5 border-b border-slate-700 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-1 p-1 bg-mist border border-slate-700 rounded-lg w-fit">
             <button
               type="button"
               onClick={() => setWorkspaceView('ledger')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${
                 workspaceView === 'ledger'
-                  ? 'bg-emerald-500 text-slate-950'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink'
               }`}
             >
               Holdings Ledger ({holdings.length})
@@ -1198,8 +1198,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               onClick={() => setWorkspaceView('insights')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${
                 workspaceView === 'insights'
-                  ? 'bg-emerald-500 text-slate-950'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink'
               }`}
             >
               Insights & Alerts ({automatedInsights.length})
@@ -1209,13 +1209,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           {workspaceView === 'ledger' && holdings.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/60" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search holdings..."
-                  className="bg-slate-950 border border-slate-800 text-xs rounded-lg pl-8 pr-3 py-1.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 w-44 sm:w-56"
+                  className="bg-mist border border-slate-700 text-xs rounded-lg pl-8 pr-3 py-1.5 text-ink placeholder-ink/50 focus:outline-none focus:border-emerald-500 w-44 sm:w-56"
                 />
               </div>
 
@@ -1223,7 +1223,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 aria-label="Filter Holdings by Asset Class"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="bg-mist border border-slate-700 text-ink/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
                 <option value="ALL">All Asset Classes</option>
                 <option value="SURGE_30D">30-Day Gainers (&gt;15%)</option>
@@ -1239,7 +1239,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 type="button"
                 onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
                 title="Save portfolio as Excel (.xlsx) to re-import later"
-                className="px-2.5 py-1.5 text-xs font-medium text-emerald-300 bg-emerald-950/30 hover:bg-emerald-950/50 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
                 <Download className="w-3.5 h-3.5 shrink-0" />
                 <span>Export .xlsx</span>
@@ -1249,9 +1249,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 type="button"
                 onClick={() => exportHoldingsToCsv(holdings)}
                 title="Save portfolio as CSV (.csv) to re-import later"
-                className="px-2.5 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="px-2.5 py-1.5 text-xs font-medium text-ink bg-mist hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
-                <Download className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <Download className="w-3.5 h-3.5 text-debt shrink-0" />
                 <span>Export .csv</span>
               </button>
 
@@ -1266,9 +1266,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   })
                 }
                 title="Download printable PDF wealth report with charts & summary stats"
-                className="px-2.5 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="px-2.5 py-1.5 text-xs font-medium text-ink bg-mist hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
-                <FileText className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <FileText className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                 <span>Export .pdf</span>
               </button>
             </div>
@@ -1280,18 +1280,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <>
             {holdings.length === 0 ? (
               <div className="py-14 px-6 text-center max-w-md mx-auto">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 mx-auto mb-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-700 mx-auto mb-3">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white">Your workspace is empty</h3>
-                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                <h3 className="text-base font-semibold text-ink">Your workspace is empty</h3>
+                <p className="text-xs text-ink/60 mt-1.5 leading-relaxed">
                   Upload an Excel spreadsheet (.xlsx/.csv) or add holdings manually to validate your asset mix, tax savings, and macro stress scenarios. Nothing leaves your browser.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
                   <button
                     type="button"
                     onClick={() => onOpenValidateModal('excel')}
-                    className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-2"
+                    className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5" />
                     Upload Excel or Batch Add
@@ -1299,7 +1299,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <button
                     type="button"
                     onClick={onOpenAddModal}
-                    className="px-4 py-2 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
+                    className="px-4 py-2 text-xs font-medium text-ink bg-mist hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add Single Holding
@@ -1309,7 +1309,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800 font-mono text-2xs">
+                  <thead className="bg-mist text-ink/60 border-b border-slate-700 font-mono text-2xs uppercase tracking-wider">
                     <tr>
                       <th className="py-3 px-4 font-medium">Instrument</th>
                       <th className="py-3 px-4 font-medium">Category</th>
@@ -1320,10 +1320,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       <th className="py-3 px-4 text-center font-medium">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-700/60">
                     {filteredHoldings.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-10 text-center text-slate-500">
+                        <td colSpan={7} className="py-10 text-center text-ink/60">
                           No holdings match your search filter.
                         </td>
                       </tr>
@@ -1341,76 +1341,76 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         return (
                           <tr
                             key={h.id}
-                            className={`hover:bg-slate-800/35 transition-colors ${
-                              isMat ? 'bg-amber-950/15' : isSurge30d ? 'bg-emerald-950/10' : ''
+                            className={`hover:bg-ink/5 transition-colors ${
+                              isMat ? 'bg-amber-500/10' : isSurge30d ? 'bg-emerald-500/5' : ''
                             }`}
                           >
-                            <td className="py-3 px-4">
+                            <td className="py-4 px-4">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-medium text-slate-100">
+                                <span className="font-medium text-ink">
                                   {h.name}
                                   {h.currency !== baseCurrency && (
-                                    <span className="ml-1.5 text-2xs font-mono text-slate-400">
+                                    <span className="ml-1.5 text-2xs font-mono text-ink/60">
                                       ({h.currency})
                                     </span>
                                   )}
                                 </span>
                                 {isSurge30d && (
-                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-2xs font-mono font-semibold whitespace-nowrap tabular-nums">
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/35 text-emerald-700 text-2xs font-mono font-semibold whitespace-nowrap tabular-nums">
                                     <TrendingUp className="w-3 h-3 shrink-0" />
                                     <span>+{gain30d.toFixed(1)}% (30d)</span>
                                   </span>
                                 )}
                               </div>
-                              <div className="text-slate-500 text-2xs mt-0.5">
+                              <div className="text-ink/60 text-2xs mt-0.5">
                                 {h.institution}
                                 {h.accountNumberMask ? ` · ${h.accountNumberMask}` : ''}
                               </div>
                             </td>
 
-                            <td className="py-3 px-4 text-slate-300">
+                            <td className="py-4 px-4 text-ink/70">
                               <span>{CATEGORY_META[h.category]?.shortLabel ?? h.category.replace('_', ' ')}</span>
                               {h.interestRatePct !== undefined && (
-                                <span className="block text-2xs text-slate-500 font-mono">
+                                <span className="block text-2xs text-ink/60 font-mono">
                                   {h.interestRatePct}% p.a.
                                 </span>
                               )}
                             </td>
 
-                            <td className="py-3 px-4 text-right font-mono text-slate-300 tabular-nums">
+                            <td className="py-4 px-4 text-right font-mono text-ink/70 tabular-nums">
                               {formatCurrency(invInBase, baseCurrency, { showDecimals: false })}
                             </td>
 
-                            <td className="py-3 px-4 text-right font-mono font-medium text-white tabular-nums">
+                            <td className="py-4 px-4 text-right font-mono font-medium text-ink tabular-nums">
                               {formatCurrency(valInBase, baseCurrency, { showDecimals: false })}
                             </td>
 
-                            <td className="py-3 px-4 text-right font-mono tabular-nums">
+                            <td className="py-4 px-4 text-right font-mono tabular-nums">
                               <div
                                 className={`font-semibold ${
-                                  gainInBase >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                                  gainInBase >= 0 ? 'text-emerald-700' : 'text-rose-600'
                                 }`}
                               >
                                 {formatPercent(h.unrealizedGainPct)}
                               </div>
-                              <div className="text-2xs text-slate-500">
+                              <div className="text-2xs text-ink/60">
                                 {formatCurrency(gainInBase, baseCurrency, { compact: true })}
                               </div>
                             </td>
 
-                            <td className="py-3 px-4">
+                            <td className="py-4 px-4">
                               {isMat ? (
-                                <span className="text-amber-400 font-medium">Matured</span>
+                                <span className="text-amber-700 font-medium">Matured</span>
                               ) : isSoon ? (
-                                <span className="text-amber-300 font-medium">In {h.daysToMaturity}d</span>
+                                <span className="text-amber-700 font-medium">In {h.daysToMaturity}d</span>
                               ) : h.maturityDate ? (
-                                <span className="text-slate-400 text-2xs font-mono">{h.maturityDate}</span>
+                                <span className="text-ink/60 text-2xs font-mono">{h.maturityDate}</span>
                               ) : (
-                                <span className="text-slate-500 text-2xs">Open-ended</span>
+                                <span className="text-ink/60 text-2xs">Open-ended</span>
                               )}
                             </td>
 
-                            <td className="py-3 px-4 text-center">
+                            <td className="py-4 px-4 text-center">
                               <div className="inline-flex items-center justify-center gap-1.5">
                                 {isMat ? (
                                   <>
@@ -1421,7 +1421,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                           ? onRebalanceHolding(h)
                                           : onSelectHoldingToReinvest(h)
                                       }
-                                      className="px-2.5 py-1 text-2xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded transition-colors whitespace-nowrap"
+                                      className="px-2.5 py-1 text-2xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded transition-colors whitespace-nowrap"
                                       title="Reinvest or diversify matured capital across market instruments or debt payoff"
                                     >
                                       Reinvest
@@ -1430,7 +1430,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => onEditHolding(h)}
-                                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 rounded transition-colors"
+                                        className="p-1.5 text-ink/60 hover:text-emerald-700 hover:bg-emerald-500/10 rounded transition-colors"
                                         title="Edit Holding"
                                         aria-label={`Edit ${h.name}`}
                                       >
@@ -1440,7 +1440,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => onDeleteHolding(h.id)}
-                                      className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                                      className="p-1.5 text-ink/60 hover:text-rose-600 transition-colors"
                                       title="Delete Holding"
                                       aria-label={`Delete ${h.name}`}
                                     >
@@ -1453,7 +1453,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => onRebalanceHolding(h)}
-                                        className="px-2 py-1 text-2xs font-medium text-emerald-300 hover:text-slate-950 bg-emerald-950/45 hover:bg-emerald-500 border border-emerald-500/35 rounded transition-colors inline-flex items-center gap-1 whitespace-nowrap"
+                                        className="px-2 py-1 text-2xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/35 rounded transition-colors inline-flex items-center gap-1 whitespace-nowrap"
                                         title="Break partial/full amount & move into Market MFs, Bonds, FDs, Stocks or Home Loan"
                                       >
                                         <Shuffle className="w-3 h-3 shrink-0" />
@@ -1464,7 +1464,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => onEditHolding(h)}
-                                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/40 rounded transition-colors"
+                                        className="p-1.5 text-ink/60 hover:text-emerald-700 hover:bg-emerald-500/10 rounded transition-colors"
                                         title="Edit Holding"
                                         aria-label={`Edit ${h.name}`}
                                       >
@@ -1474,7 +1474,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => onDeleteHolding(h.id)}
-                                      className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                                      className="p-1.5 text-ink/60 hover:text-rose-600 transition-colors"
                                       title="Delete Holding"
                                       aria-label={`Delete ${h.name}`}
                                     >
@@ -1499,7 +1499,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         {workspaceView === 'insights' && (
           <div className="p-5">
             {holdings.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">
+              <div className="py-8 text-center text-xs text-ink/60">
                 Add or upload holdings to generate automated tax, maturity, and concentration insights.
               </div>
             ) : (
@@ -1509,38 +1509,38 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     type="button"
                     key={insight.id}
                     onClick={() => insight.tabTarget && onNavigateToTab(insight.tabTarget)}
-                    className="text-left bg-slate-950/60 border border-slate-800 rounded-xl p-4 hover:border-emerald-500/45 transition-colors flex flex-col justify-between group"
+                    className="text-left bg-mist/70 border border-slate-700 rounded-xl p-4 hover:border-emerald-500/45 transition-colors flex flex-col justify-between group"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 text-2xs font-mono">
                         <span
                           className={`font-semibold ${
                             insight.type === 'CRITICAL'
-                              ? 'text-rose-400'
+                              ? 'text-rose-600'
                               : insight.type === 'WARNING'
-                              ? 'text-amber-400'
+                              ? 'text-amber-700'
                               : insight.type === 'OPPORTUNITY'
-                              ? 'text-emerald-400'
-                              : 'text-emerald-300'
+                              ? 'text-emerald-700'
+                              : 'text-emerald-700'
                           }`}
                         >
                           {insight.type}
                         </span>
                         {insight.metric && (
-                          <span className="text-slate-200 font-semibold tabular-nums">
+                          <span className="text-ink font-semibold tabular-nums">
                             {insight.metric}
                           </span>
                         )}
                       </div>
-                      <h4 className="text-sm font-medium text-white mt-2 group-hover:text-emerald-300 transition-colors">
+                      <h4 className="text-sm font-medium text-ink mt-2 group-hover:text-emerald-700 transition-colors">
                         {insight.title}
                       </h4>
-                      <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                      <p className="text-xs text-ink/60 mt-1.5 leading-relaxed">
                         {insight.description}
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-800/70 flex items-center justify-between text-xs text-emerald-400 font-medium">
+                    <div className="mt-4 pt-3 border-t border-slate-700 flex items-center justify-between text-xs text-emerald-700 font-medium">
                       <span>{insight.actionableText}</span>
                       <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </div>
@@ -1553,12 +1553,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         {/* Footer quick restart action */}
         {holdings.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-800/70 bg-slate-950/40 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <div className="px-5 py-3 border-t border-slate-700 bg-mist flex flex-wrap items-center justify-between gap-2 text-xs text-ink/60">
             <span>Want to test with your own numbers instead?</span>
             <button
               type="button"
               onClick={() => onOpenValidateModal('excel')}
-              className="text-emerald-400 hover:text-emerald-300 font-medium inline-flex items-center gap-1.5 transition-colors"
+              className="text-emerald-700 hover:text-emerald-600 font-medium inline-flex items-center gap-1.5 transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               Restart & Validate Portfolio
