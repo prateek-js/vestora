@@ -608,7 +608,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           <button
             type="button"
             onClick={onNavigateToOverview}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 whitespace-nowrap"
+            className="text-xs font-semibold text-emerald-800 hover:text-emerald-800 inline-flex items-center gap-1 whitespace-nowrap"
           >
             <span>View Updated Overview</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -1012,7 +1012,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-semibold text-ink truncate">{h.name}</span>
                       {h.isMatured && (
-                        <span className="text-2xs font-mono text-amber-700 shrink-0">Matured</span>
+                        <span className="text-2xs font-mono text-amber-800 shrink-0">Matured</span>
                       )}
                     </div>
                     <div className="text-2xs text-ink/70 mt-0.5 truncate">
@@ -1023,7 +1023,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     <div className="text-xs font-bold text-ink">
                       {formatCurrency(val, baseCurrency, { compact: true })}
                     </div>
-                    <div className={`text-2xs ${h.unrealizedGainPct >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    <div className={`text-2xs ${h.unrealizedGainPct >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                       {formatPercent(h.unrealizedGainPct, 1)}
                     </div>
                   </div>
@@ -2129,7 +2129,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <span
                 className={`font-bold ${
                   isOverAllocated
-                    ? 'text-rose-600'
+                    ? 'text-rose-700'
                     : allocatedTotal === moveAmountInBase && moveAmountInBase > 0
                     ? 'text-emerald-700'
                     : 'text-amber-700'
@@ -2249,7 +2249,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
               <div className="flex items-center gap-3">
                 {isOverAllocated && (
-                  <span className="text-2xs text-rose-600 font-medium">
+                  <span className="text-2xs text-rose-700 font-medium">
                     Allocated exceeds staged source amount by{' '}
                     {formatCurrency(allocatedTotal - moveAmountInBase, baseCurrency, { compact: true })}
                   </span>

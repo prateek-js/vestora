@@ -693,7 +693,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <button
             type="button"
             onClick={() => onNavigateToTab('radar')}
-            className="text-xs font-semibold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
+            className="text-xs font-semibold text-amber-800 hover:text-amber-800 inline-flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
           >
             <span>Open Maturity Radar</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -730,7 +730,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               setWorkspaceView('ledger');
               setSelectedCategory((prev) => (prev === 'SURGE_30D' ? 'ALL' : 'SURGE_30D'));
             }}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
+            className="text-xs font-semibold text-emerald-800 hover:text-emerald-800 inline-flex items-center gap-1 whitespace-nowrap shrink-0 self-start sm:self-auto"
           >
             <span>{selectedCategory === 'SURGE_30D' ? 'Show All Holdings' : 'Filter Top Gainers'}</span>
             <ArrowRight className="w-3.5 h-3.5" />

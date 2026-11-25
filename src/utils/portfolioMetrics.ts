@@ -218,7 +218,7 @@ export function computePortfolioSummaryMetrics(
       const meta = CATEGORY_META[key] || {
         label: key.replace(/_/g, ' '),
         shortLabel: key.replace(/_/g, ' '),
-        color: '#94a3b8',
+        color: '#64748b',
       };
       return {
         key,
