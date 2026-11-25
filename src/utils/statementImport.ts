@@ -33,16 +33,21 @@ export interface WorkbookPreview {
 
 // ---------- CSV primitives ----------
 
-/** RFC-4180-ish CSV line splitter handling quoted fields and embedded commas. */
-export function parseCsvLine(line: string): string[] {
-  const out: string[] = [];
+/**
+ * Scans CSV text into rows of trimmed cells. Quoted fields may contain commas,
+ * doubled quotes and line breaks (the exporter writes multi-line notes that way).
+ * Cells split on comma, semicolon or tab; rows end at LF or CRLF outside quotes.
+ */
+function scanCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
   let cur = '';
   let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
     if (inQuotes) {
       if (ch === '"') {
-        if (line[i + 1] === '"') {
+        if (text[i + 1] === '"') {
           cur += '"';
           i++;
         } else {
@@ -54,22 +59,31 @@ export function parseCsvLine(line: string): string[] {
     } else if (ch === '"') {
       inQuotes = true;
     } else if (ch === ',' || ch === ';' || ch === '\t') {
-      out.push(cur.trim());
+      row.push(cur.trim());
+      cur = '';
+    } else if (ch === '\n' || (ch === '\r' && text[i + 1] === '\n')) {
+      if (ch === '\r') i++;
+      row.push(cur.trim());
+      rows.push(row);
+      row = [];
       cur = '';
     } else {
       cur += ch;
     }
   }
-  out.push(cur.trim());
-  return out;
+  row.push(cur.trim());
+  rows.push(row);
+  return rows;
+}
+
+/** RFC-4180-ish CSV line splitter handling quoted fields and embedded commas. */
+export function parseCsvLine(line: string): string[] {
+  return scanCsv(line)[0];
 }
 
 /** Parses a full CSV string into rows of cells, skipping blank lines. */
 export function parseCsv(text: string): string[][] {
-  return text
-    .split(/\r?\n/)
-    .filter((line) => line.trim().length > 0)
-    .map(parseCsvLine);
+  return scanCsv(text).filter((cells) => cells.length > 1 || cells[0] !== '');
 }
 
 /** Normalizes a header cell for sniffing: lowercase, strip non-alphanumerics. */
@@ -565,7 +579,7 @@ function parseRowsToStatement(
   sheetName?: string
 ): ParsedStatement {
   const nonEmptyRows = rawRows.filter((r) => r.some((cell) => String(cell ?? '').trim() !== ''));
-  if (nonEmptyRows.length < 2) {
+  if (nonEmptyRows.length === 0) {
     throw new Error('Spreadsheet appears empty — need a header row plus at least one data row.');
   }
 
@@ -573,6 +587,9 @@ function parseRowsToStatement(
   const rows = nonEmptyRows.slice(headerIdx);
 
   const format = detectFormat(rows);
+  if (!format && nonEmptyRows.length < 2) {
+    throw new Error('Spreadsheet appears empty — need a header row plus at least one data row.');
+  }
   if (!format) {
     throw new Error(
       'Could not recognize column headers. Include columns like "Instrument Name", "Category", "Invested Amount", and "Current Value" (or use our Excel template).'
@@ -760,11 +777,11 @@ function holdingToExportRow(h: Holding): (string | number)[] {
   ];
 }
 
-/** Exports the active portfolio to a lossless, re-importable .xlsx Excel workbook. */
-export function exportHoldingsToExcel(
+/** Builds the lossless, re-importable export workbook without touching the filesystem or DOM. */
+export function buildHoldingsWorkbook(
   holdings: Holding[],
   baseCurrency: CurrencyCode = 'INR'
-): void {
+): XLSX.WorkBook {
   const rows: (string | number)[][] = [EXPORT_HEADERS, ...holdings.map(holdingToExportRow)];
   const wsPortfolio = XLSX.utils.aoa_to_sheet(rows);
   wsPortfolio['!cols'] = [
@@ -799,7 +816,15 @@ export function exportHoldingsToExcel(
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsPortfolio, 'Portfolio');
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-  XLSX.writeFile(wb, `vestora-portfolio-${todayIso()}.xlsx`);
+  return wb;
+}
+
+/** Exports the active portfolio to a lossless, re-importable .xlsx Excel workbook. */
+export function exportHoldingsToExcel(
+  holdings: Holding[],
+  baseCurrency: CurrencyCode = 'INR'
+): void {
+  XLSX.writeFile(buildHoldingsWorkbook(holdings, baseCurrency), `vestora-portfolio-${todayIso()}.xlsx`);
 }
 
 function escapeCsvCell(value: string | number): string {
@@ -810,13 +835,18 @@ function escapeCsvCell(value: string | number): string {
   return str;
 }
 
-/** Exports the active portfolio to an RFC-4180 CSV file ready for spreadsheet viewing or re-import. */
-export function exportHoldingsToCsv(holdings: Holding[]): void {
+/** Builds the RFC-4180 CSV text (BOM-prefixed) for the export without triggering a download. */
+export function buildHoldingsCsv(holdings: Holding[]): string {
   const lines = [
     EXPORT_HEADERS.map(escapeCsvCell).join(','),
     ...holdings.map((h) => holdingToExportRow(h).map(escapeCsvCell).join(',')),
   ];
-  const csvContent = '\uFEFF' + lines.join('\r\n');
+  return '\uFEFF' + lines.join('\r\n');
+}
+
+/** Exports the active portfolio to an RFC-4180 CSV file ready for spreadsheet viewing or re-import. */
+export function exportHoldingsToCsv(holdings: Holding[]): void {
+  const csvContent = buildHoldingsCsv(holdings);
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
