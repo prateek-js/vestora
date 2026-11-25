@@ -143,8 +143,12 @@ export default function DemoApp() {
         </div>
       </header>
       <main className="mx-auto max-w-[1120px] px-5 py-8">
-        {choice === 'personal' && personal && personal.holdings.length > 0 && (
-          <PersonalBanner holdings={personal.holdings} baseCurrency={personal.baseCurrency} />
+        {choice === 'personal' && personal && personal.holdings.length > 0 && !emptyPersonal && (
+          <PersonalBanner
+            holdings={personal.holdings}
+            baseCurrency={personal.baseCurrency}
+            onEdit={state.chapter === 'mine' ? undefined : () => go('mine')}
+          />
         )}
         {state.chapter === 'story' && (
           <Story
