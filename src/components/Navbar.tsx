@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { CurrencyCode, UserProfile } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
 import { trackEvent } from '../utils/analytics';
+import type { AppTab } from '../utils/tabRouting';
 import { VestoraLogo } from './VestoraLogo';
 import {
-  ArrowRight,
   ChevronDown,
+  Compass,
   Download,
   FileSpreadsheet,
   FileText,
-  Gamepad2,
   HelpCircle,
   Plus,
   RefreshCw,
@@ -18,10 +18,7 @@ import {
   Upload,
 } from 'lucide-react';
 
-export type AppTab = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
-
 const TAB_NAMES: Record<AppTab, string> = {
-  story: 'Interactive Story',
   overview: 'Overview & Ledger',
   rebalance: 'Rebalance & Market',
   radar: 'Maturity Radar',
@@ -93,62 +90,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  // Distraction-free marketing & game header on the main Story page
-  if (activeTab === 'story') {
-    return (
-      <header className="border-b border-slate-800 bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
-          {/* Zone 1: Brand Wordmark */}
-          <button
-            type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2.5 shrink-0 text-left"
-          >
-            <VestoraLogo size={32} />
-            <span className="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">
-              Vestora
-            </span>
-          </button>
-
-          {/* Zone 2: Clean Single-Line Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
-            <a
-              href="#street-stage"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0"
-            >
-              Street Simulation
-            </a>
-            <a
-              href="#why-vestora"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0"
-            >
-              Why Vestora
-            </a>
-            <button
-              type="button"
-              onClick={() => handleTabChange('rebalance')}
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0"
-            >
-              Market Explorer
-            </button>
-          </nav>
-
-          {/* Zone 3: Single Primary Action CTA */}
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => handleTabChange('overview')}
-              className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-            >
-              <span>Enter Overview</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </header>
-    );
-  }
 
   // Clean, uncluttered workspace header bar once inside the app
   return (
@@ -231,18 +172,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Zone 3: Uncluttered 3-Control Action Group (Game Mode, Consolidated Menu, + Add Holding) */}
+          {/* Zone 3: Uncluttered 3-Control Action Group (Take the tour, Consolidated Menu, + Add Holding) */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Switch to Interactive Street Game Mode */}
-            <button
-              type="button"
-              onClick={() => handleTabChange('story')}
+            {/* Guided tour of how rebalancing works */}
+            <a
+              href="/demo/"
               className="px-3 py-1.5 text-xs font-medium text-emerald-300 bg-slate-900 hover:bg-slate-800 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-              title="Open Interactive Street Simulation & Animated Story"
+              aria-label="Take the guided tour"
+              title="A short guided tour of how rebalancing works"
             >
-              <Gamepad2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="hidden sm:inline">Game Mode</span>
-            </button>
+              <Compass className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline">Take the tour</span>
+            </a>
 
             {/* Consolidated Currency, Persona, Save/Export & Data Tools Menu */}
             <div className="relative" data-tour="export-menu">

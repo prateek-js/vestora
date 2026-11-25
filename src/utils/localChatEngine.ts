@@ -26,7 +26,7 @@ export type ChatActionKind =
   | { type: 'UNDO_HOLDINGS'; snapshot: Holding[]; label?: string }
   | { type: 'APPLY_IMPORT'; holdings: Holding[]; mode: 'replace' | 'append'; fileName: string; currency?: CurrencyCode }
   | { type: 'EXPORT'; format: 'xlsx' | 'csv' | 'pdf' | 'json' }
-  | { type: 'NAVIGATE'; tab: 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator' }
+  | { type: 'NAVIGATE'; tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator' }
   | { type: 'SET_CURRENCY'; currency: CurrencyCode }
   | { type: 'START_BLANK' }
   | { type: 'RESET_SAMPLE' }
@@ -63,7 +63,7 @@ export interface ChatEngineCallbacks {
   onAppendHoldings: (holdings: Holding[]) => void;
   onDeleteHolding: (id: string) => void;
   onSetBaseCurrency: (currency: CurrencyCode) => void;
-  onNavigateToTab: (tab: 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
+  onNavigateToTab: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
   onExportExcel: () => void;
   onExportCsv: () => void;
   onExportPdf: () => void;
@@ -1623,8 +1623,10 @@ export function processLocalChatMessage(
     return { title: 'Opened Overview', text: 'Switched to your Portfolio Overview & Ledger.' };
   }
   if (/\b(story|game)\b/i.test(lower) && lower.split(/\s+/).length <= 4) {
-    cb.onNavigateToTab('story');
-    return { title: 'Opened Interactive Story', text: 'Switched to the Street Story experience.' };
+    return {
+      title: 'Guided tour',
+      text: 'The street game has been replaced by a short guided tour. Open /demo/ to walk through how a rebalance works.',
+    };
   }
 
   // 13. List holdings or Summary / Net worth / Default overview

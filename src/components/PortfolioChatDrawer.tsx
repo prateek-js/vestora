@@ -39,7 +39,7 @@ interface PortfolioChatDrawerProps {
   onReplaceHoldings: (holdings: Holding[], detectedCurrency?: CurrencyCode) => void;
   onAppendHoldings: (holdings: Holding[]) => void;
   onSetBaseCurrency: (currency: CurrencyCode) => void;
-  onNavigateToTab: (tab: 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
+  onNavigateToTab: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
   onStartBlank: () => void;
   onResetToSample: () => void;
   onExportExcel: () => void;

@@ -36,7 +36,6 @@ import {
 } from './utils/statementImport';
 import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
-import { StreetStoryGame } from './components/StreetStoryGame';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
 import { syncDocumentSeo } from './utils/seo';
 import { AppTab, planUrlSync, tabFromHash } from './utils/tabRouting';
@@ -614,23 +613,6 @@ export default function App() {
 
         {activeTab === 'simulator' && (
           <MacroSimulatorTab holdings={holdings} baseCurrency={baseCurrency} />
-        )}
-
-        {activeTab === 'story' && (
-          <StreetStoryGame
-            holdings={holdings}
-            baseCurrency={baseCurrency}
-            onEnterLiveRebalance={() => {
-              const preferred =
-                holdings.find((h) => h.isMatured) ??
-                holdings.find((h) => h.category === 'SAVINGS_CASH') ??
-                holdings[0];
-              if (preferred) setRebalanceSourceId(preferred.id);
-              setActiveTab('rebalance');
-            }}
-            onOpenOverview={() => setActiveTab('overview')}
-            onOpenValidateModal={() => openValidateModal('excel')}
-          />
         )}
       </main>
 
