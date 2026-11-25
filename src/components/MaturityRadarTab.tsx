@@ -199,7 +199,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
           <div className="flex items-center gap-2 font-mono text-xs bg-mist px-3 py-2 rounded-lg border border-slate-700">
             <span className="text-ink/60">Matured Capital Detected:</span>
-            <span className="text-amber-700 font-bold">
+            <span className="text-amber-800 font-bold">
               {formatCurrency(
                 maturingHoldings
                   .filter((h) => h.isMatured)
@@ -257,7 +257,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-700/70 border-b border-slate-700/80 bg-mist">
           <div className="px-5 py-3.5">
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="font-medium text-amber-700">Matured &amp; Next 30d</span>
+              <span className="font-medium text-amber-800">Matured &amp; Next 30d</span>
               <span className="font-mono text-ink/60 tabular-nums">{bucketTotals.urgent30Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
@@ -336,7 +336,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                   const barColorClass = isMatured
                     ? 'bg-rose-600'
                     : windowKey === 'URGENT_30'
-                    ? 'bg-amber-700'
+                    ? 'bg-amber-800'
                     : windowKey === 'WINDOW_60'
                     ? 'bg-sky-600'
                     : windowKey === 'WINDOW_90'
@@ -344,9 +344,9 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                     : 'bg-cash';
 
                   const labelColorClass = isMatured
-                    ? 'text-rose-600'
+                    ? 'text-rose-700'
                     : windowKey === 'URGENT_30'
-                    ? 'text-amber-700'
+                    ? 'text-amber-800'
                     : windowKey === 'WINDOW_60'
                     ? 'text-sky-700'
                     : windowKey === 'WINDOW_90'
@@ -482,7 +482,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                       {h.name}
                     </span>
                     {isMat ? (
-                      <span className="text-2xs font-mono font-bold text-amber-700 bg-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-2xs font-mono font-bold text-amber-800 bg-amber-500/20 px-1.5 py-0.5 rounded shrink-0">
                         MATURED
                       </span>
                     ) : (

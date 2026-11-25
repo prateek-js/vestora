@@ -84,7 +84,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <div className="flex items-center justify-between gap-3">
                 <div className="max-w-[45%]">
                   <div className="font-bold text-ink truncate">{holding.name}</div>
-                  <div className="text-amber-700 font-mono font-semibold mt-0.5">
+                  <div className="text-amber-800 font-mono font-semibold mt-0.5">
                     {formatCurrency(sourceValuation, baseCurrency)}
                   </div>
                   <div className="text-2xs text-ink/60">Matured Capital</div>

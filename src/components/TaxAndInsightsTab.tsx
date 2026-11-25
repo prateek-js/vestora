@@ -173,7 +173,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
           <div className="w-full h-2.5 bg-mist rounded-full overflow-hidden">
             <div
               style={{ width: `${sec80cPct}%` }}
-              className="h-full bg-emerald-500 rounded-full transition-all"
+              className="h-full bg-level-line rounded-full transition-all"
             />
           </div>
 
@@ -319,7 +319,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
                     <div
                       style={{ width: `${pct}%` }}
                       className={`h-full rounded-full ${
-                        c === 'INR' ? 'bg-indigo-600' : c === 'USD' ? 'bg-emerald-500' : 'bg-sky-600'
+                        c === 'INR' ? 'bg-indigo-600' : c === 'USD' ? 'bg-level-line' : 'bg-sky-600'
                       }`}
                     />
                   </div>
