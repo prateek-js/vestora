@@ -1,4 +1,4 @@
-export type SeoViewKey = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
+export type SeoViewKey = 'home' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
 
 interface SeoMetaConfig {
   title: string;
@@ -6,7 +6,7 @@ interface SeoMetaConfig {
 }
 
 const VIEW_SEO: Record<SeoViewKey, SeoMetaConfig> = {
-  story: {
+  home: {
     title: 'Vestora - Unified Wealth & Reinvestment OS',
     description:
       'Rebalance Mutual Funds, FDs, NPS, RBI G-Secs, Gold & Home Loans in one unbiased portal. Live yields, tax audit & stress tests — 0% fees, 100% on-device.',
@@ -64,7 +64,7 @@ function upsertCanonical(href: string) {
  */
 export function syncDocumentSeo(view: SeoViewKey) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
-  const cfg = VIEW_SEO[view] ?? VIEW_SEO.story;
+  const cfg = VIEW_SEO[view] ?? VIEW_SEO.home;
   const canonicalUrl = `${window.location.origin}${window.location.pathname}`;
 
   document.title = cfg.title;

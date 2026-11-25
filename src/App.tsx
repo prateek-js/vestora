@@ -39,18 +39,8 @@ import { OnboardingTour } from './components/OnboardingTour';
 import { StreetStoryGame } from './components/StreetStoryGame';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
 import { syncDocumentSeo } from './utils/seo';
+import { AppTab, planUrlSync, tabFromHash } from './utils/tabRouting';
 import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
-
-type ActiveTab = 'story' | 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator';
-
-const HASH_TO_TAB: Record<string, ActiveTab> = {
-  '#story': 'story',
-  '#overview': 'overview',
-  '#rebalance': 'rebalance',
-  '#radar': 'radar',
-  '#tax': 'tax',
-  '#simulator': 'simulator',
-};
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
@@ -74,42 +64,21 @@ export default function App() {
     };
   }, []);
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
-    if (typeof window !== 'undefined') {
-      const matched = HASH_TO_TAB[window.location.hash.toLowerCase()];
-      if (matched) return matched;
-    }
-    return 'story';
-  });
+  const [activeTab, setActiveTab] = useState<AppTab>(() =>
+    typeof window !== 'undefined' ? tabFromHash(window.location.hash) : 'overview',
+  );
 
   useEffect(() => {
-    const onHashChange = () => {
-      const h = window.location.hash.toLowerCase();
-      if (!h) {
-        setActiveTab('story');
-        return;
-      }
-      const matched = HASH_TO_TAB[h];
-      if (matched) setActiveTab(matched);
-    };
+    const onHashChange = () => setActiveTab(tabFromHash(window.location.hash));
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    syncDocumentSeo(activeTab);
-    const currentHash = window.location.hash.toLowerCase();
-    if (activeTab === 'story') {
-      if (currentHash && currentHash !== '#street-stage' && currentHash !== '#why-vestora' && currentHash !== '#story') {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
-    } else {
-      const desired = `#${activeTab}`;
-      if (currentHash !== desired) {
-        window.history.replaceState(null, '', desired);
-      }
-    }
+    const { seoView, nextHash } = planUrlSync(activeTab, window.location.hash);
+    syncDocumentSeo(seoView);
+    if (nextHash) window.history.replaceState(null, '', nextHash);
   }, [activeTab]);
   const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initial.baseCurrency);
   const [currentProfileId, setCurrentProfileId] = useState<string>(initial.profileId);
