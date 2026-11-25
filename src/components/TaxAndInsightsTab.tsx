@@ -74,14 +74,14 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             <h2 className="text-lg font-bold text-ink tracking-tight">
               Tax Optimization & Portfolio Diversification Audit
             </h2>
-            <p className="text-xs text-ink/60 mt-1 max-w-2xl">
+            <p className="text-xs text-ink/70 mt-1 max-w-2xl">
               Automated surveillance of capital gains tax liabilities, statutory deduction allowances (80C &
               NPS), single-asset concentration limits, and cross-border currency exposure.
             </p>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs bg-mist px-3 py-2 rounded-lg border border-slate-700">
-            <span className="text-ink/60">Estimated Annual Tax Shield:</span>
+            <span className="text-ink/70">Estimated Annual Tax Shield:</span>
             <span className="text-emerald-700 font-bold">
               {formatCurrency(
                 taxHarvestAudit.estimatedTaxSaved + taxSectionAudit.potentialTaxSaved,
@@ -102,7 +102,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
                 Long-Term Capital Gains (LTCG) Tax Harvesting Scanner
               </h3>
             </div>
-            <p className="text-xs text-ink/60 mt-0.5">
+            <p className="text-xs text-ink/70 mt-0.5">
               Under tax law, up to {baseCurrency === 'INR' ? '₹1,25,000' : '$1,500'} in annual equity LTCG is
               exempt from tax. Selling and rebuying resets your acquisition price tax-free.
             </p>
@@ -112,33 +112,33 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             <div className="text-xl font-bold font-mono text-emerald-700 tabular-nums">
               {formatCurrency(taxHarvestAudit.estimatedTaxSaved, baseCurrency)}
             </div>
-            <div className="text-2xs text-ink/60 font-mono">Tax Savings Unlocked</div>
+            <div className="text-2xs text-ink/70 font-mono">Tax Savings Unlocked</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
-            <div className="text-2xs text-ink/60">Total Unrealized Equity Gains</div>
+            <div className="text-2xs text-ink/70">Total Unrealized Equity Gains</div>
             <div className="text-base font-bold font-mono text-ink mt-1">
               {formatCurrency(taxHarvestAudit.eligibleLtcgGain, baseCurrency)}
             </div>
-            <div className="text-2xs text-ink/60 mt-0.5">Across mutual funds & equities</div>
+            <div className="text-2xs text-ink/70 mt-0.5">Across mutual funds & equities</div>
           </div>
 
           <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
-            <div className="text-2xs text-ink/60">Annual Exemption Ceiling</div>
+            <div className="text-2xs text-ink/70">Annual Exemption Ceiling</div>
             <div className="text-base font-bold font-mono text-emerald-700 mt-1">
               {formatCurrency(taxHarvestAudit.annualExemptionLimit, baseCurrency)}
             </div>
-            <div className="text-2xs text-ink/60 mt-0.5">Section 112A annual exemption quota</div>
+            <div className="text-2xs text-ink/70 mt-0.5">Section 112A annual exemption quota</div>
           </div>
 
           <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
-            <div className="text-2xs text-ink/60">Harvestable Gains Right Now</div>
+            <div className="text-2xs text-ink/70">Harvestable Gains Right Now</div>
             <div className="text-base font-bold font-mono text-emerald-700 mt-1">
               {formatCurrency(taxHarvestAudit.harvestableNow, baseCurrency)}
             </div>
-            <div className="text-2xs text-ink/60 mt-0.5">Eligible for zero-tax reset</div>
+            <div className="text-2xs text-ink/70 mt-0.5">Eligible for zero-tax reset</div>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
               <h4 className="text-sm font-semibold text-ink">
                 Section 80C Tax Shelter (EPF, PPF, ELSS)
               </h4>
-              <p className="text-2xs text-ink/60">
+              <p className="text-2xs text-ink/70">
                 Statutory cap: {formatCurrency(taxSectionAudit.section80cLimit, baseCurrency)}
               </p>
             </div>
@@ -178,7 +178,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
           </div>
 
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-ink/60">
+            <span className="text-ink/70">
               Active: {formatCurrency(taxSectionAudit.section80cTotal, baseCurrency, { compact: true })}
             </span>
             {taxSectionAudit.section80cShortfall > 0 ? (
@@ -192,7 +192,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             )}
           </div>
 
-          <p className="text-2xs text-ink/60">
+          <p className="text-2xs text-ink/70">
             {taxSectionAudit.section80cShortfall > 0
               ? `You can deploy ${formatCurrency(
                   taxSectionAudit.section80cShortfall,
@@ -209,7 +209,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
               <h4 className="text-sm font-semibold text-ink">
                 Section 80CCD(1B) NPS Super-Deduction
               </h4>
-              <p className="text-2xs text-ink/60">
+              <p className="text-2xs text-ink/70">
                 Exclusive additional cap: {formatCurrency(taxSectionAudit.nps80ccdLimit, baseCurrency)}
               </p>
             </div>
@@ -227,7 +227,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
           </div>
 
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-ink/60">
+            <span className="text-ink/70">
               Active: {formatCurrency(taxSectionAudit.nps80ccdTotal, baseCurrency, { compact: true })}
             </span>
             {taxSectionAudit.nps80ccdShortfall > 0 ? (
@@ -241,7 +241,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             )}
           </div>
 
-          <p className="text-2xs text-ink/60">
+          <p className="text-2xs text-ink/70">
             {taxSectionAudit.nps80ccdShortfall > 0
               ? `Deploying ${formatCurrency(
                   taxSectionAudit.nps80ccdShortfall,
@@ -261,11 +261,11 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
               <ShieldAlert className="w-4 h-4 text-amber-700" />
               <span>Concentration Risk Radar</span>
             </h4>
-            <span className="text-2xs font-mono text-ink/60">Threshold: &gt;20% single asset</span>
+            <span className="text-2xs font-mono text-ink/70">Threshold: &gt;20% single asset</span>
           </div>
 
           {concentrationRisks.length === 0 ? (
-            <div className="py-6 text-center text-xs text-ink/60">
+            <div className="py-6 text-center text-xs text-ink/70">
               No severe single-instrument or category over-concentration detected.
             </div>
           ) : (
@@ -299,7 +299,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
               <PieChart className="w-4 h-4 text-emerald-700" />
               <span>Multi-Currency Asset Exposure</span>
             </h4>
-            <span className="text-2xs font-mono text-ink/60">FX Risk Radar</span>
+            <span className="text-2xs font-mono text-ink/70">FX Risk Radar</span>
           </div>
 
           <div className="space-y-3">
@@ -311,7 +311,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
                 <div key={c} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono font-bold text-ink">{c} Denominated Assets</span>
-                    <span className="font-mono text-ink/60 tabular-nums">
+                    <span className="font-mono text-ink/70 tabular-nums">
                       {formatCurrency(val, baseCurrency, { compact: true })} ({pct.toFixed(1)}%)
                     </span>
                   </div>
@@ -328,7 +328,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             })}
           </div>
 
-          <p className="text-2xs text-ink/60 leading-relaxed pt-1">
+          <p className="text-2xs text-ink/70 leading-relaxed pt-1">
             Holding 15%–25% in hard foreign currency assets (such as USD ETFs or Euro bonds) protects your
             long-term purchasing power against emerging market currency depreciation.
           </p>

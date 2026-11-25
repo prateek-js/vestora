@@ -312,7 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           }}
                           className="px-2.5 py-2 text-left rounded-lg bg-mist hover:bg-ink/5 border border-slate-700 disabled:opacity-45 text-ink transition-colors flex items-center gap-2"
                         >
-                          <Download className="w-3.5 h-3.5 text-ink/60 shrink-0" />
+                          <Download className="w-3.5 h-3.5 text-ink/70 shrink-0" />
                           <span className="font-medium">JSON</span>
                         </button>
                       </div>
@@ -323,7 +323,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onTriggerRestore();
                         }}
-                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 transition-colors flex items-center gap-2"
+                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/40 text-emerald-700 transition-colors flex items-center gap-2"
                       >
                         <Upload className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>Restore Earlier Export (.xlsx / .csv / .json)</span>
@@ -393,7 +393,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     </div>
 
-                    <div className="px-2.5 py-1.5 bg-mist rounded-md border border-slate-700 text-2xs font-mono text-ink/60">
+                    <div className="px-2.5 py-1.5 bg-mist rounded-md border border-slate-700 text-2xs font-mono text-ink/70">
                       FX: {fxSource === 'benchmark' ? 'Benchmarks' : `ECB (${fxAsOf})`} · On your device
                     </div>
                   </div>
@@ -405,7 +405,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-level rounded-lg hover:bg-emerald-400 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-level rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Holding</span>

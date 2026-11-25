@@ -55,7 +55,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
           </h3>
           <button
             onClick={onClose}
-            className="text-ink/60 hover:text-ink p-1 rounded-lg transition-colors"
+            className="text-ink/70 hover:text-ink p-1 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -67,7 +67,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <CheckCircle2 className="w-7 h-7" />
             </div>
             <h4 className="text-base font-bold text-ink">Reinvestment Deployed Successfully!</h4>
-            <p className="text-xs text-ink/60 max-w-sm mx-auto">
+            <p className="text-xs text-ink/70 max-w-sm mx-auto">
               Your matured capital has been allocated to {solution.solutionName} and added to your active
               portfolio ledger.
             </p>
@@ -76,7 +76,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
           <div className="mt-4 space-y-4 text-xs">
             {/* Trade Flow Card */}
             <div className="bg-mist p-4 rounded-xl border border-slate-700 space-y-3">
-              <div className="flex items-center justify-between text-ink/60 font-mono text-2xs">
+              <div className="flex items-center justify-between text-ink/70 font-mono text-2xs">
                 <span>REDEEMING MATURED ASSET</span>
                 <span>DESTINATION ALLOCATION</span>
               </div>
@@ -87,10 +87,10 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                   <div className="text-amber-800 font-mono font-semibold mt-0.5">
                     {formatCurrency(sourceValuation, baseCurrency)}
                   </div>
-                  <div className="text-2xs text-ink/60">Matured Capital</div>
+                  <div className="text-2xs text-ink/70">Matured Capital</div>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-paper border border-slate-700 flex items-center justify-center text-ink/60 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-paper border border-slate-700 flex items-center justify-center text-ink/70 shrink-0">
                   <ArrowRight className="w-4 h-4" />
                 </div>
 
@@ -99,14 +99,14 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                   <div className="text-emerald-700 font-mono font-semibold mt-0.5">
                     {solution.expectedAnnualYieldPct}% p.a.
                   </div>
-                  <div className="text-2xs text-ink/60">{solution.riskTier} Risk</div>
+                  <div className="text-2xs text-ink/70">{solution.riskTier} Risk</div>
                 </div>
               </div>
             </div>
 
             {/* Allocation Amount Control */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Amount to Deploy ({baseCurrency}):
               </label>
               <input
@@ -115,7 +115,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                 onChange={(e) => setAllocatedAmount(parseFloat(e.target.value) || 0)}
                 className="w-full bg-mist border border-slate-700 rounded-lg px-3 py-2 text-ink font-mono font-bold text-sm focus:outline-none focus:border-emerald-500"
               />
-              <div className="flex justify-between text-2xs text-ink/60 font-mono mt-1">
+              <div className="flex justify-between text-2xs text-ink/70 font-mono mt-1">
                 <span>Full Balance: {formatCurrency(sourceValuation, baseCurrency)}</span>
                 <button
                   type="button"
@@ -130,17 +130,17 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
             {/* Strategic Attributes */}
             <div className="grid grid-cols-2 gap-2 bg-mist p-3 rounded-lg border border-slate-700 text-2xs font-mono">
               <div>
-                <span className="text-ink/60 block">Projected 1st-Year Yield:</span>
+                <span className="text-ink/70 block">Projected 1st-Year Yield:</span>
                 <span className="text-emerald-700 font-bold text-xs">
                   +{formatCurrency(projectedAnnualIncome, baseCurrency)}
                 </span>
               </div>
               <div>
-                <span className="text-ink/60 block">Lock-In Tenure:</span>
+                <span className="text-ink/70 block">Lock-In Tenure:</span>
                 <span className="text-ink font-medium">{solution.lockInPeriod}</span>
               </div>
               <div className="col-span-2 pt-1 border-t border-slate-700/80">
-                <span className="text-ink/60 block">Tax Status:</span>
+                <span className="text-ink/70 block">Tax Status:</span>
                 <span className="text-ink/70">{solution.taxImplication}</span>
               </div>
             </div>
@@ -150,7 +150,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+                className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
               >
                 Cancel
               </button>

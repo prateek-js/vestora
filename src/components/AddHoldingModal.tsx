@@ -157,7 +157,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="text-ink/60 hover:text-ink p-1 rounded-lg transition-colors"
+            className="text-ink/70 hover:text-ink p-1 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -173,7 +173,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
           {/* Instrument Name */}
           <div>
-            <label className="block text-ink/60 mb-1 font-medium">
+            <label className="block text-ink/70 mb-1 font-medium">
               Instrument / Security Name *
             </label>
             <input
@@ -189,7 +189,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Asset Category */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Asset Category *
               </label>
               <select
@@ -213,7 +213,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Institution */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Financial Institution / AMC
               </label>
               <input
@@ -229,7 +229,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Currency */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">Currency</label>
+              <label className="block text-ink/70 mb-1 font-medium">Currency</label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
@@ -243,7 +243,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Invested Amount */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Invested Capital *
               </label>
               <input
@@ -259,7 +259,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Current Valuation */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Current Valuation *
               </label>
               <input
@@ -277,7 +277,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Interest Rate */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Annual Rate % (if applicable)
               </label>
               <input
@@ -292,7 +292,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Purchase Date */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">Purchase Date</label>
+              <label className="block text-ink/70 mb-1 font-medium">Purchase Date</label>
               <input
                 type="date"
                 value={purchaseDate}
@@ -303,7 +303,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Maturity Date */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Maturity Date (FD/RD/Bond)
               </label>
               <input
@@ -318,7 +318,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Tax Tag */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">Tax Classification</label>
+              <label className="block text-ink/70 mb-1 font-medium">Tax Classification</label>
               <select
                 value={taxTag}
                 onChange={(e) => setTaxTag(e.target.value as TaxTag)}
@@ -334,7 +334,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
             {/* Account / Folio Mask */}
             <div>
-              <label className="block text-ink/60 mb-1 font-medium">
+              <label className="block text-ink/70 mb-1 font-medium">
                 Account / Folio Ref (Optional)
               </label>
               <input
@@ -349,7 +349,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-ink/60 mb-1 font-medium">Notes (Optional)</label>
+            <label className="block text-ink/70 mb-1 font-medium">Notes (Optional)</label>
             <input
               type="text"
               value={notes}
@@ -364,7 +364,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+              className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
             >
               Cancel
             </button>

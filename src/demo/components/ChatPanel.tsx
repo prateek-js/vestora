@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CurrencyCode, Holding } from '../../types/wealth';
 import { DEMO_PROFILES } from '../../data/mockData';
 import { useDialogA11y } from '../../utils/dialogA11y';
@@ -84,6 +84,7 @@ export function ChatPanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   // Focus returns to the launcher (the only way in) when the panel closes.
@@ -103,8 +104,14 @@ export function ChatPanel({
   });
 
   // On open, and after each reply, the newest message is on screen (the trap hook owns focus on open).
+  // With no messages yet (notes-only, e.g. the empty-list routing note) the feed is scrolled to the TOP
+  // so the note itself is visible instead of a blank bottom margin.
   useEffect(() => {
     if (!open) return;
+    if (messages.length === 0) {
+      topRef.current?.scrollIntoView({ block: 'start' });
+      return;
+    }
     endRef.current?.scrollIntoView({ block: 'end' });
   }, [open, messages.length, notes.length]);
 
@@ -329,6 +336,7 @@ export function ChatPanel({
         )}
 
         <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          <div ref={topRef} />
           {notes.map((n) => (
             <div key={n.id} className="flex justify-start">
               <div className="max-w-[92%] rounded-xl border border-ink/15 bg-mist px-3 py-2 text-sm leading-relaxed">

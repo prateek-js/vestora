@@ -371,7 +371,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
               <div className="absolute inset-0 z-20 bg-paper/90 border-2 border-dashed border-emerald-500 m-3 rounded-xl flex flex-col items-center justify-center text-center p-6 pointer-events-none">
                 <Upload className="w-8 h-8 text-emerald-700 mb-2" />
                 <p className="text-sm font-bold text-ink">Drop File to Parse Locally</p>
-                <p className="text-xs text-ink/60 mt-1">
+                <p className="text-xs text-ink/70 mt-1">
                   Supports .xlsx, .xls, .csv, .tsv, and .json backups
                 </p>
               </div>
@@ -396,7 +396,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   onClick={() => setMessages([WELCOME_MESSAGE()])}
                   title="Clear chat history"
                   aria-label="Clear chat history"
-                  className="p-2 text-ink/60 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
+                  className="p-2 text-ink/70 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -404,7 +404,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   type="button"
                   onClick={closeDrawer}
                   aria-label="Close chat assistant"
-                  className="p-2 text-ink/60 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
+                  className="p-2 text-ink/70 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -429,7 +429,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   }}
                   className={`px-2.5 py-1.5 min-h-[32px] text-2xs font-medium rounded-md whitespace-nowrap shrink-0 transition-colors ${
                     chip.kind === 'add_form'
-                      ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40 hover:bg-emerald-500 hover:text-white'
+                      ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40 hover:bg-emerald-700 hover:text-white'
                       : 'text-ink/70 bg-paper border border-slate-700 hover:text-emerald-800 hover:border-emerald-500/40'
                   }`}
                 >
@@ -461,7 +461,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                       <div className="mt-2.5 pt-2.5 border-t border-slate-700/80 grid grid-cols-2 gap-2 font-mono tabular-nums">
                         {msg.metrics.map((m) => (
                           <div key={m.label} className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5">
-                            <span className="text-2xs text-ink/60 block">{m.label}</span>
+                            <span className="text-2xs text-ink/70 block">{m.label}</span>
                             <span
                               className={`text-xs font-bold ${
                                 m.tone === 'emerald'
@@ -491,7 +491,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                               item.variant === 'primary'
                                 ? 'bg-emerald-500 hover:bg-emerald-700 text-white'
                                 : item.variant === 'danger'
-                                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                                ? 'bg-rose-600 hover:bg-rose-700 text-white'
                                 : 'bg-paper hover:bg-ink/5 text-ink border border-slate-700'
                             }`}
                           >
@@ -501,7 +501,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                       </div>
                     )}
                   </div>
-                  <span className="text-2xs text-ink/60 mt-1 px-1 font-mono">{msg.timestamp}</span>
+                  <span className="text-2xs text-ink/70 mt-1 px-1 font-mono">{msg.timestamp}</span>
                 </div>
               ))}
               <div ref={scrollEndRef} />
@@ -550,7 +550,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                     }
                   }}
                   placeholder='Add or edit holding, "Simulate 8% inflation", or drop Excel/CSV...'
-                  className="flex-1 min-h-10 max-h-28 resize-none bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2.5 text-xs text-ink placeholder-ink/50 focus:outline-none leading-snug"
+                  className="flex-1 min-h-10 max-h-28 resize-none bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2.5 text-xs text-ink placeholder-ink/60 focus:outline-none leading-snug"
                 />
 
                 <button

@@ -77,7 +77,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
           </h3>
           <button
             onClick={onClose}
-            className="text-ink/60 hover:text-ink p-1 rounded-lg transition-colors"
+            className="text-ink/70 hover:text-ink p-1 rounded-lg transition-colors"
             aria-label="Close NAV refresh"
           >
             <X className="w-5 h-5" />
@@ -86,13 +86,13 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
 
         {phase === 'confirm' && (
           <div className="mt-4 space-y-4 text-xs">
-            <p className="text-ink/60 leading-relaxed">
+            <p className="text-ink/70 leading-relaxed">
               Pulls today's published NAVs from AMFI's feed (via mfapi.in, keyless and
               client-side) and re-values each fund as units × latest NAV. On the first
               refresh, current value is adopted as units; afterwards valuations track the
               published NAV.
             </p>
-            <div className="bg-mist border border-slate-700 rounded-lg p-3 text-2xs text-ink/60 leading-relaxed">
+            <div className="bg-mist border border-slate-700 rounded-lg p-3 text-2xs text-ink/70 leading-relaxed">
               {funds.length > 0 ? (
                 <>
                   <span className="text-ink font-semibold">{funds.length} mutual fund holdings</span>{' '}
@@ -150,7 +150,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+                className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
               >
                 Cancel
               </button>
@@ -170,7 +170,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
         {phase === 'running' && (
           <div className="py-12 text-center space-y-3">
             <RefreshCw className="w-8 h-8 text-sky-700 animate-spin mx-auto" />
-            <p className="text-xs text-ink/60">Fetching latest NAVs from AMFI feed…</p>
+            <p className="text-xs text-ink/70">Fetching latest NAVs from AMFI feed…</p>
           </div>
         )}
 
@@ -178,7 +178,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
           <div className="mt-4 space-y-4 text-xs">
             {outcome.updated.length > 0 && (
               <div className="space-y-2">
-                <div className="text-2xs font-mono text-ink/60 flex items-center gap-1.5">
+                <div className="text-2xs font-mono text-ink/70 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                   {outcome.updated.length} FUNDS RE-VALUED
                 </div>
@@ -189,7 +189,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                   >
                     <div className="min-w-0">
                       <div className="text-ink font-semibold truncate">{u.name}</div>
-                      <div className="text-2xs text-ink/60 font-mono">
+                      <div className="text-2xs text-ink/70 font-mono">
                         NAV {u.oldNav !== null ? u.oldNav.toFixed(2) : '—'} → {u.nav.toFixed(2)} · as of {u.navDate}
                       </div>
                     </div>

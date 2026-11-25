@@ -623,7 +623,7 @@ export default function App() {
             aria-label="Free Wealth Calculators and Guides"
             className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink/70 border-b border-ink/10 pb-3"
           >
-            <span className="text-2xs font-mono uppercase tracking-wider text-ink/60">
+            <span className="text-2xs font-mono uppercase tracking-wider text-ink/70">
               Free Calculators &amp; Guides:
             </span>
             <a href="/home-loan-vs-fd-calculator/" className="hover:text-emerald-700 transition-colors">
@@ -640,10 +640,10 @@ export default function App() {
             </a>
           </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <p className="text-2xs text-ink/60 leading-relaxed max-w-3xl">
+            <p className="text-2xs text-ink/70 leading-relaxed max-w-3xl">
               We don&apos;t store your data with us — all spreadsheets and manual entries stay strictly on your device. Figures are illustrative / self-reported and not investment or tax advice.
             </p>
-            <span className="text-2xs text-ink/60 font-mono whitespace-nowrap">
+            <span className="text-2xs text-ink/70 font-mono whitespace-nowrap">
               © {new Date().getFullYear()} Vestora · Private by design
             </span>
           </div>
@@ -719,7 +719,7 @@ export default function App() {
                 type="button"
                 onClick={handleExportExcel}
                 disabled={holdings.length === 0}
-                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 Save Portfolio as Excel (.xlsx)
@@ -741,7 +741,7 @@ export default function App() {
                   disabled={holdings.length === 0}
                   className="px-3 py-2 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-ink/40 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5 text-ink/60" />
+                  <Download className="w-3.5 h-3.5 text-ink/70" />
                   Export .json
                 </button>
               </div>

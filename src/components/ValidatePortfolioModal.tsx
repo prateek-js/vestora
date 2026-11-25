@@ -345,14 +345,14 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
             <h2 className="text-base sm:text-lg font-semibold text-ink">
               Restart & Validate Your Portfolio
             </h2>
-            <p className="text-xs text-ink/60 mt-0.5">
+            <p className="text-xs text-ink/70 mt-0.5">
               Upload an Excel sheet or enter holdings manually to simulate your real portfolio.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-ink/60 hover:text-ink p-1.5 rounded-lg transition-colors"
+            className="text-ink/70 hover:text-ink p-1.5 rounded-lg transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -411,7 +411,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
 
           {activeTab !== 'reset' && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-ink/60 whitespace-nowrap">Action:</span>
+              <span className="text-ink/70 whitespace-nowrap">Action:</span>
               <div className="flex items-center bg-mist border border-slate-700 rounded-lg p-0.5">
                 <button
                   type="button"
@@ -477,7 +477,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     <div className="text-sm font-medium text-ink mt-3">
                       Drop your Excel (.xlsx, .xls) or CSV file here
                     </div>
-                    <p className="text-xs text-ink/60 mt-1">
+                    <p className="text-xs text-ink/70 mt-1">
                       Supports custom portfolio spreadsheets, CAMS CAS, MF Central, and Bank FD registries.
                     </p>
                     <input
@@ -496,7 +496,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   {/* Sheet selector if workbook had multiple sheets and current failed */}
                   {sheetNames.length > 1 && fileBuffer && (
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="text-ink/60">Select worksheet:</span>
+                      <span className="text-ink/70">Select worksheet:</span>
                       {sheetNames.map((sheet) => (
                         <button
                           key={sheet}
@@ -519,7 +519,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                       <div className="text-xs font-semibold text-ink">
                         Need an Excel format to start from?
                       </div>
-                      <p className="text-xs text-ink/60 mt-0.5">
+                      <p className="text-xs text-ink/70 mt-0.5">
                         Download our ready-to-edit <span className="font-mono text-ink/70">.xlsx</span> template with columns for all asset types, update your numbers, and drop it back here.
                       </p>
                     </div>
@@ -555,7 +555,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         setFileBuffer(null);
                         setFileName('');
                       }}
-                      className="text-xs text-ink/60 hover:text-ink underline-offset-2 hover:underline self-start sm:self-center"
+                      className="text-xs text-ink/70 hover:text-ink underline-offset-2 hover:underline self-start sm:self-center"
                     >
                       Choose another file
                     </button>
@@ -564,7 +564,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   {/* Multi-sheet switcher */}
                   {sheetNames.length > 1 && fileBuffer && (
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="text-ink/60">Worksheet:</span>
+                      <span className="text-ink/70">Worksheet:</span>
                       {sheetNames.map((sheet) => (
                         <button
                           key={sheet}
@@ -586,7 +586,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   <div className="border border-slate-700 rounded-xl overflow-hidden">
                     <div className="max-h-64 overflow-y-auto">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-mist text-ink/60 font-mono text-2xs border-b border-slate-700 sticky top-0">
+                        <thead className="bg-mist text-ink/70 font-mono text-2xs border-b border-slate-700 sticky top-0">
                           <tr>
                             <th className="py-2.5 px-3">Instrument</th>
                             <th className="py-2.5 px-3">Category</th>
@@ -600,7 +600,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                             <tr key={h.id} className="hover:bg-ink/5">
                               <td className="py-2 px-3">
                                 <div className="font-medium text-ink">{h.name}</div>
-                                <div className="text-2xs text-ink/60">{h.institution}</div>
+                                <div className="text-2xs text-ink/70">{h.institution}</div>
                               </td>
                               <td className="py-2 px-3 text-ink/70">
                                 {h.category.replace('_', ' ')}
@@ -617,7 +617,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                                   onClick={() =>
                                     setPreviewHoldings((prev) => prev.filter((item) => item.id !== h.id))
                                   }
-                                  className="text-ink/60 hover:text-rose-600 p-1 transition-colors"
+                                  className="text-ink/70 hover:text-rose-600 p-1 transition-colors"
                                   title="Exclude row"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -654,7 +654,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
           {activeTab === 'manual' && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-ink/60">
+                <p className="text-xs text-ink/70">
                   Add one or more holdings below to validate and stress-test your portfolio immediately.
                 </p>
                 {currentHoldings.length > 0 && (
@@ -682,7 +682,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     className="grid grid-cols-1 sm:grid-cols-12 gap-2 p-3 rounded-xl border border-slate-700 bg-mist items-end"
                   >
                     <div className="sm:col-span-3">
-                      <label className="block text-2xs text-ink/60 mb-1">
+                      <label className="block text-2xs text-ink/70 mb-1">
                         Instrument #{idx + 1} *
                       </label>
                       <input
@@ -695,7 +695,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-2xs text-ink/60 mb-1">Category</label>
+                      <label className="block text-2xs text-ink/70 mb-1">Category</label>
                       <select
                         value={row.category}
                         onChange={(e) => handleUpdateDraft(row.tempId, 'category', e.target.value)}
@@ -710,7 +710,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-2xs text-ink/60 mb-1">Invested *</label>
+                      <label className="block text-2xs text-ink/70 mb-1">Invested *</label>
                       <input
                         type="number"
                         step="any"
@@ -722,7 +722,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-2xs text-ink/60 mb-1">Current Value *</label>
+                      <label className="block text-2xs text-ink/70 mb-1">Current Value *</label>
                       <input
                         type="number"
                         step="any"
@@ -734,7 +734,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-2xs text-ink/60 mb-1">Maturity (Opt.)</label>
+                      <label className="block text-2xs text-ink/70 mb-1">Maturity (Opt.)</label>
                       <input
                         type="date"
                         value={row.maturityDate}
@@ -760,7 +760,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                           onClick={() =>
                             setDraftRows((prev) => prev.filter((item) => item.tempId !== row.tempId))
                           }
-                          className="p-1.5 text-ink/60 hover:text-rose-600 transition-colors"
+                          className="p-1.5 text-ink/70 hover:text-rose-600 transition-colors"
                           title="Remove row"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -775,13 +775,13 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setDraftRows((prev) => [...prev, createEmptyDraft(baseCurrency)])}
-                  className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/30 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Another Row
                 </button>
 
-                <div className="text-xs font-mono text-ink/60 tabular-nums">
+                <div className="text-xs font-mono text-ink/70 tabular-nums">
                   Ready: <span className="text-ink font-semibold">{manualSummary.validCount}</span> rows · Total Value:{' '}
                   <span className="text-emerald-700 font-semibold">
                     {formatCurrency(manualSummary.totalValue, baseCurrency, { showDecimals: false })}
@@ -800,7 +800,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     <div className="text-xs font-semibold text-emerald-700">
                       Save your current progress before resetting ({currentHoldings.length} holdings)
                     </div>
-                    <p className="text-2xs text-ink/60 mt-0.5">
+                    <p className="text-2xs text-ink/70 mt-0.5">
                       Download your portfolio as Excel or CSV so you can re-import it later anytime.
                     </p>
                   </div>
@@ -832,7 +832,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     <Eraser className="w-4 h-4" />
                   </div>
                   <h3 className="text-sm font-semibold text-ink">Start with Blank Slate (0 Holdings)</h3>
-                  <p className="text-xs text-ink/60 mt-1.5 leading-relaxed">
+                  <p className="text-xs text-ink/70 mt-1.5 leading-relaxed">
                     Clears all demo holdings from this browser so you can start completely fresh and add holdings one by one.
                   </p>
                 </div>
@@ -854,7 +854,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     <RotateCcw className="w-4 h-4" />
                   </div>
                   <h3 className="text-sm font-semibold text-ink">Reset Session & Load Demo</h3>
-                  <p className="text-xs text-ink/60 mt-1.5 leading-relaxed">
+                  <p className="text-xs text-ink/70 mt-1.5 leading-relaxed">
                     Clears your current session on this device and restores the illustrative sample portfolio.
                   </p>
                 </div>
@@ -876,7 +876,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
 
         {/* Footer */}
         <div className="px-5 py-3.5 border-t border-slate-700 bg-mist flex items-center justify-between gap-3 shrink-0">
-          <span className="text-2xs text-ink/60 hidden sm:inline">
+          <span className="text-2xs text-ink/70 hidden sm:inline">
             We don&apos;t store your data with us · Processed privately on your device
           </span>
 
@@ -884,7 +884,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+              className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
             >
               Cancel
             </button>

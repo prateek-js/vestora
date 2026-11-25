@@ -36,21 +36,24 @@ export interface CategoryAllocationItem {
   pct: number;
 }
 
+/* Darkened same-family hues: every value clears 4.5:1 as small text on Paper (the donut's
+   hovered-slice centre label reuses these colours as text, OverviewTab) and 3:1 as a slice
+   fill. 11-way distinctness preserved (min pairwise ΔE 14.4, vs 10.6 in the old set). */
 export const CATEGORY_META: Record<
   AssetCategory,
   { label: string; shortLabel: string; color: string }
 > = {
-  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#6366f1' },
-  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#8b5cf6' },
-  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#0ea5e9' },
-  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#38bdf8' },
-  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#06b6d4' },
-  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#14b8a6' },
-  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#f59e0b' },
-  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#10b981' },
-  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#059669' },
-  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#84cc16' },
-  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#94a3b8' },
+  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#4f46e5' },
+  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#7c3aed' },
+  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#0369a1' },
+  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#1e40af' },
+  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#0e7490' },
+  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#0f766e' },
+  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#b45309' },
+  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#047857' },
+  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#064e3b' },
+  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#4d7c0f' },
+  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#64748b' },
 };
 
 const MONTHLY_PROFILES = [

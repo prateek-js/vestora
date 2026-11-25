@@ -589,7 +589,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
         {prepayments.length > 0 && (
           <div className="bg-mist border border-emerald-500/30 rounded-xl px-4 py-2.5 text-xs font-mono shrink-0">
-            <div className="text-2xs text-ink/60">Cumulative Debt Prepayment</div>
+            <div className="text-2xs text-ink/70">Cumulative Debt Prepayment</div>
             <div className="text-emerald-700 font-bold tabular-nums mt-0.5">
               {formatCurrency(totalDebtRetired, baseCurrency, { compact: true })} paid ·{' '}
               {formatCurrency(totalInterestSaved, baseCurrency, { compact: true })} interest saved
@@ -608,7 +608,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           <button
             type="button"
             onClick={onNavigateToOverview}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-600 inline-flex items-center gap-1 whitespace-nowrap"
+            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1 whitespace-nowrap"
           >
             <span>View Updated Overview</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -623,7 +623,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
       >
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-ink/10 pb-4">
           <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-ink/60">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-ink/70">
               <span className="font-semibold text-emerald-700">Smart Diversification Suggestions</span>
               <span aria-hidden="true">·</span>
               <span>
@@ -730,7 +730,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     aria-label="Home loan rate percentage"
                     className="w-12 bg-transparent text-xs font-mono font-bold text-ink focus:outline-none tabular-nums text-right"
                   />
-                  <span className="text-xs font-mono text-ink/60">%</span>
+                  <span className="text-xs font-mono text-ink/70">%</span>
                 </div>
               )}
             </div>
@@ -742,7 +742,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-ink/70 font-medium">Current Mix vs. {TARGET_MIX_BY_GOAL[smartGoal].label} Target</span>
-              <span className="font-mono text-ink/60 tabular-nums">
+              <span className="font-mono text-ink/70 tabular-nums">
                 Total {formatCurrency(smartReport.analysis.totalValuation, baseCurrency, { compact: true })}
               </span>
             </div>
@@ -795,12 +795,12 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       <span>{b.label}</span>
                     </div>
                     <div className="text-ink font-semibold mt-0.5">
-                      {curr}% <span className="text-ink/60">/ {targ}%</span>
+                      {curr}% <span className="text-ink/70">/ {targ}%</span>
                     </div>
                     <div
                       className={
                         Math.abs(diff) <= 4
-                          ? 'text-ink/60'
+                          ? 'text-ink/70'
                           : diff > 0
                           ? 'text-amber-700'
                           : 'text-emerald-700'
@@ -816,7 +816,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
           {/* Live Market Reference Benchmarks */}
           <div className="bg-mist border border-slate-700 rounded-lg p-3 space-y-2">
-            <div className="flex items-center justify-between text-2xs text-ink/60">
+            <div className="flex items-center justify-between text-2xs text-ink/70">
               <span className="font-medium text-ink">
                 Live Indian &amp; Global Benchmarks (AMFI · GoI G-Sec · NPS · Gold)
               </span>
@@ -828,18 +828,18 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 const cagr = det?.cagr3yPct ?? det?.cagr1yPct;
                 return (
                   <div key={cfg.id} className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                    <span className="text-ink/60 truncate">{cfg.id.replace('_', ' ')}</span>
+                    <span className="text-ink/70 truncate">{cfg.id.replace('_', ' ')}</span>
                     <span className="text-emerald-700 font-semibold shrink-0">
                       {cagr !== null && cagr !== undefined ? `${cagr.toFixed(1)}%` : `${cfg.fallbackYieldPct}%`}
                       {det?.annualizedVolatilityPct ? (
-                        <span className="text-ink/60 font-normal"> · {det.annualizedVolatilityPct}%v</span>
+                        <span className="text-ink/70 font-normal"> · {det.annualizedVolatilityPct}%v</span>
                       ) : null}
                     </span>
                   </div>
                 );
               })}
               <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/60 truncate">INDIA G-SEC</span>
+                <span className="text-ink/70 truncate">INDIA G-SEC</span>
                 <span className="text-emerald-700 font-semibold shrink-0">
                   {benchmarks?.indiaGsecs[0]
                     ? `${benchmarks.indiaGsecs[0].rateOrYieldPct.toFixed(2)}%`
@@ -847,7 +847,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/60 truncate">NPS TOP E</span>
+                <span className="text-ink/70 truncate">NPS TOP E</span>
                 <span className="text-emerald-700 font-semibold shrink-0">
                   {benchmarks?.npsSchemes.length
                     ? `${Math.max(...benchmarks.npsSchemes.map((s) => s.cagr3yPct ?? 0)).toFixed(1)}%`
@@ -855,22 +855,22 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/60 truncate">24K GOLD</span>
-                <span className="text-gold font-semibold shrink-0">
+                <span className="text-ink/70 truncate">24K GOLD</span>
+                <span className="text-amber-800 font-semibold shrink-0">
                   {benchmarks?.goldInrPer10g
                     ? `₹${(benchmarks.goldInrPer10g / 1000).toFixed(1)}k/10g`
                     : '₹116k/10g'}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/60 truncate">364D T-BILL</span>
+                <span className="text-ink/70 truncate">364D T-BILL</span>
                 <span className="text-emerald-700 font-semibold shrink-0">
                   {benchmarks?.indiaGsecs.find((g) => /364/i.test(g.name))?.rateOrYieldPct.toFixed(2) ?? '6.54'}%
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/60 truncate">US TREASURY</span>
-                <span className="text-debt font-semibold shrink-0">
+                <span className="text-ink/70 truncate">US TREASURY</span>
+                <span className="text-sky-700 font-semibold shrink-0">
                   {benchmarks?.usTreasuries[0]
                     ? `${benchmarks.usTreasuries[0].rateOrYieldPct.toFixed(2)}%`
                     : '4.01%'}
@@ -899,7 +899,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   }`}
                 >
                   <div className="space-y-2.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-ink/60">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-ink/70">
                       <span className="font-medium text-emerald-700">{plan.categoryLabel}</span>
                       <span className="font-mono tabular-nums text-emerald-700 font-semibold">
                         {plan.benefitSummary}
@@ -910,7 +910,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     <p className="text-xs text-ink/70 leading-relaxed">{plan.rationale}</p>
 
                     <div className="pt-2 border-t border-ink/10 space-y-1.5 text-2xs">
-                      <div className="flex items-center justify-between text-ink/60 font-mono">
+                      <div className="flex items-center justify-between text-ink/70 font-mono">
                         <span>Source: {plan.sourceHolding.name}</span>
                         <span className="text-ink font-semibold tabular-nums">
                           -{formatCurrency(plan.moveAmountInBase, baseCurrency, { compact: true })}
@@ -932,7 +932,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   </div>
 
                   <div className="pt-3 border-t border-ink/10 flex items-center justify-between gap-3">
-                    <div className="text-2xs font-mono text-ink/60 tabular-nums">
+                    <div className="text-2xs font-mono text-ink/70 tabular-nums">
                       Risk Score:{' '}
                       <span className="text-ink font-semibold">{plan.riskBefore}</span>
                       {' → '}
@@ -984,7 +984,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               </span>
               <h3 className="text-sm font-bold text-ink mt-0.5">Select Source Holding</h3>
             </div>
-            <span className="text-2xs font-mono text-ink/60">{holdings.length} holdings</span>
+            <span className="text-2xs font-mono text-ink/70">{holdings.length} holdings</span>
           </div>
 
           {/* Holding Selector List */}
@@ -1015,7 +1015,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         <span className="text-2xs font-mono text-amber-700 shrink-0">Matured</span>
                       )}
                     </div>
-                    <div className="text-2xs text-ink/60 mt-0.5 truncate">
+                    <div className="text-2xs text-ink/70 mt-0.5 truncate">
                       {catLabel} · {h.institution}
                     </div>
                   </div>
@@ -1086,13 +1086,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
               <div className="grid grid-cols-2 gap-2 text-2xs font-mono bg-mist border border-slate-700 rounded-lg p-3">
                 <div>
-                  <span className="text-ink/60 block">Staged to Diversify</span>
+                  <span className="text-ink/70 block">Staged to Diversify</span>
                   <span className="text-emerald-700 font-bold text-xs tabular-nums">
                     {formatCurrency(moveAmountInBase, baseCurrency, { compact: false })}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-ink/60 block">Remaining in Source</span>
+                  <span className="text-ink/70 block">Remaining in Source</span>
                   <span className="text-ink font-semibold text-xs tabular-nums">
                     {sourceValueInBase - moveAmountInBase <= 1
                       ? 'Full Exit (0)'
@@ -1191,7 +1191,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     Top Ranked by Category (Kuvera API)
                   </button>
                 </div>
-                <span className="text-2xs font-mono text-ink/60">
+                <span className="text-2xs font-mono text-ink/70">
                   {mfMode === 'AMFI_SEARCH' ? 'Direct NAV + History' : 'Sorted by 3Y CAGR'}
                 </span>
               </div>
@@ -1236,7 +1236,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                               <div className="text-xs font-semibold text-ink leading-snug">
                                 {fund.name}
                               </div>
-                              <div className="text-2xs font-mono text-ink/60 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
+                              <div className="text-2xs font-mono text-ink/70 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
                                 <span>{fund.topCategory} · {fund.subCategory}</span>
                                 <span>·</span>
                                 <span className="text-emerald-700 font-semibold">
@@ -1311,7 +1311,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       })
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-2xs text-ink/60">
+                  <div className="flex items-center justify-between text-2xs text-ink/70">
                     <span>Source: Kuvera Categorized MF Tree + AMFI Scheme Resolver</span>
                     <span className="font-mono">Top {rankedKuveraMatches.length} Direct Growth</span>
                   </div>
@@ -1326,13 +1326,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 className="flex items-center gap-2"
               >
                 <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/50" />
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/70" />
                   <input
                     type="text"
                     value={mfQuery}
                     onChange={(e) => setMfQuery(e.target.value)}
                     placeholder="Search 40,000+ AMFI mutual funds (e.g. Parag Parikh, Nifty 50, Gilt, Liquid)..."
-                    className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/50 focus:outline-none"
+                    className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/60 focus:outline-none"
                   />
                 </div>
                 <button
@@ -1389,7 +1389,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                             <div className="text-xs font-semibold text-ink group-hover:text-emerald-700 transition-colors leading-snug">
                               {hit.schemeName}
                             </div>
-                            <div className="text-2xs font-mono text-ink/60 mt-0.5 flex items-center gap-2">
+                            <div className="text-2xs font-mono text-ink/70 mt-0.5 flex items-center gap-2">
                               <span>AMFI #{hit.schemeCode}</span>
                               <span>·</span>
                               <span className="text-emerald-700">
@@ -1466,15 +1466,15 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                               <div className="space-y-2">
                                 <div className="flex flex-wrap items-center justify-between gap-2 text-ink/70">
                                   <span className="font-medium">{schemeDetail.fundHouse}</span>
-                                  <span className="font-mono text-ink/60">{schemeDetail.schemeCategory}</span>
+                                  <span className="font-mono text-ink/70">{schemeDetail.schemeCategory}</span>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-ink/10 font-mono tabular-nums">
                                   <div>
-                                    <span className="text-ink/60 block">Latest NAV ({schemeDetail.navDate})</span>
+                                    <span className="text-ink/70 block">Latest NAV ({schemeDetail.navDate})</span>
                                     <span className="text-ink font-bold">₹{schemeDetail.latestNav.toFixed(2)}</span>
                                   </div>
                                   <div>
-                                    <span className="text-ink/60 block">30-Day Return</span>
+                                    <span className="text-ink/70 block">30-Day Return</span>
                                     <span
                                       className={`font-semibold ${
                                         (schemeDetail.return30dPct ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
@@ -1486,7 +1486,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                     </span>
                                   </div>
                                   <div>
-                                    <span className="text-ink/60 block">1-Year Return</span>
+                                    <span className="text-ink/70 block">1-Year Return</span>
                                     <span
                                       className={`font-semibold ${
                                         (schemeDetail.cagr1yPct ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
@@ -1498,7 +1498,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                     </span>
                                   </div>
                                   <div>
-                                    <span className="text-ink/60 block">3-Year CAGR</span>
+                                    <span className="text-ink/70 block">3-Year CAGR</span>
                                     <span
                                       className={`font-semibold ${
                                         (schemeDetail.cagr3yPct ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
@@ -1510,7 +1510,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                     </span>
                                   </div>
                                   <div>
-                                    <span className="text-ink/60 block">1Y Volatility</span>
+                                    <span className="text-ink/70 block">1Y Volatility</span>
                                     <span className="font-semibold text-ink">
                                       {schemeDetail.annualizedVolatilityPct !== null
                                         ? `${schemeDetail.annualizedVolatilityPct.toFixed(1)}%`
@@ -1520,7 +1520,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-ink/60">Could not fetch historical NAVs for this scheme.</span>
+                              <span className="text-ink/70">Could not fetch historical NAVs for this scheme.</span>
                             )}
                           </div>
                         )}
@@ -1529,7 +1529,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   })
                 )}
               </div>
-              <div className="flex items-center justify-between text-2xs text-ink/60">
+              <div className="flex items-center justify-between text-2xs text-ink/70">
                 <span>Source: Open AMFI NAV API (api.mfapi.in) · Keyless live query</span>
                 <span className="font-mono">Showing up to {mfHits.length} matches</span>
               </div>
@@ -1543,19 +1543,19 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/50" />
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/70" />
                   <input
                     type="text"
                     value={marketQuery}
                     onChange={(e) => setMarketQuery(e.target.value)}
                     placeholder="Search SBI FD, RBI Bond, T-Bill, NABARD, Treasury, SGB..."
-                    className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/50 focus:outline-none"
+                    className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/60 focus:outline-none"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowCustomBondForm((v) => !v)}
-                  className="px-3 py-2 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/35 rounded-lg transition-colors whitespace-nowrap shrink-0"
+                  className="px-3 py-2 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/35 rounded-lg transition-colors whitespace-nowrap shrink-0"
                 >
                   {showCustomBondForm ? 'Hide Custom Form' : '+ Custom FD / Bond'}
                 </button>
@@ -1588,7 +1588,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   ))}
                 </div>
 
-                <span className="text-2xs font-mono text-ink/60">
+                <span className="text-2xs font-mono text-ink/70">
                   {benchmarks?.indiaGsecs.length
                     ? `GoI G-Sec API: Live (${benchmarks.indiaGsecs.length})`
                     : ''}
@@ -1611,14 +1611,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       value={customBondName}
                       onChange={(e) => setCustomBondName(e.target.value)}
                       placeholder="Instrument Name (e.g. ICICI 15M FD / Tata Capital NCD)"
-                      className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/50 focus:outline-none focus:border-emerald-500"
+                      className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/60 focus:outline-none focus:border-emerald-500"
                     />
                     <input
                       type="text"
                       value={customBondInstitution}
                       onChange={(e) => setCustomBondInstitution(e.target.value)}
                       placeholder="Bank / Issuer (e.g. ICICI Bank)"
-                      className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/50 focus:outline-none focus:border-emerald-500"
+                      className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/60 focus:outline-none focus:border-emerald-500"
                     />
                     <select
                       value={customBondCat}
@@ -1693,7 +1693,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                             <span className="text-2xs font-mono text-emerald-700">Live</span>
                           )}
                         </div>
-                        <div className="text-2xs text-ink/60 mt-0.5 flex flex-wrap items-center gap-x-2">
+                        <div className="text-2xs text-ink/70 mt-0.5 flex flex-wrap items-center gap-x-2">
                           <span>{item.issuer}</span>
                           <span>·</span>
                           <span>{item.tenureLabel}</span>
@@ -1707,7 +1707,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           <div className="text-xs font-bold text-emerald-700">
                             {item.rateOrYieldPct.toFixed(2)}%
                           </div>
-                          <div className="text-2xs text-ink/60">{item.currency} p.a.</div>
+                          <div className="text-2xs text-ink/70">{item.currency} p.a.</div>
                         </div>
 
                         <button
@@ -1757,13 +1757,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           {explorerTab === 'STOCKS_ETFS' && (
             <div className="space-y-3">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/50" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-ink/70" />
                 <input
                   type="text"
                   value={marketQuery}
                   onChange={(e) => setMarketQuery(e.target.value)}
                   placeholder="Filter listed index ETFs (NIFTYBEES, BANKBEES, VOO, QQQ)..."
-                  className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/50 focus:outline-none"
+                  className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/60 focus:outline-none"
                 />
               </div>
 
@@ -1774,7 +1774,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     <div key={item.id} className="p-3 flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <div className="text-xs font-semibold text-ink">{item.name}</div>
-                        <div className="text-2xs text-ink/60 mt-0.5">
+                        <div className="text-2xs text-ink/70 mt-0.5">
                           {item.issuer} · {item.rating} · {item.taxSummary}
                         </div>
                       </div>
@@ -1817,14 +1817,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     value={customStockName}
                     onChange={(e) => setCustomStockName(e.target.value)}
                     placeholder="Stock / Ticker (e.g. TCS, NVDA, MSFT)"
-                    className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/50 focus:outline-none focus:border-emerald-500"
+                    className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/60 focus:outline-none focus:border-emerald-500"
                   />
                   <input
                     type="text"
                     value={customStockBroker}
                     onChange={(e) => setCustomStockBroker(e.target.value)}
                     placeholder="Exchange / Broker"
-                    className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/50 focus:outline-none focus:border-emerald-500"
+                    className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/60 focus:outline-none focus:border-emerald-500"
                   />
                   <div className="flex gap-2">
                     <select
@@ -1889,7 +1889,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     </button>
                   ))}
                 </div>
-                <span className="text-2xs font-mono text-ink/60">
+                <span className="text-2xs font-mono text-ink/70">
                   Section 80CCD(1B) · Extra ₹50,000 Deduction
                 </span>
               </div>
@@ -1914,7 +1914,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           <div className="text-xs font-semibold text-ink leading-snug">
                             {nps.schemeName}
                           </div>
-                          <div className="text-2xs font-mono text-ink/60 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
+                          <div className="text-2xs font-mono text-ink/70 mt-1 flex flex-wrap items-center gap-x-2 tabular-nums">
                             <span>{nps.pfmName}</span>
                             <span>·</span>
                             <span className="text-ink font-semibold">NAV ₹{nps.nav.toFixed(2)}</span>
@@ -1967,7 +1967,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   })
                 )}
               </div>
-              <div className="flex items-center justify-between text-2xs text-ink/60">
+              <div className="flex items-center justify-between text-2xs text-ink/70">
                 <span>Source: Open NPSNAV API (npsnav.in) · Keyless live PFRDA NAV query</span>
                 <span className="font-mono">{filteredNpsSchemes.length} schemes</span>
               </div>
@@ -1992,7 +1992,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-2xs text-ink/60 mb-1">Loan Label / Bank</label>
+                    <label className="block text-2xs text-ink/70 mb-1">Loan Label / Bank</label>
                     <input
                       type="text"
                       value={loanLabel}
@@ -2001,7 +2001,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-2xs text-ink/60 mb-1">
+                    <label className="block text-2xs text-ink/70 mb-1">
                       Outstanding Principal ({baseCurrency})
                     </label>
                     <input
@@ -2013,7 +2013,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-2xs text-ink/60 mb-1">
+                    <label className="block text-2xs text-ink/70 mb-1">
                       Interest Rate (% p.a.)
                     </label>
                     <input
@@ -2027,7 +2027,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-2xs text-ink/60 mb-1">
+                    <label className="block text-2xs text-ink/70 mb-1">
                       Remaining Tenure (Years)
                     </label>
                     <input
@@ -2044,29 +2044,29 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 {/* Real-time Amortization Savings Preview */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-ink/10 font-mono tabular-nums">
                   <div className="p-2.5 rounded-lg bg-paper border border-slate-700">
-                    <span className="text-2xs text-ink/60 block">Effective Risk-Free Yield</span>
+                    <span className="text-2xs text-ink/70 block">Effective Risk-Free Yield</span>
                     <span className="text-sm font-bold text-emerald-700">
                       {homeLoanImpact.taxFreeReturnPct.toFixed(2)}% tax-free
                     </span>
-                    <span className="text-2xs text-ink/60 block mt-0.5">
+                    <span className="text-2xs text-ink/70 block mt-0.5">
                       ~{homeLoanImpact.preTaxEquivalent30Pct.toFixed(1)}% pre-tax @ 30%
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-paper border border-slate-700">
-                    <span className="text-2xs text-ink/60 block">Total Interest Saved</span>
+                    <span className="text-2xs text-ink/70 block">Total Interest Saved</span>
                     <span className="text-sm font-bold text-emerald-700">
                       +{formatCurrency(homeLoanImpact.interestSaved, baseCurrency, { compact: true })}
                     </span>
-                    <span className="text-2xs text-ink/60 block mt-0.5">
+                    <span className="text-2xs text-ink/70 block mt-0.5">
                       On {formatCurrency(homeLoanImpact.prepayApplied, baseCurrency, { compact: true })} prepay
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-paper border border-slate-700">
-                    <span className="text-2xs text-ink/60 block">Tenure Reduced By</span>
+                    <span className="text-2xs text-ink/70 block">Tenure Reduced By</span>
                     <span className="text-sm font-bold text-emerald-700">
                       {Math.floor(homeLoanImpact.monthsSaved / 12)}y {homeLoanImpact.monthsSaved % 12}m
                     </span>
-                    <span className="text-2xs text-ink/60 block mt-0.5">
+                    <span className="text-2xs text-ink/70 block mt-0.5">
                       EMI {formatCurrency(homeLoanImpact.monthlyEmi, baseCurrency, { compact: true })}/mo
                     </span>
                   </div>
@@ -2125,7 +2125,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono tabular-nums">
             <div>
-              <span className="text-ink/60">Allocated: </span>
+              <span className="text-ink/70">Allocated: </span>
               <span
                 className={`font-bold ${
                   isOverAllocated
@@ -2137,7 +2137,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               >
                 {formatCurrency(allocatedTotal, baseCurrency, { compact: false })}
               </span>
-              <span className="text-ink/60">
+              <span className="text-ink/70">
                 {' '}
                 / {formatCurrency(moveAmountInBase, baseCurrency, { compact: false })}
               </span>
@@ -2147,7 +2147,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <button
                 type="button"
                 onClick={handleSplitEvenly}
-                className="px-2.5 py-1 text-2xs font-sans font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/35 rounded-md transition-colors"
+                className="px-2.5 py-1 text-2xs font-sans font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/35 rounded-md transition-colors"
               >
                 Split Evenly
               </button>
@@ -2174,7 +2174,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           ? 'bg-emerald-500/10 text-emerald-700'
                           : dest.kind === 'MUTUAL_FUND'
                           ? 'bg-indigo-500/10 text-indigo-600'
-                          : 'bg-debt/10 text-debt'
+                          : 'bg-debt/10 text-sky-700'
                       }`}
                     >
                       {dest.kind === 'HOME_LOAN'
@@ -2185,12 +2185,12 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     </span>
                     <span className="text-xs font-semibold text-ink truncate">{dest.title}</span>
                   </div>
-                  <div className="text-2xs text-ink/60 mt-1 truncate">{dest.subtitle}</div>
+                  <div className="text-2xs text-ink/70 mt-1 truncate">{dest.subtitle}</div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-2xs font-mono text-ink/60">{baseCurrency}</span>
+                    <span className="text-2xs font-mono text-ink/70">{baseCurrency}</span>
                     <input
                       type="number"
                       min={0}
@@ -2217,7 +2217,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveDestination(dest.id)}
-                    className="p-1.5 text-ink/60 hover:text-rose-600 transition-colors"
+                    className="p-1.5 text-ink/70 hover:text-rose-600 transition-colors"
                     aria-label={`Remove ${dest.title}`}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -2230,17 +2230,17 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             <div className="pt-3 mt-2 border-t border-ink/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-4 text-xs font-mono tabular-nums">
                 <div>
-                  <span className="text-ink/60">Risk Score Impact: </span>
+                  <span className="text-ink/70">Risk Score Impact: </span>
                   <span className="text-ink font-semibold">
                     {riskSimulation.before.score} ({riskSimulation.before.posture})
                   </span>
-                  <span className="text-ink/60 mx-1.5">→</span>
+                  <span className="text-ink/70 mx-1.5">→</span>
                   <span className="text-emerald-700 font-bold">
                     {riskSimulation.after.score} ({riskSimulation.after.posture})
                   </span>
                 </div>
                 <div>
-                  <span className="text-ink/60">Equity Share: </span>
+                  <span className="text-ink/70">Equity Share: </span>
                   <span className="text-ink/70">
                     {riskSimulation.before.equityExposurePct}% → {riskSimulation.after.equityExposurePct}%
                   </span>
@@ -2284,7 +2284,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <button
                 type="button"
                 onClick={onClearPrepayments}
-                className="text-2xs text-ink/60 hover:text-rose-600 transition-colors"
+                className="text-2xs text-ink/70 hover:text-rose-600 transition-colors"
               >
                 Clear History
               </button>
@@ -2296,9 +2296,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <div key={p.id} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="font-semibold text-ink">
-                    {p.loanLabel} <span className="text-ink/60 font-normal">from {p.sourceName}</span>
+                    {p.loanLabel} <span className="text-ink/70 font-normal">from {p.sourceName}</span>
                   </div>
-                  <div className="text-2xs font-mono text-ink/60 mt-0.5">
+                  <div className="text-2xs font-mono text-ink/70 mt-0.5">
                     {p.date} · {p.loanRatePct.toFixed(2)}% rate · Shaved {p.monthsSaved} months off loan
                   </div>
                 </div>

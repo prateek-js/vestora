@@ -58,7 +58,7 @@ export function ChapterBar({ chapters, chapter, reached, onGo }: ChapterBarProps
                   aria-label={`Go to ${c.label} (${Math.max(i, 0) + 1} of ${chapters.length})`}
                   onClick={() => onGo(c.id)}
                   className={`h-5 flex w-full items-center justify-center rounded-full transition-colors ${
-                    passed ? 'bg-ink' : isReached ? 'bg-ink/40 hover:bg-ink' : 'bg-ink/15 cursor-not-allowed'
+                    !isReached ? 'bg-ink/15 cursor-not-allowed' : passed ? 'bg-ink' : 'bg-ink/40 hover:bg-ink'
                   }`}
                 />
               </li>

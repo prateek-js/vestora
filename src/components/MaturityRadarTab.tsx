@@ -190,7 +190,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
             <h2 className="text-lg font-bold text-ink tracking-tight">
               Maturity Radar & Intelligent Reinvestment Engine
             </h2>
-            <p className="text-xs text-ink/60 mt-1 max-w-2xl">
+            <p className="text-xs text-ink/70 mt-1 max-w-2xl">
               Track maturing Fixed Deposits, Recurring Deposits, Sovereign Gold Bonds, and Debentures.
               Eliminate zero-yield idle cash drag by preemptively channeling matured capital into 5–8 vetted
               institutional alternatives based on your risk appetite.
@@ -198,7 +198,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs bg-mist px-3 py-2 rounded-lg border border-slate-700">
-            <span className="text-ink/60">Matured Capital Detected:</span>
+            <span className="text-ink/70">Matured Capital Detected:</span>
             <span className="text-amber-800 font-bold">
               {formatCurrency(
                 maturingHoldings
@@ -222,7 +222,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <Clock className="w-4 h-4 text-amber-700 shrink-0" />
               <span>Maturity Timeline</span>
             </h3>
-            <p className="text-xs text-ink/60 mt-1">
+            <p className="text-xs text-ink/70 mt-1">
               Chronological expiration horizon across dated holdings. Click any bar to stage that capital for reinvestment below.
             </p>
           </div>
@@ -258,7 +258,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           <div className="px-5 py-3.5">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-medium text-amber-800">Matured &amp; Next 30d</span>
-              <span className="font-mono text-ink/60 tabular-nums">{bucketTotals.urgent30Count}</span>
+              <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.urgent30Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
               {formatCurrency(bucketTotals.urgent30Value, baseCurrency, { compact: false, showDecimals: false })}
@@ -268,7 +268,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           <div className="px-5 py-3.5">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-medium text-sky-700">31–60 Days</span>
-              <span className="font-mono text-ink/60 tabular-nums">{bucketTotals.window60Count}</span>
+              <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window60Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
               {formatCurrency(bucketTotals.window60Value, baseCurrency, { compact: false, showDecimals: false })}
@@ -278,7 +278,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           <div className="px-5 py-3.5">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-medium text-indigo-600">61–90 Days</span>
-              <span className="font-mono text-ink/60 tabular-nums">{bucketTotals.window90Count}</span>
+              <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
               {formatCurrency(bucketTotals.window90Value, baseCurrency, { compact: false, showDecimals: false })}
@@ -288,7 +288,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           <div className="px-5 py-3.5">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-medium text-ink/70">Beyond 90 Days</span>
-              <span className="font-mono text-ink/60 tabular-nums">{bucketTotals.beyond90Count}</span>
+              <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.beyond90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
               {formatCurrency(bucketTotals.beyond90Value, baseCurrency, { compact: false, showDecimals: false })}
@@ -299,17 +299,17 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
         {/* Horizontal Bar Timeline */}
         <div className="p-5">
           {timelineEntries.length === 0 ? (
-            <div className="py-10 text-center text-xs text-ink/60">
+            <div className="py-10 text-center text-xs text-ink/70">
               No holdings with fixed maturity dates found. Add an FD, RD, Bond, or upload a sheet with Maturity Date values to view the timeline.
             </div>
           ) : visibleTimelineEntries.length === 0 ? (
-            <div className="py-10 text-center text-xs text-ink/60">
+            <div className="py-10 text-center text-xs text-ink/70">
               No holdings expire inside this window. Select <strong className="text-ink">All</strong> to see the full maturity schedule.
             </div>
           ) : (
             <div className="space-y-2">
               {/* Horizon Axis Header (Desktop) */}
-              <div className="hidden md:grid md:grid-cols-12 gap-4 items-center pb-2 border-b border-slate-700/80 text-2xs font-mono text-ink/60">
+              <div className="hidden md:grid md:grid-cols-12 gap-4 items-center pb-2 border-b border-slate-700/80 text-2xs font-mono text-ink/70">
                 <div className="col-span-4">Instrument &amp; Maturity Date</div>
                 <div className="col-span-6 relative h-5">
                   <span className="absolute left-0 top-0 text-ink/70 font-semibold">Today</span>
@@ -322,7 +322,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                   <span className="absolute left-3/4 -translate-x-1/2 top-0 text-indigo-600 font-semibold">
                     90d
                   </span>
-                  <span className="absolute right-0 top-0 text-ink/60">90d+</span>
+                  <span className="absolute right-0 top-0 text-ink/70">90d+</span>
                 </div>
                 <div className="col-span-2 text-right">Value &amp; Window</div>
               </div>
@@ -351,7 +351,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                     ? 'text-sky-700'
                     : windowKey === 'WINDOW_90'
                     ? 'text-indigo-600'
-                    : 'text-ink/60';
+                    : 'text-ink/70';
 
                   const daysLabel = isMatured
                     ? days < 0
@@ -380,7 +380,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-2 text-2xs text-ink/60 mt-0.5 font-mono tabular-nums">
+                        <div className="flex flex-wrap items-center gap-x-2 text-2xs text-ink/70 mt-0.5 font-mono tabular-nums">
                           <span>{holding.maturityDate || 'Date derived'}</span>
                           <span aria-hidden="true" className="text-ink/40">·</span>
                           <span>{holding.institution}</span>
@@ -430,11 +430,11 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           )}
 
           {openEndedCount > 0 && (
-            <div className="mt-4 pt-3 border-t border-slate-700/80 text-2xs text-ink/60 flex items-center justify-between gap-2">
+            <div className="mt-4 pt-3 border-t border-slate-700/80 text-2xs text-ink/70 flex items-center justify-between gap-2">
               <span>
                 {openEndedCount} open-ended holding{openEndedCount === 1 ? '' : 's'} (Mutual Funds, Equities, or Cash) without fixed expiration dates.
               </span>
-              <span className="hidden sm:inline font-mono text-ink/60">
+              <span className="hidden sm:inline font-mono text-ink/70">
                 Milestones: 30d · 60d · 90d
               </span>
             </div>
@@ -449,13 +449,13 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
             <Calendar className="w-4 h-4 text-emerald-700" />
             <span>Select Maturing Instrument to Reinvest</span>
           </h3>
-          <span className="text-xs text-ink/60 font-mono">
+          <span className="text-xs text-ink/70 font-mono">
             {maturingHoldings.length} Instruments Tracked
           </span>
         </div>
 
         {maturingHoldings.length === 0 ? (
-          <div className="p-8 text-center text-ink/60 text-xs">
+          <div className="p-8 text-center text-ink/70 text-xs">
             No fixed-tenure instruments (FD, RD, SGB, Bond) detected in your portfolio.
           </div>
         ) : (
@@ -486,7 +486,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                         MATURED
                       </span>
                     ) : (
-                      <span className="text-2xs font-mono text-ink/60 bg-ink/5 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-2xs font-mono text-ink/70 bg-ink/5 px-1.5 py-0.5 rounded shrink-0">
                         {h.daysToMaturity}d left
                       </span>
                     )}
@@ -496,12 +496,12 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                     <div className="text-base font-bold font-mono text-ink tabular-nums">
                       {formatCurrency(val, baseCurrency, { compact: false })}
                     </div>
-                    <div className="text-2xs text-ink/60">
+                    <div className="text-2xs text-ink/70">
                       {h.category.replace('_', ' ')}
                     </div>
                   </div>
 
-                  <div className="mt-1 text-2xs text-ink/60 flex items-center justify-between">
+                  <div className="mt-1 text-2xs text-ink/70 flex items-center justify-between">
                     <span>{h.institution}</span>
                     {h.interestRatePct && <span>Rate: {h.interestRatePct}%</span>}
                   </div>
@@ -621,7 +621,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                     >
                       {sol.riskTier} RISK
                     </span>
-                    <span className="text-2xs text-ink/60 font-mono">
+                    <span className="text-2xs text-ink/70 font-mono">
                       {sol.actionTag}
                     </span>
                   </div>
@@ -630,7 +630,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                     <div className="text-lg font-bold font-mono text-emerald-700 tabular-nums">
                       {sol.expectedAnnualYieldPct}%
                     </div>
-                    <div className="text-2xs text-ink/60 font-mono">Exp. Annual Yield</div>
+                    <div className="text-2xs text-ink/70 font-mono">Exp. Annual Yield</div>
                   </div>
                 </div>
 
@@ -638,7 +638,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                 <h4 className="text-base font-bold text-ink mt-2 group-hover:text-emerald-700 transition-colors">
                   {sol.solutionName}
                 </h4>
-                <div className="text-xs text-ink/60 mt-0.5 font-mono">
+                <div className="text-xs text-ink/70 mt-0.5 font-mono">
                   {sol.instrumentType}
                 </div>
 
@@ -650,11 +650,11 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                 {/* Key Spec Grid */}
                 <div className="mt-4 grid grid-cols-2 gap-2 text-2xs bg-mist p-3 rounded-lg border border-slate-700/80 font-mono">
                   <div>
-                    <span className="text-ink/60 block">Lock-in & Tenure:</span>
+                    <span className="text-ink/70 block">Lock-in & Tenure:</span>
                     <span className="text-ink font-medium">{sol.lockInPeriod}</span>
                   </div>
                   <div>
-                    <span className="text-ink/60 block">Tax Treatment:</span>
+                    <span className="text-ink/70 block">Tax Treatment:</span>
                     <span className="text-ink font-medium truncate block" title={sol.taxImplication}>
                       {sol.taxImplication}
                     </span>
@@ -663,7 +663,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
                 {/* Annual Income Projection Callout */}
                 {activeHolding && (
-                  <div className="mt-3 text-2xs text-ink/60 flex items-center justify-between px-1">
+                  <div className="mt-3 text-2xs text-ink/70 flex items-center justify-between px-1">
                     <span>Projected 1st-Year Yield on Staged Capital:</span>
                     <span className="text-emerald-700 font-mono font-bold">
                       +{formatCurrency(projectedGainAnnual, baseCurrency, { showDecimals: false })}
@@ -674,7 +674,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
               {/* Action Button */}
               <div className="mt-4 pt-3 border-t border-slate-700/80 flex items-center justify-between">
-                <span className="text-2xs text-ink/60 max-w-xs truncate" title={sol.suitability}>
+                <span className="text-2xs text-ink/70 max-w-xs truncate" title={sol.suitability}>
                   {sol.suitability}
                 </span>
 

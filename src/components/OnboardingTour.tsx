@@ -257,7 +257,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-ink/60 hover:text-ink rounded-md hover:bg-ink/5 transition-colors"
+            className="p-1 text-ink/70 hover:text-ink rounded-md hover:bg-ink/5 transition-colors"
             aria-label="Close tour"
           >
             <X className="w-4 h-4" />
@@ -301,7 +301,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-2 py-1.5 text-2xs font-medium text-ink/60 hover:text-ink transition-colors"
+              className="px-2 py-1.5 text-2xs font-medium text-ink/70 hover:text-ink transition-colors"
             >
               Skip
             </button>

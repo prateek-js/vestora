@@ -152,7 +152,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               reset();
               onClose();
             }}
-            className="text-ink/60 hover:text-ink p-1 rounded-lg transition-colors"
+            className="text-ink/70 hover:text-ink p-1 rounded-lg transition-colors"
             aria-label="Close import"
           >
             <X className="w-5 h-5" />
@@ -194,11 +194,11 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                   : 'border-slate-700 hover:border-ink/40 bg-mist'
               }`}
             >
-              <UploadCloud className="w-8 h-8 text-ink/60 mx-auto" />
+              <UploadCloud className="w-8 h-8 text-ink/70 mx-auto" />
               <div className="text-xs font-medium text-ink mt-2">
                 Drop an Excel (.xlsx, .xls) or CSV statement here, or click to browse
               </div>
-              <p className="text-2xs text-ink/60 mt-1">
+              <p className="text-2xs text-ink/70 mt-1">
                 Parsed entirely in your browser — the file never leaves your device.
               </p>
               <input
@@ -242,7 +242,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => downloadTemplate(format)}
-                      className="text-2xs text-ink/60 hover:text-ink flex items-center gap-1 transition-colors"
+                      className="text-2xs text-ink/70 hover:text-ink flex items-center gap-1 transition-colors"
                       title="Download CSV template"
                     >
                       <Download className="w-3 h-3" />
@@ -266,11 +266,11 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
         {parsed && (
           <div className="mt-4 space-y-4">
             <div className="bg-mist border border-slate-700 rounded-lg p-3">
-              <div className="text-2xs font-mono text-ink/60">{fileName}</div>
+              <div className="text-2xs font-mono text-ink/70">{fileName}</div>
               <div className="text-xs text-ink font-semibold mt-1">
                 {FORMAT_LABELS[parsed.format]}
               </div>
-              <div className="text-2xs text-ink/60 mt-1">
+              <div className="text-2xs text-ink/70 mt-1">
                 {parsed.holdings.length} holding{parsed.holdings.length !== 1 ? 's' : ''} ready to
                 import
                 {parsed.skipped.length > 0 && ` · ${parsed.skipped.length} row${parsed.skipped.length !== 1 ? 's' : ''} skipped`}
@@ -285,7 +285,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                 >
                   <div className="min-w-0">
                     <div className="text-2xs font-semibold text-ink truncate">{h.name}</div>
-                    <div className="text-2xs text-ink/60 truncate">
+                    <div className="text-2xs text-ink/70 truncate">
                       {h.institution}
                       {h.accountNumberMask ? ` · ${h.accountNumberMask}` : ''}
                     </div>
@@ -317,7 +317,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               <button
                 type="button"
                 onClick={reset}
-                className="text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+                className="text-xs font-medium text-ink/70 hover:text-ink transition-colors"
               >
                 Choose another file
               </button>
@@ -328,7 +328,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                     reset();
                     onClose();
                   }}
-                  className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
+                  className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
                 >
                   Cancel
                 </button>

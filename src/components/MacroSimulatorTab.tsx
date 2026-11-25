@@ -197,7 +197,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs bg-mist px-3 py-2 rounded-lg border border-slate-700">
-            <span className="text-ink/60">Protection Horizon:</span>
+            <span className="text-ink/70">Protection Horizon:</span>
             <span className="text-ink font-bold">{params.projectionHorizonYears} Years</span>
           </div>
         </div>
@@ -220,7 +220,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
                 projectionHorizonYears: 5,
               })
             }
-            className="text-xs text-ink/60 hover:text-ink flex items-center gap-1 transition-colors"
+            className="text-xs text-ink/70 hover:text-ink flex items-center gap-1 transition-colors"
           >
             <RefreshCw className="w-3 h-3" />
             <span>Reset Baseline</span>
@@ -245,7 +245,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               }
               className="w-full accent-amber-500 cursor-pointer"
             />
-            <div className="flex justify-between text-2xs text-ink/60 font-mono">
+            <div className="flex justify-between text-2xs text-ink/70 font-mono">
               <span>2.0% (Tame)</span>
               <span>12.0% (Crisis)</span>
             </div>
@@ -270,7 +270,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               }
               className="w-full accent-sky-500 cursor-pointer"
             />
-            <div className="flex justify-between text-2xs text-ink/60 font-mono">
+            <div className="flex justify-between text-2xs text-ink/70 font-mono">
               <span>-200 bps (Eased)</span>
               <span>+400 bps (Aggressive)</span>
             </div>
@@ -293,7 +293,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               }
               className="w-full accent-rose-500 cursor-pointer"
             />
-            <div className="flex justify-between text-2xs text-ink/60 font-mono">
+            <div className="flex justify-between text-2xs text-ink/70 font-mono">
               <span>0 (Peaceful)</span>
               <span>10 (War / Supply Shock)</span>
             </div>
@@ -324,7 +324,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               }
               className="w-full accent-emerald-500 cursor-pointer"
             />
-            <div className="flex justify-between text-2xs text-ink/60 font-mono">
+            <div className="flex justify-between text-2xs text-ink/70 font-mono">
               <span>-30% (Crash)</span>
               <span>+20% (Bull Run)</span>
             </div>
@@ -412,13 +412,13 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
                         ? 'text-emerald-700'
                         : shift.diff < 0
                         ? 'text-rose-600'
-                        : 'text-ink/60'
+                        : 'text-ink/70'
                     }`}
                   >
                     {shift.diff > 0 ? `+${shift.diff}%` : shift.diff < 0 ? `${shift.diff}%` : '0%'}
                   </span>
                 </div>
-                <span className="text-3xs text-ink/60 mt-0.5">Current: {shift.from}%</span>
+                <span className="text-3xs text-ink/70 mt-0.5">Current: {shift.from}%</span>
               </div>
             ))}
           </div>
@@ -534,24 +534,24 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
         {/* Outcome Summary Metric Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs font-mono">
           <div className="bg-mist p-3 rounded-lg border border-slate-700/80">
-            <span className="text-ink/60 block">Baseline End Net Worth:</span>
+            <span className="text-ink/70 block">Baseline End Net Worth:</span>
             <span className="text-base font-bold text-ink">
               {formatCurrency(simResult.finalBaselineNetWorth, baseCurrency, { compact: true })}
             </span>
-            <span className="text-2xs text-ink/60 block mt-0.5">Under 5% normal inflation</span>
+            <span className="text-2xs text-ink/70 block mt-0.5">Under 5% normal inflation</span>
           </div>
 
           <div className="bg-mist p-3 rounded-lg border border-slate-700/80">
-            <span className="text-ink/60 block">Current Portfolio (Unhedged):</span>
+            <span className="text-ink/70 block">Current Portfolio (Unhedged):</span>
             <span className="text-base font-bold text-rose-700">
               {formatCurrency(simResult.finalScenarioNetWorth, baseCurrency, { compact: true })}
             </span>
-            <span className="text-2xs text-ink/60 block mt-0.5">
+            <span className="text-2xs text-ink/70 block mt-0.5">
               Drawdown drag: {formatPercent(simResult.scenarioAlphaVsBaselinePct)}
             </span>
           </div>
 
-          <div className="bg-mist p-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
+          <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/40">
             <span className="text-emerald-800 block font-semibold">Shuffled Portfolio Outcome:</span>
             <span className="text-base font-bold text-emerald-800">
               {formatCurrency(simResult.finalShuffledNetWorth, baseCurrency, { compact: true })}
@@ -593,21 +593,21 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
             <button
               type="button"
               onClick={() => applyRecommendedPreset('DEFENSIVE')}
-              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-slate-700/15 text-ink/70 hover:text-ink rounded transition-colors"
+              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-ink/10 text-ink/70 hover:text-ink rounded transition-colors"
             >
               Defensive Shield
             </button>
             <button
               type="button"
               onClick={() => applyRecommendedPreset('ALL_WEATHER')}
-              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-slate-700/15 text-ink/70 hover:text-ink rounded transition-colors"
+              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-ink/10 text-ink/70 hover:text-ink rounded transition-colors"
             >
               All-Weather
             </button>
             <button
               type="button"
               onClick={() => applyRecommendedPreset('MAX_GROWTH')}
-              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-slate-700/15 text-ink/70 hover:text-ink rounded transition-colors"
+              className="px-2.5 py-1 text-2xs font-mono font-medium bg-mist hover:bg-ink/10 text-ink/70 hover:text-ink rounded transition-colors"
             >
               Growth Focus
             </button>
@@ -630,7 +630,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) => handleShuffleChange('equities', parseInt(e.target.value))}
               className="w-full accent-indigo-500 cursor-pointer"
             />
-            <div className="text-2xs text-ink/60">Current: {initialAllocation.equities}%</div>
+            <div className="text-2xs text-ink/70">Current: {initialAllocation.equities}%</div>
           </div>
 
           {/* Fixed Income */}
@@ -647,7 +647,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) => handleShuffleChange('fixedIncome', parseInt(e.target.value))}
               className="w-full accent-sky-500 cursor-pointer"
             />
-            <div className="text-2xs text-ink/60">Current: {initialAllocation.fixedIncome}%</div>
+            <div className="text-2xs text-ink/70">Current: {initialAllocation.fixedIncome}%</div>
           </div>
 
           {/* Gold / SGB */}
@@ -664,7 +664,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) => handleShuffleChange('goldCommodity', parseInt(e.target.value))}
               className="w-full accent-amber-500 cursor-pointer"
             />
-            <div className="text-2xs text-ink/60">Current: {initialAllocation.goldCommodity}%</div>
+            <div className="text-2xs text-ink/70">Current: {initialAllocation.goldCommodity}%</div>
           </div>
 
           {/* Retirement Pensions */}
@@ -681,7 +681,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) => handleShuffleChange('retirementPensions', parseInt(e.target.value))}
               className="w-full accent-emerald-500 cursor-pointer"
             />
-            <div className="text-2xs text-ink/60">Current: {initialAllocation.retirementPensions}%</div>
+            <div className="text-2xs text-ink/70">Current: {initialAllocation.retirementPensions}%</div>
           </div>
 
           {/* Cash */}
@@ -698,7 +698,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               onChange={(e) => handleShuffleChange('liquidCash', parseInt(e.target.value))}
               className="w-full accent-slate-400 cursor-pointer"
             />
-            <div className="text-2xs text-ink/60">Current: {initialAllocation.liquidCash}%</div>
+            <div className="text-2xs text-ink/70">Current: {initialAllocation.liquidCash}%</div>
           </div>
         </div>
 
@@ -711,7 +711,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           <p className="text-xs text-ink/70 leading-relaxed">
             {simResult.macroDiagnosis}
           </p>
-          <ul className="text-2xs text-ink/60 space-y-1 list-disc pl-4 pt-1">
+          <ul className="text-2xs text-ink/70 space-y-1 list-disc pl-4 pt-1">
             {simResult.recommendedShuffleAdvice.map((adv, idx) => (
               <li key={idx} className="leading-relaxed">
                 {adv}
