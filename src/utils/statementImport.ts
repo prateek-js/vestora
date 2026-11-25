@@ -57,7 +57,14 @@ function scanCsv(text: string): string[][] {
         cur += ch;
       }
     } else if (ch === '"') {
-      inQuotes = true;
+      // A quote only opens a quoted cell at the start of a cell; mid-cell it is literal (RFC 4180),
+      // so a stray inch mark like `5" pipe` cannot swallow the rest of the file.
+      if (cur.trim() === '') {
+        inQuotes = true;
+        cur = '';
+      } else {
+        cur += ch;
+      }
     } else if (ch === ',' || ch === ';' || ch === '\t') {
       row.push(cur.trim());
       cur = '';
@@ -70,6 +77,11 @@ function scanCsv(text: string): string[][] {
     } else {
       cur += ch;
     }
+  }
+  if (inQuotes) {
+    throw new Error(
+      'Unterminated quote in CSV: a quoted cell was never closed, so the rest of the file cannot be read reliably. Check for a stray " character.'
+    );
   }
   row.push(cur.trim());
   rows.push(row);

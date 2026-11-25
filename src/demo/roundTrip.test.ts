@@ -98,3 +98,45 @@ test('a header-only export imports as nothing', () => {
   });
   assert.equal(holdings.length, 0);
 });
+
+const CSV_HEADER = 'Instrument Name,Category,Institution,Invested Amount,Current Value,Currency';
+
+function csvOf(...rows: string[]): string {
+  return [CSV_HEADER, ...rows].join('\n');
+}
+
+test('a quote in the middle of an unquoted cell is literal and keeps every row', () => {
+  const text = csvOf(
+    'Fund A,Mutual Fund,AMC,100,120,INR',
+    'B 5" pipe,Mutual Fund,AMC,200,240,INR',
+    'Fund C,Mutual Fund,AMC,300,360,INR',
+    'Fund D,Mutual Fund,AMC,400,480,INR'
+  );
+  const parsed = importStatement(text, 'INR');
+  assert.deepEqual(
+    parsed.holdings.map((h) => h.name),
+    ['Fund A', 'B 5" pipe', 'Fund C', 'Fund D']
+  );
+  assert.equal(parsed.skipped.length, 0);
+});
+
+test('a properly closed quoted cell that starts a row still works', () => {
+  const text = csvOf(
+    '"Axis, Direct",Mutual Fund,AMC,100,120,INR',
+    'Fund B,Mutual Fund,AMC,200,240,INR'
+  );
+  const parsed = importStatement(text, 'INR');
+  assert.deepEqual(
+    parsed.holdings.map((h) => h.name),
+    ['Axis, Direct', 'Fund B']
+  );
+});
+
+test('an unterminated quoted cell throws instead of silently truncating', () => {
+  const text = csvOf(
+    'Fund A,Mutual Fund,AMC,100,120,INR',
+    '"Fund B,Mutual Fund,AMC,200,240,INR',
+    'Fund C,Mutual Fund,AMC,300,360,INR'
+  );
+  assert.throws(() => importStatement(text, 'INR'), /Unterminated quote/);
+});
