@@ -4,7 +4,15 @@ import assert from 'node:assert/strict';
 import type { Holding } from '../types/wealth';
 import type { PersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
-import { DEFAULT_LOAN, loadBenchmarks, pickPortfolio, withTimeout } from './demoData.ts';
+import { convertCurrency } from '../utils/currency';
+import {
+  DEFAULT_LOAN,
+  loadBenchmarks,
+  personalPortfolio,
+  pickPortfolio,
+  portfolioTotal,
+  withTimeout,
+} from './demoData.ts';
 
 function holding(over: Partial<Holding> = {}): Holding {
   return {
@@ -62,6 +70,27 @@ test('a saved portfolio worth nothing falls back to the sample', () => {
 
 test('saved sample-mode data counts as the sample, not as the visitor’s own', () => {
   assert.equal(pickPortfolio(saved({ mode: 'demo' })).source, 'sample');
+});
+
+test('a personal portfolio has no loan and its own source', () => {
+  const p = personalPortfolio([holding()], 'INR');
+  assert.equal(p.source, 'personal');
+  assert.equal(p.loan, null);
+  assert.equal(p.baseCurrency, 'INR');
+  assert.equal(p.holdings.length, 1);
+});
+
+test('portfolioTotal converts mixed currencies to the base', () => {
+  const inr = holding({ id: 'a', currency: 'INR', currentValue: 100000 });
+  const usd = holding({ id: 'b', currency: 'USD', currentValue: 1000 });
+  assert.equal(
+    portfolioTotal({ holdings: [inr, usd], baseCurrency: 'INR' }),
+    100000 + convertCurrency(1000, 'USD', 'INR')
+  );
+});
+
+test('portfolioTotal of nothing is 0', () => {
+  assert.equal(portfolioTotal({ holdings: [], baseCurrency: 'INR' }), 0);
 });
 
 test('withTimeout gives the fallback when the promise never settles', async () => {

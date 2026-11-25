@@ -13,13 +13,23 @@ export type BenchmarkStatus = 'loading' | 'live' | 'sample';
 export interface DemoPortfolio {
   holdings: Holding[];
   baseCurrency: CurrencyCode;
-  source: 'sample' | 'saved';
-  /** Only known for the sample; a saved portfolio has no loan data and never gets an invented one. */
+  source: 'sample' | 'saved' | 'personal';
+  /** Only known for the sample; saved and personal portfolios have no loan data and never get an invented one. */
   loan: LoanInputs | null;
 }
 
 function totalValue(holdings: Holding[], base: CurrencyCode): number {
   return holdings.reduce((sum, h) => sum + convertCurrency(h.currentValue, h.currency, base), 0);
+}
+
+/** Total value of a portfolio in its base currency; 0 when it has no holdings. */
+export function portfolioTotal(p: { holdings: Holding[]; baseCurrency: CurrencyCode }): number {
+  return totalValue(p.holdings, p.baseCurrency);
+}
+
+/** A portfolio the visitor built or imported in the demo itself. Never persisted, never given a loan. */
+export function personalPortfolio(holdings: Holding[], baseCurrency: CurrencyCode): DemoPortfolio {
+  return { holdings, baseCurrency, source: 'personal', loan: null };
 }
 
 /** The visitor's own saved portfolio when it has real value in it, otherwise the sample. */
