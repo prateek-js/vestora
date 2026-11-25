@@ -99,11 +99,12 @@ export default function DemoApp() {
   }, [state.chapter]);
 
   // The chat panel closes without changing chapters: hand focus back to its launcher.
-  // A chapter change has its own focus target (the new heading), so stay out of its way.
+  // Never opened (or a chapter change, which has its own focus target) means the launcher
+  // has nothing to hand focus back to, so stay out of the initial page load's way.
   useEffect(() => {
-    if (chatOpen || state.chapter !== chapterAtOpenRef.current) return;
+    if (!chatOpened || chatOpen || state.chapter !== chapterAtOpenRef.current) return;
     if (document.activeElement === document.body) chatLauncherRef.current?.focus();
-  }, [chatOpen, state.chapter]);
+  }, [chatOpened, chatOpen, state.chapter]);
 
   // A personal portfolio with nothing in it has nothing to look at yet: only the story and the editor open.
   const emptyPersonal = choice === 'personal' && portfolioTotal(portfolio) <= 0;
