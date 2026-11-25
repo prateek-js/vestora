@@ -1,6 +1,6 @@
 import type { CurrencyCode, Holding } from '../types/wealth';
 import { parsePortfolioExport } from '../utils/backupRestore.ts';
-import { importExcelBuffer, importStatement } from '../utils/statementImport.ts';
+import { getExcelSheetNames, importExcelBuffer, importStatement } from '../utils/statementImport.ts';
 
 export interface ImportedPortfolio {
   holdings: Holding[];
@@ -8,7 +8,7 @@ export interface ImportedPortfolio {
   skippedRows: number;
 }
 
-const EXCEL_EXTENSIONS = ['xlsx', 'xls', 'xlsm'];
+const EXCEL_EXTENSIONS = ['xlsx', 'xls', 'xlsm', 'xlsb', 'ods'];
 const TEXT_EXTENSIONS = ['csv', 'tsv'];
 
 function extensionOf(fileName: string): string {
@@ -38,7 +38,19 @@ export function parseImportedFile(
 
   if (EXCEL_EXTENSIONS.includes(ext)) {
     if (typeof content === 'string') throw new Error(`Could not read ${fileName}. Try saving it again.`);
-    const { parsed } = importExcelBuffer(content, undefined, fallbackCurrency);
+    try {
+      // Fails on files that are not real workbooks (corrupt, or another format renamed to .xlsx).
+      getExcelSheetNames(content);
+    } catch {
+      throw new Error(`Could not read ${fileName}. Try saving it again.`);
+    }
+    let parsed;
+    try {
+      parsed = importExcelBuffer(content, undefined, fallbackCurrency).parsed;
+    } catch {
+      // A workbook with nothing recognisable in it (blank, or no known column headers).
+      throw noInvestments(fileName);
+    }
     if (parsed.holdings.length === 0) throw noInvestments(fileName);
     return {
       holdings: parsed.holdings,

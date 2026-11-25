@@ -63,3 +63,23 @@ test('rejects a file with no investments', () => {
 test('rejects broken JSON', () => {
   assert.throws(() => parseImportedFile('x.json', '{oops', 'INR'), /not a valid JSON/i);
 });
+
+test('reads an ODS export', () => {
+  const f = fixture();
+  const buf = XLSX.write(buildHoldingsWorkbook(f, 'INR'), { type: 'array', bookType: 'ods' }) as ArrayBuffer;
+  const result = parseImportedFile('mine.ods', buf, 'INR');
+  assert.equal(result.holdings.length, f.length);
+});
+
+test('a corrupt workbook gets a plain message, not a library error', () => {
+  const full = new Uint8Array(
+    XLSX.write(buildHoldingsWorkbook(fixture(), 'INR'), { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+  );
+  const truncated = full.slice(0, 200).buffer;
+  assert.throws(() => parseImportedFile('broken.xlsx', truncated, 'INR'), /Could not read broken\.xlsx\. Try saving it again\./);
+});
+
+test('junk bytes under an Excel name end in the no-investments message', () => {
+  const junk = new TextEncoder().encode('%PDF-1.4 not a spreadsheet').buffer as ArrayBuffer;
+  assert.throws(() => parseImportedFile('scan.xlsx', junk, 'INR'), /No investments found in scan\.xlsx/);
+});
