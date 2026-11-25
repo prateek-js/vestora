@@ -67,6 +67,27 @@ export function defaultTaxTag(category: AssetCategory): TaxTag {
   }
 }
 
+const PLAIN_NUMBER = /^-?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+
+/**
+ * Reads a typed number strictly: thousands commas are ignored, but the rest
+ * must be a plain decimal (so "100abc", "0x10" and "Infinity" are refused).
+ * Returns undefined for anything that is not a finite number.
+ */
+function parseAmount(text: string): number | undefined {
+  const cleaned = text.trim().replace(/,/g, '');
+  if (!PLAIN_NUMBER.test(cleaned)) return undefined;
+  const value = Number(cleaned);
+  if (!Number.isFinite(value)) return undefined;
+  return value === 0 ? 0 : value; // turns -0 into 0
+}
+
+function isRealDate(iso: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+  const d = new Date(`${iso}T00:00:00Z`);
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === iso;
+}
+
 function newId(): string {
   const suffix = Math.random().toString(36).slice(2, 8).padEnd(6, '0');
   return `h-custom-${Date.now()}-${suffix}`;
@@ -80,17 +101,20 @@ export function holdingFromDraft(
   if (!draft.name.trim()) {
     return { ok: false, error: 'Please provide a name for the investment.' };
   }
-  const inv = parseFloat(draft.investedAmount);
-  const currVal = parseFloat(draft.currentValue);
-  if (isNaN(inv) || inv <= 0) {
+  const inv = parseAmount(draft.investedAmount);
+  const currVal = parseAmount(draft.currentValue);
+  if (inv === undefined || inv <= 0) {
     return { ok: false, error: 'Please enter a valid invested amount.' };
   }
-  if (isNaN(currVal) || currVal < 0) {
+  if (currVal === undefined || currVal < 0) {
     return { ok: false, error: 'Please enter a valid current valuation.' };
   }
-  const parsedRate = draft.interestRatePct.trim() ? parseFloat(draft.interestRatePct) : undefined;
-  if (parsedRate !== undefined && isNaN(parsedRate)) {
+  const parsedRate = draft.interestRatePct.trim() ? parseAmount(draft.interestRatePct) : undefined;
+  if (draft.interestRatePct.trim() && parsedRate === undefined) {
     return { ok: false, error: 'Please enter a valid annual rate %.' };
+  }
+  if (draft.maturityDate && !isRealDate(draft.maturityDate)) {
+    return { ok: false, error: 'Please enter a valid maturity date.' };
   }
 
   const unrealizedGain = Number((currVal - inv).toFixed(2));

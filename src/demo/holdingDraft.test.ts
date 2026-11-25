@@ -142,3 +142,50 @@ test('a draft made from a holding round-trips back to the same numbers', () => {
   assert.equal(again.investedAmount, h.investedAmount);
   assert.equal(again.interestRatePct, 7.25);
 });
+
+test('amounts that are not plain numbers are refused', () => {
+  for (const bad of ['Infinity', '1e999', '100abc', '0x10', 'NaN', '1.2.3']) {
+    assert.equal(failure(draft({ investedAmount: bad })), 'Please enter a valid invested amount.', bad);
+    assert.equal(failure(draft({ currentValue: bad })), 'Please enter a valid current valuation.', bad);
+    assert.equal(failure(draft({ interestRatePct: bad })), 'Please enter a valid annual rate %.', bad);
+  }
+});
+
+test('thousands commas, spaces and exponents are read as numbers', () => {
+  assert.equal(success(draft({ investedAmount: '1,00,000' })).investedAmount, 100000);
+  assert.equal(success(draft({ investedAmount: '1,000,000' })).investedAmount, 1000000);
+  assert.equal(success(draft({ investedAmount: ' 100 ' })).investedAmount, 100);
+  assert.equal(success(draft({ investedAmount: '1e5' })).investedAmount, 100000);
+});
+
+test('a current value of minus zero is stored as zero', () => {
+  assert.ok(Object.is(success(draft({ currentValue: '-0' })).currentValue, 0));
+});
+
+test('a malformed maturity date is refused', () => {
+  for (const bad of ['2026-13-45', 'tomorrow', '2026-02-30', '1/1/2030']) {
+    assert.equal(failure(draft({ maturityDate: bad })), 'Please enter a valid maturity date.', bad);
+  }
+});
+
+test('editing keeps the tax tag when the category is unchanged', () => {
+  const existing: Holding = { ...success(draft()), taxTag: 'TAX_EXEMPT_EEE' };
+  const edited = success(draftFromHolding(existing), existing);
+  assert.equal(edited.taxTag, 'TAX_EXEMPT_EEE');
+});
+
+test('editing to another category gives that category its default tax tag', () => {
+  const existing: Holding = { ...success(draft()), taxTag: 'TAX_EXEMPT_EEE' };
+  const edited = success({ ...draftFromHolding(existing), category: 'NPS' }, existing);
+  assert.equal(edited.taxTag, '80CCD');
+});
+
+test('clearing the maturity date on edit removes the maturity fields', () => {
+  const existing = success(draft({ category: 'FIXED_DEPOSIT', maturityDate: '2999-01-01' }));
+  assert.equal(existing.isMatured, false);
+  assert.ok(existing.daysToMaturity !== undefined);
+  const edited = success({ ...draftFromHolding(existing), maturityDate: '' }, existing);
+  assert.equal(edited.maturityDate, undefined);
+  assert.equal(edited.daysToMaturity, undefined);
+  assert.equal(edited.isMatured, false);
+});
