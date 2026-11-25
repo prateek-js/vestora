@@ -68,21 +68,21 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* 1. Header Overview */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+      <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">
+            <h2 className="text-lg font-bold text-ink tracking-tight">
               Tax Optimization & Portfolio Diversification Audit
             </h2>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-xs text-ink/60 mt-1 max-w-2xl">
               Automated surveillance of capital gains tax liabilities, statutory deduction allowances (80C &
               NPS), single-asset concentration limits, and cross-border currency exposure.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
-            <span className="text-slate-500">Estimated Annual Tax Shield:</span>
-            <span className="text-emerald-400 font-bold">
+          <div className="flex items-center gap-2 font-mono text-xs bg-mist px-3 py-2 rounded-lg border border-slate-700">
+            <span className="text-ink/60">Estimated Annual Tax Shield:</span>
+            <span className="text-emerald-700 font-bold">
               {formatCurrency(
                 taxHarvestAudit.estimatedTaxSaved + taxSectionAudit.potentialTaxSaved,
                 baseCurrency
@@ -93,59 +93,59 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
       </div>
 
       {/* 2. Capital Gains Tax Harvesting Scanner */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+      <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-700/80 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-sm font-semibold text-white">
+              <Zap className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-sm font-semibold text-ink">
                 Long-Term Capital Gains (LTCG) Tax Harvesting Scanner
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-ink/60 mt-0.5">
               Under tax law, up to {baseCurrency === 'INR' ? '₹1,25,000' : '$1,500'} in annual equity LTCG is
               exempt from tax. Selling and rebuying resets your acquisition price tax-free.
             </p>
           </div>
 
           <div className="text-right shrink-0">
-            <div className="text-xl font-bold font-mono text-emerald-400 tabular-nums">
+            <div className="text-xl font-bold font-mono text-emerald-700 tabular-nums">
               {formatCurrency(taxHarvestAudit.estimatedTaxSaved, baseCurrency)}
             </div>
-            <div className="text-2xs text-slate-500 font-mono">Tax Savings Unlocked</div>
+            <div className="text-2xs text-ink/60 font-mono">Tax Savings Unlocked</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800/80">
-            <div className="text-2xs text-slate-400">Total Unrealized Equity Gains</div>
-            <div className="text-base font-bold font-mono text-white mt-1">
+          <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
+            <div className="text-2xs text-ink/60">Total Unrealized Equity Gains</div>
+            <div className="text-base font-bold font-mono text-ink mt-1">
               {formatCurrency(taxHarvestAudit.eligibleLtcgGain, baseCurrency)}
             </div>
-            <div className="text-2xs text-slate-500 mt-0.5">Across mutual funds & equities</div>
+            <div className="text-2xs text-ink/60 mt-0.5">Across mutual funds & equities</div>
           </div>
 
-          <div className="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800/80">
-            <div className="text-2xs text-slate-400">Annual Exemption Ceiling</div>
-            <div className="text-base font-bold font-mono text-emerald-400 mt-1">
+          <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
+            <div className="text-2xs text-ink/60">Annual Exemption Ceiling</div>
+            <div className="text-base font-bold font-mono text-emerald-700 mt-1">
               {formatCurrency(taxHarvestAudit.annualExemptionLimit, baseCurrency)}
             </div>
-            <div className="text-2xs text-slate-500 mt-0.5">Section 112A annual exemption quota</div>
+            <div className="text-2xs text-ink/60 mt-0.5">Section 112A annual exemption quota</div>
           </div>
 
-          <div className="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800/80">
-            <div className="text-2xs text-slate-400">Harvestable Gains Right Now</div>
-            <div className="text-base font-bold font-mono text-emerald-400 mt-1">
+          <div className="bg-mist p-3.5 rounded-lg border border-slate-700/80">
+            <div className="text-2xs text-ink/60">Harvestable Gains Right Now</div>
+            <div className="text-base font-bold font-mono text-emerald-700 mt-1">
               {formatCurrency(taxHarvestAudit.harvestableNow, baseCurrency)}
             </div>
-            <div className="text-2xs text-slate-500 mt-0.5">Eligible for zero-tax reset</div>
+            <div className="text-2xs text-ink/60 mt-0.5">Eligible for zero-tax reset</div>
           </div>
         </div>
 
-        <div className="mt-4 bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-300 flex items-start gap-2.5">
-          <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-700 flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold text-emerald-200">Harvesting Strategy: </span>
+            <span className="font-semibold text-emerald-700">Harvesting Strategy: </span>
             {taxHarvestAudit.recommendation}
           </div>
         </div>
@@ -154,23 +154,23 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
       {/* 3. Statutory Deductions Scorecard (Section 80C & 80CCD) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Section 80C */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-semibold text-white">
+              <h4 className="text-sm font-semibold text-ink">
                 Section 80C Tax Shelter (EPF, PPF, ELSS)
               </h4>
-              <p className="text-2xs text-slate-400">
+              <p className="text-2xs text-ink/60">
                 Statutory cap: {formatCurrency(taxSectionAudit.section80cLimit, baseCurrency)}
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-emerald-400">
+            <span className="text-xs font-mono font-bold text-emerald-700">
               {sec80cPct.toFixed(0)}% Utilized
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-mist rounded-full overflow-hidden">
             <div
               style={{ width: `${sec80cPct}%` }}
               className="h-full bg-emerald-500 rounded-full transition-all"
@@ -178,21 +178,21 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
           </div>
 
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-slate-400">
+            <span className="text-ink/60">
               Active: {formatCurrency(taxSectionAudit.section80cTotal, baseCurrency, { compact: true })}
             </span>
             {taxSectionAudit.section80cShortfall > 0 ? (
-              <span className="text-amber-400">
+              <span className="text-amber-700">
                 Gap: {formatCurrency(taxSectionAudit.section80cShortfall, baseCurrency, { compact: true })}
               </span>
             ) : (
-              <span className="text-emerald-400 flex items-center gap-1">
+              <span className="text-emerald-700 flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" /> Fully Maxed
               </span>
             )}
           </div>
 
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-ink/60">
             {taxSectionAudit.section80cShortfall > 0
               ? `You can deploy ${formatCurrency(
                   taxSectionAudit.section80cShortfall,
@@ -203,45 +203,45 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
         </div>
 
         {/* Section 80CCD(1B) NPS */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-semibold text-white">
+              <h4 className="text-sm font-semibold text-ink">
                 Section 80CCD(1B) NPS Super-Deduction
               </h4>
-              <p className="text-2xs text-slate-400">
+              <p className="text-2xs text-ink/60">
                 Exclusive additional cap: {formatCurrency(taxSectionAudit.nps80ccdLimit, baseCurrency)}
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-sky-400">
+            <span className="text-xs font-mono font-bold text-sky-700">
               {npsPct.toFixed(0)}% Utilized
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-mist rounded-full overflow-hidden">
             <div
               style={{ width: `${npsPct}%` }}
-              className="h-full bg-sky-500 rounded-full transition-all"
+              className="h-full bg-sky-600 rounded-full transition-all"
             />
           </div>
 
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-slate-400">
+            <span className="text-ink/60">
               Active: {formatCurrency(taxSectionAudit.nps80ccdTotal, baseCurrency, { compact: true })}
             </span>
             {taxSectionAudit.nps80ccdShortfall > 0 ? (
-              <span className="text-amber-400">
+              <span className="text-amber-700">
                 Gap: {formatCurrency(taxSectionAudit.nps80ccdShortfall, baseCurrency, { compact: true })}
               </span>
             ) : (
-              <span className="text-emerald-400 flex items-center gap-1">
+              <span className="text-emerald-700 flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" /> Fully Maxed
               </span>
             )}
           </div>
 
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-ink/60">
             {taxSectionAudit.nps80ccdShortfall > 0
               ? `Deploying ${formatCurrency(
                   taxSectionAudit.nps80ccdShortfall,
@@ -255,17 +255,17 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
       {/* 4. Portfolio Concentration & Currency Diversification Radar */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Concentration Alert List */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-3">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <h4 className="text-sm font-semibold text-ink flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-amber-700" />
               <span>Concentration Risk Radar</span>
             </h4>
-            <span className="text-2xs font-mono text-slate-400">Threshold: &gt;20% single asset</span>
+            <span className="text-2xs font-mono text-ink/60">Threshold: &gt;20% single asset</span>
           </div>
 
           {concentrationRisks.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-500">
+            <div className="py-6 text-center text-xs text-ink/60">
               No severe single-instrument or category over-concentration detected.
             </div>
           ) : (
@@ -275,17 +275,17 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
                   key={idx}
                   className={`p-3 rounded-lg border text-xs ${
                     risk.severity === 'HIGH'
-                      ? 'bg-rose-950/20 border-rose-500/40 text-rose-200'
-                      : 'bg-amber-950/20 border-amber-500/40 text-amber-200'
+                      ? 'bg-rose-500/10 border-rose-500/40 text-rose-700'
+                      : 'bg-amber-500/10 border-amber-500/40 text-amber-700'
                   }`}
                 >
                   <div className="font-semibold flex items-center justify-between">
                     <span>{risk.title}</span>
-                    <span className="font-mono text-2xs bg-black/40 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-2xs bg-ink/5 px-1.5 py-0.5 rounded">
                       {risk.percentage.toFixed(1)}% Weight
                     </span>
                   </div>
-                  <p className="text-2xs text-slate-300 mt-1 leading-relaxed">{risk.advice}</p>
+                  <p className="text-2xs text-ink/70 mt-1 leading-relaxed">{risk.advice}</p>
                 </div>
               ))}
             </div>
@@ -293,13 +293,13 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
         </div>
 
         {/* Global Multi-Currency Exposure */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-4">
+        <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-emerald-400" />
+            <h4 className="text-sm font-semibold text-ink flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-emerald-700" />
               <span>Multi-Currency Asset Exposure</span>
             </h4>
-            <span className="text-2xs font-mono text-slate-400">FX Risk Radar</span>
+            <span className="text-2xs font-mono text-ink/60">FX Risk Radar</span>
           </div>
 
           <div className="space-y-3">
@@ -310,16 +310,16 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
               return (
                 <div key={c} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono font-bold text-slate-200">{c} Denominated Assets</span>
-                    <span className="font-mono text-slate-400 tabular-nums">
+                    <span className="font-mono font-bold text-ink">{c} Denominated Assets</span>
+                    <span className="font-mono text-ink/60 tabular-nums">
                       {formatCurrency(val, baseCurrency, { compact: true })} ({pct.toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-mist rounded-full overflow-hidden">
                     <div
                       style={{ width: `${pct}%` }}
                       className={`h-full rounded-full ${
-                        c === 'INR' ? 'bg-indigo-500' : c === 'USD' ? 'bg-emerald-500' : 'bg-sky-500'
+                        c === 'INR' ? 'bg-indigo-600' : c === 'USD' ? 'bg-emerald-500' : 'bg-sky-600'
                       }`}
                     />
                   </div>
@@ -328,7 +328,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             })}
           </div>
 
-          <p className="text-2xs text-slate-400 leading-relaxed pt-1">
+          <p className="text-2xs text-ink/60 leading-relaxed pt-1">
             Holding 15%–25% in hard foreign currency assets (such as USD ETFs or Euro bonds) protects your
             long-term purchasing power against emerging market currency depreciation.
           </p>
