@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { VestoraLogo } from '../components/VestoraLogo';
 import { loadPersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
 import { ChapterBar } from './components/ChapterBar';
@@ -68,7 +69,10 @@ export default function DemoApp() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-ink/10 bg-mist">
         <div className="mx-auto flex max-w-[1120px] items-center gap-4 px-5 py-3">
-          <span className="font-display text-xl font-semibold">Vestora</span>
+          <div className="flex items-center gap-2">
+            <VestoraLogo size={32} />
+            <span className="font-display text-xl font-semibold max-sm:sr-only">Vestora</span>
+          </div>
           <ChapterBar chapter={state.chapter} reached={reached} onGo={go} />
           <a href="/#overview" className="shrink-0 text-sm font-medium underline underline-offset-4">
             Full app
