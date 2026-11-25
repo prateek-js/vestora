@@ -192,13 +192,13 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
   const renderStepIcon = () => {
     switch (currentStep.icon) {
       case 'privacy':
-        return <ShieldCheck className="w-4 h-4 text-emerald-400" />;
+        return <ShieldCheck className="w-4 h-4 text-emerald-700" />;
       case 'export':
-        return <Download className="w-4 h-4 text-emerald-400" />;
+        return <Download className="w-4 h-4 text-emerald-700" />;
       case 'import':
-        return <Upload className="w-4 h-4 text-emerald-400" />;
+        return <Upload className="w-4 h-4 text-emerald-700" />;
       default:
-        return <Sparkles className="w-4 h-4 text-amber-400" />;
+        return <Sparkles className="w-4 h-4 text-amber-700" />;
     }
   };
 
@@ -212,7 +212,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       {/* Clickable backdrop when spotlight isn't active, or subtle dim overlay */}
       {!targetRect && (
         <div
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs"
+          className="fixed inset-0 bg-ink/50 backdrop-blur-xs"
           onClick={onClose}
         />
       )}
@@ -227,13 +227,13 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
           />
           <div
             aria-hidden="true"
-            className="fixed rounded-xl border-2 border-emerald-400 pointer-events-none transition-all duration-200"
+            className="fixed rounded-xl border-2 border-emerald-500 pointer-events-none transition-all duration-200"
             style={{
               top: `${Math.max(4, targetRect.top - 6)}px`,
               left: `${Math.max(4, targetRect.left - 6)}px`,
               width: `${targetRect.width + 12}px`,
               height: `${targetRect.height + 12}px`,
-              boxShadow: '0 0 0 9999px rgba(6, 9, 17, 0.80)',
+              boxShadow: '0 0 0 9999px rgba(20, 33, 61, 0.50)',
             }}
           />
         </>
@@ -242,14 +242,14 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       {/* Tour Step Card */}
       <div
         style={cardStyle}
-        className="z-50 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-5 text-slate-100 space-y-3.5 transition-all duration-200"
+        className="z-50 bg-paper border border-slate-700 rounded-xl shadow-ink/10 shadow-2xl p-5 text-ink space-y-3.5 transition-all duration-200"
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
+            <span className="w-7 h-7 rounded-lg bg-mist border border-slate-700 flex items-center justify-center shrink-0">
               {renderStepIcon()}
             </span>
-            <span className="text-2xs font-mono uppercase tracking-wider text-emerald-300 font-semibold">
+            <span className="text-2xs font-mono uppercase tracking-wider text-emerald-700 font-semibold">
               Step {stepIndex + 1} of {TOUR_STEPS.length}
             </span>
           </div>
@@ -257,7 +257,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors"
+            className="p-1 text-ink/60 hover:text-ink rounded-md hover:bg-ink/5 transition-colors"
             aria-label="Close tour"
           >
             <X className="w-4 h-4" />
@@ -265,15 +265,15 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
         </div>
 
         <div>
-          <h3 className="text-sm font-bold text-white leading-snug">
+          <h3 className="text-sm font-bold text-ink leading-snug">
             {currentStep.title}
           </h3>
-          <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+          <p className="text-xs text-ink/70 mt-1.5 leading-relaxed">
             {currentStep.description}
           </p>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-2xs text-slate-300 leading-relaxed">
+        <div className="p-2.5 rounded-lg bg-mist border border-slate-700 text-2xs text-ink/70 leading-relaxed">
           {currentStep.tip}
         </div>
 
@@ -288,10 +288,10 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
                 aria-label={`Go to step ${idx + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
                   idx === stepIndex
-                    ? 'w-5 bg-emerald-400'
+                    ? 'w-5 bg-emerald-500'
                     : idx < stepIndex
                     ? 'w-2 bg-emerald-500/70'
-                    : 'w-2 bg-slate-700 hover:bg-slate-600'
+                    : 'w-2 bg-slate-700 hover:bg-ink/40'
                 }`}
               />
             ))}
@@ -301,7 +301,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-2 py-1.5 text-2xs font-medium text-slate-400 hover:text-white transition-colors"
+              className="px-2 py-1.5 text-2xs font-medium text-ink/60 hover:text-ink transition-colors"
             >
               Skip
             </button>
@@ -310,7 +310,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
               <button
                 type="button"
                 onClick={() => setStepIndex((s) => Math.max(0, s - 1))}
-                className="px-2.5 py-1.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors inline-flex items-center gap-1"
+                className="px-2.5 py-1.5 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-ink/40 rounded-lg transition-colors inline-flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Back</span>
@@ -323,7 +323,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
                 if (isLast) onClose();
                 else setStepIndex((s) => s + 1);
               }}
-              className="px-3.5 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap"
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap"
             >
               <span>{isLast ? 'Finish Tour' : 'Next'}</span>
               {isLast ? (

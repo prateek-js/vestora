@@ -7,6 +7,7 @@ import {
   parseFileForChat,
   processLocalChatMessage,
 } from '../utils/localChatEngine';
+import { useDialogA11y } from '../utils/dialogA11y';
 import {
   MessageSquareText,
   Paperclip,
@@ -113,26 +114,36 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+
+  // Focus trap + aria-modal + focus restore to the launcher, shared with the demo panel.
+  useDialogA11y({
+    open: isOpen,
+    dialogRef: drawerRef,
+    restoreFocusRef: launcherRef,
+    initialFocusRef: inputRef,
+    onEscape: () => setIsOpen(false),
+  });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         setIsOpen((prev) => !prev);
-      } else if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setTimeout(() => inputRef.current?.focus(), 80);
     }
   }, [isOpen, messages.length]);
+
+  const closeDrawer = () => setIsOpen(false);
 
   const appendAssistantMessage = (payload: Omit<ChatMessage, 'id' | 'sender' | 'timestamp'>) => {
     setMessages((prev) => [
@@ -314,29 +325,33 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
 
   return (
     <>
-      {/* Floating Compact Launcher Button */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          aria-label="Open on-device portfolio chat"
-          className="fixed bottom-5 right-5 z-40 h-11 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs shadow-lg shadow-slate-950/60 border border-emerald-400/60 inline-flex items-center gap-2 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <MessageSquareText className="w-4 h-4 shrink-0" />
-          <span className="whitespace-nowrap">Portfolio Chat</span>
-          <span className="hidden sm:inline text-2xs font-mono opacity-75">Ctrl+/</span>
-        </button>
-      )}
+      {/* Floating Compact Launcher Button — stays mounted while the drawer is open so focus can return here */}
+      <button
+        type="button"
+        ref={launcherRef}
+        onClick={() => setIsOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        aria-label="Open on-device portfolio chat"
+        className={`fixed bottom-5 right-5 z-40 h-11 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-700 text-white font-semibold text-xs shadow-lg shadow-ink/10 border border-emerald-600/60 inline-flex items-center gap-2 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${isOpen ? 'pointer-events-none opacity-0' : ''}`}
+      >
+        <MessageSquareText className="w-4 h-4 shrink-0" />
+        <span className="whitespace-nowrap">Portfolio Chat</span>
+        <span className="hidden sm:inline text-2xs font-mono opacity-75">Ctrl+/</span>
+      </button>
 
       {/* Slide-Over Chat Drawer */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/55 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex justify-end bg-ink/40 backdrop-blur-xs"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setIsOpen(false);
+            if (e.target === e.currentTarget) closeDrawer();
           }}
         >
           <aside
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
             aria-label="On-device Portfolio Chat Assistant"
             onDragOver={(e) => {
               e.preventDefault();
@@ -349,26 +364,26 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
               const file = e.dataTransfer.files?.[0];
               if (file) handleFileImport(file);
             }}
-            className="relative w-full max-w-md h-full bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col"
+            className="relative w-full max-w-md h-full bg-paper border-l border-slate-700 shadow-ink/10 shadow-2xl flex flex-col"
           >
             {/* Drag-and-drop overlay */}
             {isDraggingFile && (
-              <div className="absolute inset-0 z-20 bg-slate-950/90 border-2 border-dashed border-emerald-400 m-3 rounded-xl flex flex-col items-center justify-center text-center p-6 pointer-events-none">
-                <Upload className="w-8 h-8 text-emerald-400 mb-2" />
-                <p className="text-sm font-bold text-white">Drop File to Parse Locally</p>
-                <p className="text-xs text-slate-400 mt-1">
+              <div className="absolute inset-0 z-20 bg-paper/90 border-2 border-dashed border-emerald-500 m-3 rounded-xl flex flex-col items-center justify-center text-center p-6 pointer-events-none">
+                <Upload className="w-8 h-8 text-emerald-700 mb-2" />
+                <p className="text-sm font-bold text-ink">Drop File to Parse Locally</p>
+                <p className="text-xs text-ink/60 mt-1">
                   Supports .xlsx, .xls, .csv, .tsv, and .json backups
                 </p>
               </div>
             )}
 
             {/* Drawer Header */}
-            <div className="px-4 py-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between gap-3 shrink-0">
+            <div className="px-4 py-3.5 border-b border-slate-700 bg-mist flex items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <VestoraLogo size={28} />
                 <div className="min-w-0">
-                  <h2 className="text-sm font-bold text-white truncate">Portfolio Assistant</h2>
-                  <p className="text-2xs text-emerald-400 flex items-center gap-1 truncate">
+                  <h2 className="text-sm font-bold text-ink truncate">Portfolio Assistant</h2>
+                  <p className="text-2xs text-emerald-700 flex items-center gap-1 truncate">
                     <ShieldCheck className="w-3 h-3 shrink-0" />
                     <span>On-device · Zero external API calls</span>
                   </p>
@@ -381,15 +396,15 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   onClick={() => setMessages([WELCOME_MESSAGE()])}
                   title="Clear chat history"
                   aria-label="Clear chat history"
-                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                  className="p-2 text-ink/60 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeDrawer}
                   aria-label="Close chat assistant"
-                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                  className="p-2 text-ink/60 hover:text-ink rounded-lg hover:bg-ink/5 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -397,7 +412,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
             </div>
 
             {/* Guided Action Chips Strip */}
-            <div className="px-4 py-2 border-b border-slate-800/80 bg-slate-950/60 flex items-center gap-1.5 overflow-x-auto shrink-0">
+            <div className="px-4 py-2 border-b border-slate-700/80 bg-mist/60 flex items-center gap-1.5 overflow-x-auto shrink-0">
               {QUICK_CHIPS.map((chip) => (
                 <button
                   key={chip.label}
@@ -412,10 +427,10 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                       handleSendText(chip.prompt);
                     }
                   }}
-                  className={`px-2.5 py-1 text-2xs font-medium rounded-md whitespace-nowrap shrink-0 transition-colors ${
+                  className={`px-2.5 py-1.5 min-h-[32px] text-2xs font-medium rounded-md whitespace-nowrap shrink-0 transition-colors ${
                     chip.kind === 'add_form'
-                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
-                      : 'text-slate-300 hover:text-emerald-300 bg-slate-900 border border-slate-800 hover:border-emerald-500/40'
+                      ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40 hover:bg-emerald-500 hover:text-white'
+                      : 'text-ink/70 bg-paper border border-slate-700 hover:text-emerald-800 hover:border-emerald-500/40'
                   }`}
                 >
                   {chip.label}
@@ -433,29 +448,29 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   <div
                     className={`max-w-[92%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
                       msg.sender === 'user'
-                        ? 'bg-emerald-500 text-slate-950 font-medium'
-                        : 'bg-slate-950 border border-slate-800 text-slate-200'
+                        ? 'bg-ink text-paper font-medium'
+                        : 'bg-mist border border-slate-700 text-ink'
                     }`}
                   >
                     {msg.title && (
-                      <div className="font-bold text-white mb-1">{msg.title}</div>
+                      <div className="font-bold text-ink mb-1">{msg.title}</div>
                     )}
                     <div className="whitespace-pre-line">{msg.text}</div>
 
                     {msg.metrics && msg.metrics.length > 0 && (
-                      <div className="mt-2.5 pt-2.5 border-t border-slate-800/80 grid grid-cols-2 gap-2 font-mono tabular-nums">
+                      <div className="mt-2.5 pt-2.5 border-t border-slate-700/80 grid grid-cols-2 gap-2 font-mono tabular-nums">
                         {msg.metrics.map((m) => (
-                          <div key={m.label} className="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
-                            <span className="text-2xs text-slate-500 block">{m.label}</span>
+                          <div key={m.label} className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5">
+                            <span className="text-2xs text-ink/60 block">{m.label}</span>
                             <span
                               className={`text-xs font-bold ${
                                 m.tone === 'emerald'
-                                  ? 'text-emerald-400'
+                                  ? 'text-emerald-700'
                                   : m.tone === 'amber'
-                                  ? 'text-amber-300'
+                                  ? 'text-amber-700'
                                   : m.tone === 'rose'
-                                  ? 'text-rose-400'
-                                  : 'text-slate-100'
+                                  ? 'text-rose-600'
+                                  : 'text-ink'
                               }`}
                             >
                               {m.value}
@@ -466,18 +481,18 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                     )}
 
                     {msg.actions && msg.actions.length > 0 && (
-                      <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                      <div className="mt-2.5 pt-2 border-t border-slate-700/80 flex flex-wrap gap-1.5">
                         {msg.actions.map((item, idx) => (
                           <button
                             key={`${msg.id}-act-${idx}`}
                             type="button"
                             onClick={() => handleActionClick(item.action)}
-                            className={`px-2.5 py-1.5 text-2xs font-semibold rounded-md transition-colors whitespace-nowrap ${
+                            className={`px-2.5 py-1.5 min-h-[32px] text-2xs font-semibold rounded-md transition-colors whitespace-nowrap ${
                               item.variant === 'primary'
-                                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                                ? 'bg-emerald-500 hover:bg-emerald-700 text-white'
                                 : item.variant === 'danger'
                                 ? 'bg-rose-600 hover:bg-rose-500 text-white'
-                                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700'
+                                : 'bg-paper hover:bg-ink/5 text-ink border border-slate-700'
                             }`}
                           >
                             {item.label}
@@ -486,19 +501,20 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                       </div>
                     )}
                   </div>
-                  <span className="text-2xs text-slate-600 mt-1 px-1 font-mono">{msg.timestamp}</span>
+                  <span className="text-2xs text-ink/60 mt-1 px-1 font-mono">{msg.timestamp}</span>
                 </div>
               ))}
               <div ref={scrollEndRef} />
             </div>
 
             {/* Composer Bar */}
-            <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+            <div className="p-3 border-t border-slate-700 bg-mist shrink-0">
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".xlsx,.xls,.xlsm,.xlsb,.ods,.csv,.tsv,.json,application/json"
                 className="hidden"
+                tabIndex={-1}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   e.target.value = '';
@@ -517,7 +533,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   onClick={() => fileInputRef.current?.click()}
                   title="Attach .xlsx, .csv, or .json to import locally"
                   aria-label="Attach spreadsheet or JSON file"
-                  className="h-10 w-10 shrink-0 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-emerald-400 flex items-center justify-center transition-colors"
+                  className="h-10 w-10 shrink-0 rounded-lg bg-paper hover:bg-ink/5 border border-slate-700 text-ink/70 hover:text-emerald-700 flex items-center justify-center transition-colors"
                 >
                   <Paperclip className="w-4 h-4" />
                 </button>
@@ -534,14 +550,14 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                     }
                   }}
                   placeholder='Add or edit holding, "Simulate 8% inflation", or drop Excel/CSV...'
-                  className="flex-1 min-h-10 max-h-28 resize-none bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none leading-snug"
+                  className="flex-1 min-h-10 max-h-28 resize-none bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-2.5 text-xs text-ink placeholder-ink/50 focus:outline-none leading-snug"
                 />
 
                 <button
                   type="submit"
                   disabled={!input.trim()}
                   aria-label="Send message"
-                  className="h-10 w-10 shrink-0 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 text-slate-950 flex items-center justify-center transition-colors"
+                  className="h-10 w-10 shrink-0 rounded-lg bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white flex items-center justify-center transition-colors"
                 >
                   <Send className="w-4 h-4" />
                 </button>

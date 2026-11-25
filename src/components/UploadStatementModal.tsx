@@ -140,11 +140,11 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl max-h-[88vh] overflow-y-auto shadow-2xl p-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-emerald-400" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-xs">
+      <div className="bg-paper border border-slate-700 rounded-xl w-full max-w-xl max-h-[88vh] overflow-y-auto shadow-ink/10 shadow-2xl p-6">
+        <div className="flex items-center justify-between border-b border-slate-700 pb-4">
+          <h3 className="text-base font-bold text-ink flex items-center gap-2">
+            <FileText className="w-4 h-4 text-emerald-700" />
             <span>Import Excel or CSV Statement</span>
           </h3>
           <button
@@ -152,22 +152,22 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               reset();
               onClose();
             }}
-            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+            className="text-ink/60 hover:text-ink p-1 rounded-lg transition-colors"
             aria-label="Close import"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mt-4 p-3 rounded-lg bg-emerald-950/25 border border-emerald-500/25 flex items-start gap-2.5 text-xs text-emerald-100/90">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs text-emerald-700">
+          <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
           <span>
             We don&apos;t store your data with us. Your file is read privately on your device and never sent to any server.
           </span>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 bg-rose-950/30 border border-rose-500/40 rounded-lg text-rose-300 text-xs flex items-start gap-2">
+          <div className="mt-4 p-3 bg-rose-500/10 border border-rose-500/40 rounded-lg text-rose-700 text-xs flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -190,15 +190,15 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               onClick={() => fileInputRef.current?.click()}
               className={`mt-4 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
                 dragActive
-                  ? 'border-emerald-400 bg-emerald-500/10'
-                  : 'border-slate-800 hover:border-slate-600 bg-slate-950/40'
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : 'border-slate-700 hover:border-ink/40 bg-mist'
               }`}
             >
-              <UploadCloud className="w-8 h-8 text-slate-500 mx-auto" />
-              <div className="text-xs font-medium text-slate-300 mt-2">
+              <UploadCloud className="w-8 h-8 text-ink/60 mx-auto" />
+              <div className="text-xs font-medium text-ink mt-2">
                 Drop an Excel (.xlsx, .xls) or CSV statement here, or click to browse
               </div>
-              <p className="text-2xs text-slate-500 mt-1">
+              <p className="text-2xs text-ink/60 mt-1">
                 Parsed entirely in your browser — the file never leaves your device.
               </p>
               <input
@@ -217,13 +217,13 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
             {/* Excel & CSV Templates */}
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-semibold text-ink">
                   Templates & sample statements
                 </label>
                 <button
                   type="button"
                   onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
-                  className="text-2xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                  className="text-2xs font-medium text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
                 >
                   <Download className="w-3 h-3" />
                   Download Excel Template (.xlsx)
@@ -232,17 +232,17 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               {(Object.keys(STATEMENT_TEMPLATES) as StatementFormat[]).map((format) => (
                 <div
                   key={format}
-                  className="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-slate-800 bg-slate-950/40"
+                  className="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-slate-700 bg-mist"
                 >
                   <div className="min-w-0">
-                    <div className="text-2xs font-semibold text-slate-200 truncate">
+                    <div className="text-2xs font-semibold text-ink truncate">
                       {FORMAT_LABELS[format]}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => downloadTemplate(format)}
-                      className="text-2xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                      className="text-2xs text-ink/60 hover:text-ink flex items-center gap-1 transition-colors"
                       title="Download CSV template"
                     >
                       <Download className="w-3 h-3" />
@@ -250,7 +250,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                     </button>
                     <button
                       onClick={() => loadSampleForFormat(format)}
-                      className="text-2xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+                      className="text-2xs text-emerald-700 hover:text-emerald-800 flex items-center gap-1 transition-colors"
                       title="Load sample rows now"
                     >
                       Sample
@@ -265,12 +265,12 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
 
         {parsed && (
           <div className="mt-4 space-y-4">
-            <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-3">
-              <div className="text-2xs font-mono text-slate-500">{fileName}</div>
-              <div className="text-xs text-slate-200 font-semibold mt-1">
+            <div className="bg-mist border border-slate-700 rounded-lg p-3">
+              <div className="text-2xs font-mono text-ink/60">{fileName}</div>
+              <div className="text-xs text-ink font-semibold mt-1">
                 {FORMAT_LABELS[parsed.format]}
               </div>
-              <div className="text-2xs text-slate-400 mt-1">
+              <div className="text-2xs text-ink/60 mt-1">
                 {parsed.holdings.length} holding{parsed.holdings.length !== 1 ? 's' : ''} ready to
                 import
                 {parsed.skipped.length > 0 && ` · ${parsed.skipped.length} row${parsed.skipped.length !== 1 ? 's' : ''} skipped`}
@@ -281,16 +281,16 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
               {parsed.holdings.map((h) => (
                 <div
                   key={h.id}
-                  className="flex items-center justify-between gap-3 bg-slate-950/40 border border-slate-800 rounded-lg px-3 py-2"
+                  className="flex items-center justify-between gap-3 bg-paper border border-slate-700 rounded-lg px-3 py-2"
                 >
                   <div className="min-w-0">
-                    <div className="text-2xs font-semibold text-slate-200 truncate">{h.name}</div>
-                    <div className="text-2xs text-slate-500 truncate">
+                    <div className="text-2xs font-semibold text-ink truncate">{h.name}</div>
+                    <div className="text-2xs text-ink/60 truncate">
                       {h.institution}
                       {h.accountNumberMask ? ` · ${h.accountNumberMask}` : ''}
                     </div>
                   </div>
-                  <div className="text-2xs text-slate-300 font-mono whitespace-nowrap">
+                  <div className="text-2xs text-ink/70 font-mono whitespace-nowrap">
                     {Math.round(h.currentValue).toLocaleString()} {h.currency}
                   </div>
                 </div>
@@ -298,26 +298,26 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
             </div>
 
             {parsed.skipped.length > 0 && (
-              <div className="bg-amber-950/20 border border-amber-500/30 rounded-lg p-3">
-                <div className="text-2xs font-semibold text-amber-300 flex items-center gap-1.5">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <div className="text-2xs font-semibold text-amber-700 flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Skipped rows
                 </div>
                 <ul className="mt-1.5 space-y-1">
                   {parsed.skipped.slice(0, 5).map((s, i) => (
-                    <li key={i} className="text-2xs text-amber-200/80 truncate">
-                      Row {s.row}: {s.reason} — <span className="text-amber-200/60">{s.raw}</span>
+                    <li key={i} className="text-2xs text-amber-700/90 truncate">
+                      Row {s.row}: {s.reason} — <span className="text-amber-700/70">{s.raw}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
+            <div className="pt-3 border-t border-slate-700 flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={reset}
-                className="text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                className="text-xs font-medium text-ink/60 hover:text-ink transition-colors"
               >
                 Choose another file
               </button>
@@ -328,14 +328,14 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                     reset();
                     onClose();
                   }}
-                  className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-xs font-medium text-ink/60 hover:text-ink transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={confirmImport}
-                  className="px-5 py-2 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                  className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-ink/10"
                 >
                   <span>Import {parsed.holdings.length} Holdings</span>
                   <ArrowRight className="w-3.5 h-3.5" />
