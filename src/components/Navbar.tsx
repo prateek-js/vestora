@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   // Clean, uncluttered workspace header bar once inside the app
   return (
-    <header className="border-b border-slate-800 bg-slate-950/95 backdrop-blur-md sticky top-0 z-40 w-full">
+    <header className="border-b border-ink/10 bg-mist sticky top-0 z-40 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-6">
           {/* Zone 1: Brand Wordmark */}
@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2.5 shrink-0 text-left"
           >
             <VestoraLogo size={32} />
-            <span className="text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap">
+            <span className="font-display text-lg sm:text-xl font-semibold tracking-tight text-ink whitespace-nowrap">
               Vestora
             </span>
           </button>
@@ -115,8 +115,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('overview')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'overview'
-                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink hover:bg-ink/10'
               }`}
             >
               Overview
@@ -126,8 +126,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('rebalance')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'rebalance'
-                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink hover:bg-ink/10'
               }`}
             >
               Rebalance
@@ -137,13 +137,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('radar')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 ${
                 activeTab === 'radar'
-                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink hover:bg-ink/10'
               }`}
             >
               <span>Maturity Radar</span>
               {maturedCount > 0 && (
-                <span className="text-2xs font-mono font-semibold text-amber-400">
+                <span
+                  className={`text-2xs font-mono font-semibold ${
+                    activeTab === 'radar' ? 'text-amber-400' : 'text-ink/70'
+                  }`}
+                >
                   ({maturedCount})
                 </span>
               )}
@@ -153,8 +157,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('tax')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'tax'
-                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink hover:bg-ink/10'
               }`}
             >
               Tax &amp; Audit
@@ -164,8 +168,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleTabChange('simulator')}
               className={`px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === 'simulator'
-                  ? 'bg-slate-800 text-emerald-300 border border-emerald-500/25'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink/70 hover:text-ink hover:bg-ink/10'
               }`}
             >
               Stress Lab
@@ -177,11 +181,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Guided tour of how rebalancing works */}
             <a
               href="/demo/"
-              className="px-3 py-1.5 text-xs font-medium text-emerald-300 bg-slate-900 hover:bg-slate-800 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-paper hover:bg-ink/5 border border-level/50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
               aria-label="Take the guided tour"
               title="A short guided tour of how rebalancing works"
             >
-              <Compass className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <Compass className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
               <span className="hidden sm:inline">Take the tour</span>
             </a>
 
@@ -192,13 +196,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setIsMenuOpen((prev) => !prev)}
                 className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   isMenuOpen
-                    ? 'bg-slate-800 border-emerald-500 text-white'
-                    : 'bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700'
+                    ? 'bg-ink border-ink text-paper'
+                    : 'bg-paper border-slate-700 text-ink hover:bg-ink/5 hover:border-ink/40'
                 }`}
                 title="Currency, Save/Export, Import & Tools"
               >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-mono text-2xs text-slate-300">{baseCurrency}</span>
+                <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span className="font-mono text-2xs opacity-90">{baseCurrency}</span>
                 <span className="hidden sm:inline">Menu</span>
                 <ChevronDown className="w-3 h-3 opacity-75 shrink-0" />
               </button>
@@ -209,12 +213,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="fixed inset-0 z-40"
                     onClick={() => setIsMenuOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-3 z-50 text-xs space-y-3 max-h-[82vh] overflow-y-auto">
+                  <div className="absolute right-0 mt-2 w-80 bg-paper border border-slate-700 rounded-xl shadow-ink/10 shadow-lg p-3 z-50 text-ink space-y-3 max-h-[82vh] overflow-y-auto">
                     {/* Currency & Demo Persona */}
-                    <div className="space-y-2 pb-2.5 border-b border-slate-800">
+                    <div className="space-y-2 pb-2.5 border-b border-slate-700">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-2xs font-medium text-slate-400">Display Currency</span>
-                        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                        <span className="text-2xs font-medium text-ink/70">Display Currency</span>
+                        <div className="flex items-center bg-mist border border-slate-700 rounded-lg p-0.5">
                           {(['INR', 'USD', 'EUR'] as CurrencyCode[]).map((curr) => (
                             <button
                               key={curr}
@@ -222,8 +226,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                               onClick={() => setBaseCurrency(curr)}
                               className={`px-2 py-1 text-2xs font-mono font-semibold rounded transition-colors ${
                                 baseCurrency === curr
-                                  ? 'bg-emerald-500 text-slate-950'
-                                  : 'text-slate-400 hover:text-white'
+                                  ? 'bg-emerald-500 text-white'
+                                  : 'text-ink/70 hover:text-ink'
                               }`}
                             >
                               {curr}
@@ -233,7 +237,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-2xs font-medium text-slate-400 shrink-0">Demo Persona</span>
+                        <span className="text-2xs font-medium text-ink/70 shrink-0">Demo Persona</span>
                         <select
                           aria-label="Active Investor Profile"
                           value={currentProfile.id}
@@ -244,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                               setIsMenuOpen(false);
                             }
                           }}
-                          className="bg-slate-950 border border-slate-800 text-slate-200 text-2xs rounded-md px-2 py-1 focus:outline-none focus:border-emerald-500 max-w-[180px] truncate"
+                          className="bg-mist border border-slate-700 text-ink text-2xs rounded-md px-2 py-1 focus:outline-none focus:border-emerald-500 max-w-[180px] truncate"
                         >
                           {DEMO_PROFILES.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -256,10 +260,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
 
                     {/* Save & Restore */}
-                    <div className="space-y-1 pb-2.5 border-b border-slate-800">
-                      <div className="px-1 pb-1 text-2xs font-medium text-slate-400 flex items-center justify-between">
+                    <div className="space-y-1 pb-2.5 border-b border-slate-700">
+                      <div className="px-1 pb-1 text-2xs font-medium text-ink/70 flex items-center justify-between">
                         <span>Save &amp; Restore</span>
-                        <span className="font-mono text-emerald-400">{holdingsCount} holdings</span>
+                        <span className="font-mono text-emerald-700">{holdingsCount} holdings</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-1.5">
@@ -270,9 +274,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                             setIsMenuOpen(false);
                             onExportExcel();
                           }}
-                          className="px-2.5 py-2 text-left rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 disabled:opacity-45 text-slate-100 transition-colors flex items-center gap-2"
+                          className="px-2.5 py-2 text-left rounded-lg bg-mist hover:bg-ink/5 border border-slate-700 disabled:opacity-45 text-ink transition-colors flex items-center gap-2"
                         >
-                          <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                           <span className="font-medium">Excel (.xlsx)</span>
                         </button>
                         <button
@@ -282,9 +286,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                             setIsMenuOpen(false);
                             onExportCsv();
                           }}
-                          className="px-2.5 py-2 text-left rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 disabled:opacity-45 text-slate-200 transition-colors flex items-center gap-2"
+                          className="px-2.5 py-2 text-left rounded-lg bg-mist hover:bg-ink/5 border border-slate-700 disabled:opacity-45 text-ink transition-colors flex items-center gap-2"
                         >
-                          <Download className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                          <Download className="w-3.5 h-3.5 text-debt shrink-0" />
                           <span className="font-medium">CSV (.csv)</span>
                         </button>
                         <button
@@ -294,9 +298,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                             setIsMenuOpen(false);
                             onExportPdf();
                           }}
-                          className="px-2.5 py-2 text-left rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 disabled:opacity-45 text-slate-200 transition-colors flex items-center gap-2"
+                          className="px-2.5 py-2 text-left rounded-lg bg-mist hover:bg-ink/5 border border-slate-700 disabled:opacity-45 text-ink transition-colors flex items-center gap-2"
                         >
-                          <FileText className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                          <FileText className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                           <span className="font-medium">PDF Report</span>
                         </button>
                         <button
@@ -306,9 +310,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                             setIsMenuOpen(false);
                             onExportJson();
                           }}
-                          className="px-2.5 py-2 text-left rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 disabled:opacity-45 text-slate-300 transition-colors flex items-center gap-2"
+                          className="px-2.5 py-2 text-left rounded-lg bg-mist hover:bg-ink/5 border border-slate-700 disabled:opacity-45 text-ink transition-colors flex items-center gap-2"
                         >
-                          <Download className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <Download className="w-3.5 h-3.5 text-ink/60 shrink-0" />
                           <span className="font-medium">JSON</span>
                         </button>
                       </div>
@@ -319,9 +323,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onTriggerRestore();
                         }}
-                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-emerald-950/35 hover:bg-emerald-900/45 border border-emerald-500/30 text-emerald-200 hover:text-white transition-colors flex items-center gap-2"
+                        className="w-full mt-1 px-2.5 py-2 text-left rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 transition-colors flex items-center gap-2"
                       >
-                        <Upload className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <Upload className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>Restore Earlier Export (.xlsx / .csv / .json)</span>
                       </button>
                     </div>
@@ -334,9 +338,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onOpenValidateModal();
                         }}
-                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
+                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-ink/5 text-ink transition-colors flex items-center gap-2"
                       >
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>Validate / Build Portfolio</span>
                       </button>
 
@@ -346,9 +350,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onOpenNavRefresh();
                         }}
-                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
+                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-ink/5 text-ink transition-colors flex items-center gap-2"
                       >
-                        <RefreshCw className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <RefreshCw className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>Refresh Live AMFI NAVs</span>
                       </button>
 
@@ -358,9 +362,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onOpenUploadModal();
                         }}
-                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
+                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-ink/5 text-ink transition-colors flex items-center gap-2"
                       >
-                        <Upload className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                        <Upload className="w-3.5 h-3.5 text-debt shrink-0" />
                         <span>Import Excel / CAS / CSV</span>
                       </button>
 
@@ -370,9 +374,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onStartTour();
                         }}
-                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-2"
+                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-ink/5 text-ink transition-colors flex items-center gap-2"
                       >
-                        <HelpCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <HelpCircle className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                         <span>Interactive Guided Tour</span>
                       </button>
 
@@ -382,14 +386,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsMenuOpen(false);
                           onResetToSample();
                         }}
-                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-slate-800 text-rose-300 transition-colors flex items-center gap-2"
+                        className="w-full px-2.5 py-1.5 text-left rounded-lg hover:bg-ink/5 text-rose-600 transition-colors flex items-center gap-2"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <RotateCcw className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                         <span>Manage Data / Reset Portfolio</span>
                       </button>
                     </div>
 
-                    <div className="px-2.5 py-1.5 bg-slate-950/70 rounded-md border border-slate-800 text-2xs font-mono text-slate-500">
+                    <div className="px-2.5 py-1.5 bg-mist rounded-md border border-slate-700 text-2xs font-mono text-ink/60">
                       FX: {fxSource === 'benchmark' ? 'Benchmarks' : `ECB (${fxAsOf})`} · On your device
                     </div>
                   </div>
@@ -401,7 +405,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-500 rounded-lg hover:bg-emerald-400 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-level rounded-lg hover:bg-emerald-400 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Holding</span>
@@ -411,12 +415,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Mobile Sub-Navigation Bar */}
-        <div className="md:hidden flex items-center justify-around py-2 border-t border-slate-800/80 text-xs">
+        <div className="md:hidden flex items-center justify-around py-2 border-t border-ink/10 text-xs">
           <button
             type="button"
             onClick={() => handleTabChange('overview')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'overview' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
+              activeTab === 'overview' ? 'text-emerald-700 font-semibold' : 'text-ink/70'
             }`}
           >
             Overview
@@ -425,7 +429,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('rebalance')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'rebalance' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
+              activeTab === 'rebalance' ? 'text-emerald-700 font-semibold' : 'text-ink/70'
             }`}
           >
             Rebalance
@@ -434,7 +438,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('radar')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'radar' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
+              activeTab === 'radar' ? 'text-emerald-700 font-semibold' : 'text-ink/70'
             }`}
           >
             Radar {maturedCount > 0 && `(${maturedCount})`}
@@ -443,7 +447,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('tax')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'tax' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
+              activeTab === 'tax' ? 'text-emerald-700 font-semibold' : 'text-ink/70'
             }`}
           >
             Tax
@@ -452,7 +456,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={() => handleTabChange('simulator')}
             className={`py-1 px-2 rounded font-medium ${
-              activeTab === 'simulator' ? 'text-emerald-400 font-semibold' : 'text-slate-400'
+              activeTab === 'simulator' ? 'text-emerald-700 font-semibold' : 'text-ink/70'
             }`}
           >
             Stress

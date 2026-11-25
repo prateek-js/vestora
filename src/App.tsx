@@ -499,7 +499,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-mist text-ink flex flex-col overflow-x-hidden">
       {/* Top Bar Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -539,15 +539,15 @@ export default function App() {
 
       {restoreNotice && (
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-xs text-emerald-200">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-xs text-emerald-700">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
               <span>{restoreNotice}</span>
             </div>
             <button
               type="button"
               onClick={() => setRestoreNotice('')}
-              className="text-emerald-300 hover:text-white p-0.5"
+              className="text-emerald-700 hover:text-ink p-0.5"
               aria-label="Dismiss restore message"
             >
               <X className="w-3.5 h-3.5" />
@@ -617,33 +617,33 @@ export default function App() {
       </main>
 
       {/* Compliance, SEO Guides & Privacy Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950">
+      <footer className="border-t border-ink/10 bg-mist">
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-3">
           <nav
             aria-label="Free Wealth Calculators and Guides"
-            className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400 border-b border-slate-800/70 pb-3"
+            className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink/70 border-b border-ink/10 pb-3"
           >
-            <span className="text-2xs font-mono uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-mono uppercase tracking-wider text-ink/60">
               Free Calculators &amp; Guides:
             </span>
-            <a href="/home-loan-vs-fd-calculator/" className="hover:text-emerald-300 transition-colors">
+            <a href="/home-loan-vs-fd-calculator/" className="hover:text-emerald-700 transition-colors">
               Home Loan vs FD Calculator
             </a>
-            <a href="/mutual-fund-rebalance-india/" className="hover:text-emerald-300 transition-colors">
+            <a href="/mutual-fund-rebalance-india/" className="hover:text-emerald-700 transition-colors">
               Mutual Fund Rebalance &amp; Direct Plan
             </a>
-            <a href="/fd-maturity-reinvestment-guide/" className="hover:text-emerald-300 transition-colors">
+            <a href="/fd-maturity-reinvestment-guide/" className="hover:text-emerald-700 transition-colors">
               Matured FD Reinvestment Guide
             </a>
-            <a href="/ltcg-tax-harvesting-india/" className="hover:text-emerald-300 transition-colors">
+            <a href="/ltcg-tax-harvesting-india/" className="hover:text-emerald-700 transition-colors">
               LTCG Tax Harvesting &amp; 80CCD(1B)
             </a>
           </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <p className="text-2xs text-slate-500 leading-relaxed max-w-3xl">
+            <p className="text-2xs text-ink/60 leading-relaxed max-w-3xl">
               We don&apos;t store your data with us — all spreadsheets and manual entries stay strictly on your device. Figures are illustrative / self-reported and not investment or tax advice.
             </p>
-            <span className="text-2xs text-slate-600 font-mono whitespace-nowrap">
+            <span className="text-2xs text-ink/60 font-mono whitespace-nowrap">
               © {new Date().getFullYear()} Vestora · Private by design
             </span>
           </div>
@@ -702,13 +702,13 @@ export default function App() {
       {/* Portfolio data management: export / restore / reset */}
       {isResetConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm shadow-2xl p-6">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-amber-400" />
+          <div className="bg-paper border border-slate-700 rounded-xl w-full max-w-sm shadow-ink/10 shadow-xl p-6">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-amber-600" />
               <span>Manage Portfolio Data</span>
             </h3>
-            <div className="mt-3 p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/25 flex items-start gap-2 text-2xs text-emerald-200/90">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="mt-3 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2 text-2xs text-emerald-700">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
               <span>
                 We don&apos;t store your data with us. Everything remains private on your own device.
               </span>
@@ -719,7 +719,7 @@ export default function App() {
                 type="button"
                 onClick={handleExportExcel}
                 disabled={holdings.length === 0}
-                className="w-full px-4 py-2.5 text-xs font-semibold text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-400 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 Save Portfolio as Excel (.xlsx)
@@ -730,18 +730,18 @@ export default function App() {
                   type="button"
                   onClick={handleExportCsv}
                   disabled={holdings.length === 0}
-                  className="px-3 py-2 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  className="px-3 py-2 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-ink/40 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5 text-sky-400" />
+                  <Download className="w-3.5 h-3.5 text-debt" />
                   Export .csv
                 </button>
                 <button
                   type="button"
                   onClick={handleExportPortfolio}
                   disabled={holdings.length === 0}
-                  className="px-3 py-2 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-slate-500 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  className="px-3 py-2 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-ink/40 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5 text-slate-400" />
+                  <Download className="w-3.5 h-3.5 text-ink/60" />
                   Export .json
                 </button>
               </div>
@@ -750,25 +750,25 @@ export default function App() {
                 type="button"
                 onClick={handleExportPdf}
                 disabled={holdings.length === 0}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-rose-500/70 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-rose-500/70 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                <FileText className="w-3.5 h-3.5 text-rose-400" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
                 Export Printable PDF Report (.pdf)
               </button>
 
               <button
                 type="button"
                 onClick={() => restoreInputRef.current?.click()}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-emerald-500/70 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-emerald-500/70 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                <Upload className="w-3.5 h-3.5 text-emerald-700" />
                 Re-import Saved (.xlsx / .csv / .json)
               </button>
 
               <button
                 type="button"
                 onClick={handleStartBlank}
-                className="w-full px-4 py-2.5 text-xs font-medium text-slate-200 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-medium text-ink bg-mist border border-slate-700 hover:border-emerald-500 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 Clear All & Start Blank (0 Holdings)
               </button>
@@ -776,7 +776,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleResetToSample}
-                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset to Sample Portfolio
@@ -784,19 +784,19 @@ export default function App() {
             </div>
 
             {restoreError && (
-              <p className="mt-3 text-2xs text-rose-300 bg-rose-950/30 border border-rose-500/40 rounded-lg px-3 py-2">
+              <p className="mt-3 text-2xs text-rose-700 bg-rose-500/10 border border-rose-500/40 rounded-lg px-3 py-2">
                 {restoreError}
               </p>
             )}
 
-            <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-end">
+            <div className="mt-5 pt-4 border-t border-slate-700 flex items-center justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setIsResetConfirmOpen(false);
                   setRestoreError('');
                 }}
-                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-xs font-medium text-ink/70 hover:text-ink transition-colors"
               >
                 Close
               </button>
