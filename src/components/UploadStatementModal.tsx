@@ -305,8 +305,8 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                 </div>
                 <ul className="mt-1.5 space-y-1">
                   {parsed.skipped.slice(0, 5).map((s, i) => (
-                    <li key={i} className="text-2xs text-amber-700/90 truncate">
-                      Row {s.row}: {s.reason} — <span className="text-amber-700/70">{s.raw}</span>
+                    <li key={i} className="text-2xs text-amber-700 truncate">
+                      Row {s.row}: {s.reason} — <span className="text-amber-700">{s.raw}</span>
                     </li>
                   ))}
                 </ul>

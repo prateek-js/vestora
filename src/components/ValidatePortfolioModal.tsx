@@ -636,7 +636,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                         <AlertTriangle className="w-3.5 h-3.5" />
                         {parsed.skipped.length} row{parsed.skipped.length > 1 ? 's' : ''} skipped
                       </div>
-                      <ul className="mt-1.5 space-y-1 text-2xs text-amber-700/90">
+                      <ul className="mt-1.5 space-y-1 text-2xs text-amber-700">
                         {parsed.skipped.slice(0, 4).map((s, idx) => (
                           <li key={idx}>
                             Row {s.row}: {s.reason} ({s.raw})
