@@ -132,6 +132,34 @@ test('a properly closed quoted cell that starts a row still works', () => {
   );
 });
 
+const SEMI_TAB_NAME = 'Axis; ELSS\tTax Saver';
+
+function semiTabHolding(): Holding {
+  return { ...extraHolding(), id: 'extra-2', name: SEMI_TAB_NAME, institution: 'Axis; AMC' };
+}
+
+test('a name with a semicolon and a tab survives the csv round trip', () => {
+  const f = [...fixture(), semiTabHolding()];
+  const imported = viaCsv(f);
+  const h = imported.find((x) => x.name === SEMI_TAB_NAME);
+  assert.ok(
+    h,
+    `holding with ;/tab name found; got: ${imported.map((x) => JSON.stringify(x.name)).join(', ')}`
+  );
+  assert.equal(h.name, SEMI_TAB_NAME);
+  assert.equal(h.category, 'MUTUAL_FUND');
+  assert.equal(h.institution, 'Axis; AMC');
+});
+
+test('csv export quotes the name cell when it contains a semicolon or a tab', () => {
+  const csv = buildHoldingsCsv([semiTabHolding()]);
+  const firstDataRow = csv.replace(/^﻿/, '').split('\r\n')[1];
+  assert.ok(
+    firstDataRow.startsWith(`"${SEMI_TAB_NAME}"`),
+    `expected the quoted name cell to start the data row, got: ${JSON.stringify(firstDataRow.slice(0, 40))}`
+  );
+});
+
 test('an unterminated quoted cell throws instead of silently truncating', () => {
   const text = csvOf(
     'Fund A,Mutual Fund,AMC,100,120,INR',

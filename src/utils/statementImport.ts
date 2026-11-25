@@ -841,7 +841,7 @@ export function exportHoldingsToExcel(
 
 function escapeCsvCell(value: string | number): string {
   const str = String(value ?? '');
-  if (/[",\n\r]/.test(str)) {
+  if (/[",;\t\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
