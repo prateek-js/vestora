@@ -1,18 +1,19 @@
-import { CHAPTERS, type Chapter } from '../journeyState';
+import type { Chapter } from '../journeyState';
 
 interface ChapterBarProps {
+  chapters: { id: Chapter; label: string }[];
   chapter: Chapter;
   /** Chapters the visitor has already opened, in order. */
   reached: Chapter[];
   onGo: (c: Chapter) => void;
 }
 
-export function ChapterBar({ chapter, reached, onGo }: ChapterBarProps) {
-  const activeIndex = CHAPTERS.findIndex((c) => c.id === chapter);
+export function ChapterBar({ chapters, chapter, reached, onGo }: ChapterBarProps) {
+  const activeIndex = chapters.findIndex((c) => c.id === chapter);
   return (
     <nav aria-label="Journey" className="min-w-0 flex-1">
       <ol className="m-0 hidden list-none justify-center gap-1 p-0 sm:flex">
-        {CHAPTERS.map((c) => {
+        {chapters.map((c) => {
           const isActive = c.id === chapter;
           const isReached = reached.includes(c.id);
           return (
@@ -38,13 +39,13 @@ export function ChapterBar({ chapter, reached, onGo }: ChapterBarProps) {
       </ol>
       <div className="sm:hidden">
         <p className="m-0 text-center text-sm font-semibold">
-          {CHAPTERS[activeIndex].label}{' '}
+          {chapters[activeIndex].label}{' '}
           <span className="num font-normal text-ink/70">
-            ({activeIndex + 1} of {CHAPTERS.length})
+            ({activeIndex + 1} of {chapters.length})
           </span>
         </p>
         <div className="mt-1 flex gap-1" aria-hidden>
-          {CHAPTERS.map((c, i) => (
+          {chapters.map((c, i) => (
             <span key={c.id} className={`h-1 flex-1 rounded-full ${i <= activeIndex ? 'bg-ink' : 'bg-ink/15'}`} />
           ))}
         </div>

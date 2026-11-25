@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import type { MacroParameters } from '../types/wealth';
 import type { DiversificationGoal } from '../utils/smartDiversification';
 
-export type Chapter = 'story' | 'see' | 'play' | 'plan';
+export type Chapter = 'story' | 'mine' | 'see' | 'play' | 'plan';
 
 export const CHAPTERS: { id: Chapter; label: string }[] = [
   { id: 'story', label: 'The problem' },
@@ -10,6 +10,24 @@ export const CHAPTERS: { id: Chapter; label: string }[] = [
   { id: 'play', label: 'Play' },
   { id: 'plan', label: 'Your plan' },
 ];
+
+/** The core chapters, with "Your numbers" after the story once the visitor has built a portfolio. */
+export function visibleChapters(hasPersonal: boolean): { id: Chapter; label: string }[] {
+  if (!hasPersonal) return CHAPTERS;
+  return [CHAPTERS[0], { id: 'mine', label: 'Your numbers' }, ...CHAPTERS.slice(1)];
+}
+
+const NEXT_CHAPTER: Record<Chapter, Chapter | null> = {
+  story: 'see',
+  mine: 'see',
+  see: 'play',
+  play: 'plan',
+  plan: null,
+};
+
+export function nextChapter(from: Chapter): Chapter | null {
+  return NEXT_CHAPTER[from];
+}
 
 /** Same starting point as the full app's Stress Lab. */
 export const DEFAULT_FACTORS: MacroParameters = {
