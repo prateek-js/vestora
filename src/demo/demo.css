@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* values mirror index.css — keep in sync */
 @theme static {
   --color-ink: #14213d;
   --color-mist: #eef2f6;

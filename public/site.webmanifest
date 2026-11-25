@@ -4,8 +4,8 @@
   "description": "Rebalance Mutual Funds, FDs, NPS, RBI G-Secs, Gold & Home Loans in one unbiased portal. Live yields, tax audit & stress tests — 0% fees, 100% on-device.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060911",
-  "theme_color": "#060911",
+  "background_color": "#EEF2F6",
+  "theme_color": "#EEF2F6",
   "icons": [
     {
       "src": "/logo-240.png",

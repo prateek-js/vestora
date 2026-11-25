@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Obsidian Vault neutrals sampled from Vestora launch visuals */
-  --color-slate-950: #060911;
-  --color-slate-900: #0c111b;
-  --color-slate-800: #182132;
-  --color-slate-700: #26334a;
+  /* Vestora light neutrals: Mist page, Paper surfaces, cool slate edges.
+     slate-100/300/400 remap so legacy dark-theme text utilities stay readable on light. */
+  --color-slate-950: #eef2f6;
+  --color-slate-900: #ffffff;
+  --color-slate-800: #ffffff;
+  --color-slate-700: #d8e0ea;
+  --color-slate-300: #475569;
+  --color-slate-400: #475569;
+  --color-slate-100: #14213d;
 
   /* Faceted Emerald hero brand ramp matching the Vestora crest */
   --color-emerald-400: #34d99b;
-  --color-emerald-500: #02c37e;
+  --color-emerald-500: #02a26d;
   --color-emerald-600: #02a26d;
   --color-emerald-700: #047857;
 
@@ -17,6 +21,23 @@
   --color-indigo-400: #6e7df7;
   --color-indigo-500: #4c5ce6;
   --color-indigo-600: #3d4cd4;
+
+  /* Named demo tokens — src/demo/demo.css mirrors these; keep in sync */
+  --color-ink: #14213d;
+  --color-mist: #eef2f6;
+  --color-paper: #ffffff;
+  --color-level: #02a26d;
+  /* Same green, a step deeper, for thin strokes: the brand green is 2.9:1 on Mist, this is 3.2:1. */
+  --color-level-line: #029a67;
+  --color-tilt: #e8a33d;
+  --color-risk: #d8454b;
+  --color-equity: #4c5ce6;
+  --color-debt: #1f8a9e;
+  --color-gold: #c99a2e;
+  --color-cash: #6b7a90;
+
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Extra-small label size used across dense financial UI (62 call sites). */
@@ -27,32 +48,53 @@
 
 @layer base {
   body {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #060911;
+    background-color: var(--color-mist);
+    color: var(--color-ink);
+    font-family: var(--font-body);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-display);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    /* Bricolage Grotesque's width axis: a slightly condensed cut reads as a headline, not a UI label. */
+    font-stretch: 88%;
   }
 
   .font-mono, .tabular-nums {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
 }
 
-/* Custom scrollbars for Obsidian Vault terminal aesthetic */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Light scrollbars matching the demo's Mist chrome */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(6, 9, 17, 0.85);
+  background: rgba(238, 242, 246, 0.85);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(38, 51, 74, 0.75);
+  background: rgba(216, 224, 234, 0.9);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(2, 195, 126, 0.55);
+  background: rgba(2, 162, 109, 0.55);
 }
