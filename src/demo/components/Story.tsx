@@ -284,7 +284,7 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, hasP
                 </button>
               )}
               <button type="button" onClick={onAddMine} className={secondaryButton}>
-                {hasPersonal ? 'Edit my investments' : 'Add my investments'}
+                {hasPersonal ? 'Open my investments' : 'Add my investments'}
               </button>
             </>
           )}

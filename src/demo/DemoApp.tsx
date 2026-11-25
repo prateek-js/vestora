@@ -5,6 +5,7 @@ import { convertCurrency } from '../utils/currency';
 import { loadPersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
 import { ChapterBar } from './components/ChapterBar';
+import { DemoErrorBoundary } from './components/DemoErrorBoundary';
 import { PersonalBanner } from './components/PersonalBanner';
 import { PlanSummary } from './components/PlanSummary';
 import { Play } from './components/Play';
@@ -34,6 +35,9 @@ interface PersonalData {
 /** Ask the editor, from anywhere, to open its add or edit form. */
 type OpenRequest = { mode: 'add'; draft?: Holding } | { mode: 'edit'; holding: Holding };
 
+/** Assistant line shown when a chat edit empties the list while the visitor is on a numbers chapter. */
+const EMPTY_LIST_NOTE = 'Your list is empty — add an investment to see your numbers.';
+
 /** Lands on the page heading once a lazily loaded chapter has appeared. */
 function FocusHeading() {
   useEffect(() => {
@@ -54,6 +58,8 @@ export default function DemoApp() {
   // Stays true after the first open, so the lazily loaded panel (and its history) is kept.
   const [chatOpened, setChatOpened] = useState(false);
   const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
+  // Assistant lines appended on the chat's behalf (e.g. the empty-list routing note).
+  const [chatNotes, setChatNotes] = useState<{ id: string; text: string }[]>([]);
 
   // Read-only: the demo never writes the visitor's stored portfolio.
   const sample = useMemo<DemoPortfolio>(() => pickPortfolio(null), []);
@@ -88,13 +94,18 @@ export default function DemoApp() {
   const firstChapterRender = useRef(true);
   const chatLauncherRef = useRef<HTMLButtonElement>(null);
   const chapterAtOpenRef = useRef<Chapter>(state.chapter);
+  // The chat panel owns focus while it is open (the note must be heard where the visitor is); read it without re-running this effect.
+  const chatOpenRef = useRef(false);
+  useEffect(() => {
+    chatOpenRef.current = chatOpen;
+  }, [chatOpen]);
   useEffect(() => {
     if (firstChapterRender.current) {
       firstChapterRender.current = false;
       chapterAtOpenRef.current = state.chapter;
       return;
     }
-    document.querySelector<HTMLElement>('main h1')?.focus();
+    if (!chatOpenRef.current) document.querySelector<HTMLElement>('main h1')?.focus();
     chapterAtOpenRef.current = state.chapter;
   }, [state.chapter]);
 
@@ -120,6 +131,17 @@ export default function DemoApp() {
     set({ chapter });
     window.scrollTo({ top: 0 });
   };
+
+  // Chat-entry navigation into Your numbers: seeds from the portfolio on screen
+  // (a copy) so a sample or saved path never lands on an empty editor. Only the
+  // story's "Add my investments" button starts empty.
+  const goMineFromChat = () => {
+    setPersonal((p) => p ?? { holdings: [...portfolio.holdings], baseCurrency: portfolio.baseCurrency });
+    setChoice('personal');
+    setReached((r) => (r.includes('mine') ? r : [...r, 'mine']));
+    set({ chapter: 'mine' });
+    window.scrollTo({ top: 0 });
+  };
   const next = () => {
     const to = nextChapter(state.chapter);
     if (to) go(to);
@@ -132,6 +154,19 @@ export default function DemoApp() {
     setChoice('personal');
     updatePersonal((p) => ({ ...p, holdings: fn(p.holdings) }));
   };
+
+  // A chat edit that empties the list strands the visitor on a numbers chapter
+  // (₹0 everywhere): go() can only gate entering those chapters, not eject from
+  // one. Route back to Your numbers with a note in the chat.
+  useEffect(() => {
+    if (!emptyPersonal || !chatOpened) return;
+    if (state.chapter !== 'see' && state.chapter !== 'play' && state.chapter !== 'plan') return;
+    setChatNotes((prev) =>
+      prev.some((n) => n.text === EMPTY_LIST_NOTE) ? prev : [...prev, { id: `note-empty-${Date.now()}`, text: EMPTY_LIST_NOTE }]
+    );
+    set({ chapter: 'mine' });
+    window.scrollTo({ top: 0 });
+  }, [emptyPersonal, chatOpened, state.chapter, set]);
   const addMine = () => {
     setPersonal((p) => p ?? { holdings: [], baseCurrency: 'INR' });
     setChoice('personal');
@@ -156,13 +191,16 @@ export default function DemoApp() {
     go('play');
   };
 
-  // The chat's add/edit buttons open the real form in Your numbers.
+  // The chat's add/edit buttons open the real form in Your numbers. Chat-entry
+  // seeding keeps whatever portfolio is on screen (see goMineFromChat).
   const openChatForm = (req: OpenRequest) => {
     setOpenRequest(req);
-    go('mine');
+    goMineFromChat();
   };
   // Stable so the editor's openRequest effect can depend on it.
   const handleOpenRequestHandled = useCallback(() => setOpenRequest(null), []);
+  // Stable so the chat panel's focus-trap hook can depend on it.
+  const handleChatClose = useCallback(() => setChatOpen(false), []);
 
   return (
     <div className="min-h-screen">
@@ -183,7 +221,7 @@ export default function DemoApp() {
           </a>
         </div>
       </header>
-      <main className="mx-auto max-w-[1120px] px-5 py-8">
+      <main className="mx-auto max-w-[1120px] px-5 pb-28 py-8">
         {choice === 'personal' && personal && personal.holdings.length > 0 && !emptyPersonal && (
           <PersonalBanner
             holdings={personal.holdings}
@@ -203,21 +241,23 @@ export default function DemoApp() {
           />
         )}
         {state.chapter === 'mine' && personal && (
-          <Suspense fallback={<p className="py-10 text-lg">Loading your investments</p>}>
-            <Editor
-              holdings={personal.holdings}
-              baseCurrency={personal.baseCurrency}
-              onChange={(nextHoldings) => editPersonal(() => nextHoldings)}
-              onImported={(imported) =>
-                updatePersonal(() => ({ holdings: imported.holdings, baseCurrency: imported.baseCurrency }))
-              }
-              onBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
-              onContinue={next}
-              openRequest={openRequest}
-              onOpenRequestHandled={handleOpenRequestHandled}
-            />
-            <FocusHeading />
-          </Suspense>
+          <DemoErrorBoundary>
+            <Suspense fallback={<p className="py-10 text-lg">Loading your investments</p>}>
+              <Editor
+                holdings={personal.holdings}
+                baseCurrency={personal.baseCurrency}
+                onChange={(nextHoldings) => editPersonal(() => nextHoldings)}
+                onImported={(imported) =>
+                  updatePersonal(() => ({ holdings: imported.holdings, baseCurrency: imported.baseCurrency }))
+                }
+                onBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
+                onContinue={next}
+                openRequest={openRequest}
+                onOpenRequestHandled={handleOpenRequestHandled}
+              />
+              <FocusHeading />
+            </Suspense>
+          </DemoErrorBoundary>
         )}
         {state.chapter === 'see' && (
           <SeeIt
@@ -259,25 +299,28 @@ export default function DemoApp() {
             setChatOpened(true);
             setChatOpen(true);
           }}
-          className="rounded-full border border-ink bg-paper px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-ink/5"
+          className="demo-chat-launcher rounded-full border border-ink bg-paper px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-ink/5"
         >
           Ask about my portfolio
         </button>
       </div>
       {chatOpened && (
-        <Suspense fallback={null}>
-          <ChatPanelLazy
-            open={chatOpen}
-            onClose={() => setChatOpen(false)}
-            holdings={portfolio.holdings}
-            baseCurrency={portfolio.baseCurrency}
-            onEdit={editPersonal}
-            onSetBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
-            onGoChapter={go}
-            onRebalanceHolding={rebalanceHolding}
-            onOpenForm={openChatForm}
-          />
-        </Suspense>
+        <DemoErrorBoundary>
+          <Suspense fallback={null}>
+            <ChatPanelLazy
+              open={chatOpen}
+              onClose={handleChatClose}
+              notes={chatNotes}
+              holdings={portfolio.holdings}
+              baseCurrency={portfolio.baseCurrency}
+              onEdit={editPersonal}
+              onSetBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
+              onGoChapter={(c) => (c === 'mine' ? goMineFromChat() : go(c))}
+              onRebalanceHolding={rebalanceHolding}
+              onOpenForm={openChatForm}
+            />
+          </Suspense>
+        </DemoErrorBoundary>
       )}
     </div>
   );

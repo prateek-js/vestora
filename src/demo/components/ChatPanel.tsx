@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CurrencyCode, Holding } from '../../types/wealth';
 import { DEMO_PROFILES } from '../../data/mockData';
+import { useDialogA11y } from '../../utils/dialogA11y';
 import { sampleHoldingsFor } from '../../utils/portfolioStorage';
 import {
   parseFileForChat,
@@ -17,6 +18,8 @@ import type { Chapter } from '../journeyState';
 interface ChatPanelProps {
   open: boolean;
   onClose: () => void;
+  /** Assistant lines appended from the app shell (e.g. the empty-list routing note). */
+  notes: { id: string; text: string }[];
   holdings: Holding[];
   baseCurrency: CurrencyCode;
   /** Every change to the visitor's investments goes through here. */
@@ -66,6 +69,7 @@ function messageId(prefix: string): string {
 export function ChatPanel({
   open,
   onClose,
+  notes,
   holdings,
   baseCurrency,
   onEdit,
@@ -80,22 +84,29 @@ export function ChatPanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  // Focus returns to the launcher (the only way in) when the panel closes.
+  useEffect(() => {
+    launcherRef.current = document.querySelector<HTMLButtonElement>('.demo-chat-launcher');
+  }, []);
 
-  // On open, and after each reply, the message box has focus and the newest message is on screen.
+  // Focus trap + Escape + focus restore, shared with the app drawer. Escape
+  // ownership lives here; the message-box focus and auto-scroll below are the
+  // demo panel's own behaviour on top of it.
+  useDialogA11y({
+    open,
+    dialogRef: panelRef,
+    restoreFocusRef: launcherRef,
+    initialFocusRef: inputRef,
+    onEscape: onClose,
+  });
+
+  // On open, and after each reply, the newest message is on screen (the trap hook owns focus on open).
   useEffect(() => {
     if (!open) return;
-    inputRef.current?.focus();
     endRef.current?.scrollIntoView({ block: 'end' });
-  }, [open, messages.length]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, messages.length, notes.length]);
 
   if (!open) return null;
 
@@ -280,7 +291,9 @@ export function ChatPanel({
       }}
     >
       <aside
+        ref={panelRef}
         role="dialog"
+        aria-modal="true"
         aria-label="Portfolio chat"
         className="relative flex h-full w-full max-w-[420px] flex-col border-l border-ink/15 bg-paper shadow-2xl"
         onDragOver={(e) => {
@@ -316,6 +329,13 @@ export function ChatPanel({
         )}
 
         <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          {notes.map((n) => (
+            <div key={n.id} className="flex justify-start">
+              <div className="max-w-[92%] rounded-xl border border-ink/15 bg-mist px-3 py-2 text-sm leading-relaxed">
+                <p className="m-0 whitespace-pre-line">{n.text}</p>
+              </div>
+            </div>
+          ))}
           {messages.map((m) => (
             <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div

@@ -44,11 +44,27 @@ export function ChapterBar({ chapters, chapter, reached, onGo }: ChapterBarProps
             ({Math.max(activeIndex, 0) + 1} of {chapters.length})
           </span>
         </p>
-        <div className="mt-1 flex gap-1" aria-hidden>
-          {chapters.map((c, i) => (
-            <span key={c.id} className={`h-1 flex-1 rounded-full ${i <= activeIndex ? 'bg-ink' : 'bg-ink/15'}`} />
-          ))}
-        </div>
+        {/* Same semantics as the desktop bar: reached chapters jump, locked ones sit disabled. */}
+        <ol className="m-0 mt-1 flex list-none gap-1 p-0">
+          {chapters.map((c, i) => {
+            const isReached = reached.includes(c.id);
+            const passed = i <= activeIndex;
+            return (
+              <li key={c.id} className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  disabled={!isReached}
+                  aria-current={c.id === chapter ? 'step' : undefined}
+                  aria-label={`Go to ${c.label} (${Math.max(i, 0) + 1} of ${chapters.length})`}
+                  onClick={() => onGo(c.id)}
+                  className={`h-5 flex w-full items-center justify-center rounded-full transition-colors ${
+                    passed ? 'bg-ink' : isReached ? 'bg-ink/40 hover:bg-ink' : 'bg-ink/15 cursor-not-allowed'
+                  }`}
+                />
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </nav>
   );
