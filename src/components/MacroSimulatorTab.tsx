@@ -163,8 +163,15 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
     const paddingY = 24;
 
     const x = paddingX + (yearIdx / (chartPoints.length - 1)) * (width - 2 * paddingX);
+    // Degenerate axis (e.g. empty portfolio, all-zero trajectory): collapse to the
+    // chart midline instead of dividing 0/0 into NaN SVG coordinates.
+    const span = maxVal - minVal;
     const y =
-      height - paddingY - ((val - minVal) / (maxVal - minVal)) * (height - 2 * paddingY);
+      height -
+      paddingY -
+      (span > 0
+        ? ((val - minVal) / span) * (height - 2 * paddingY)
+        : (height - 2 * paddingY) / 2);
     return { x, y: Math.max(paddingY, Math.min(height - paddingY, y)) };
   };
 
