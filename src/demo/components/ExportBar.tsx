@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import type { CurrencyCode, Holding } from '../../types/wealth';
+import type { Holding } from '../../types/wealth';
 import { exportPortfolio, type ExportFormat } from '../exports';
 
 interface ExportBarProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   formats?: ExportFormat[];
 }
 
@@ -15,14 +14,14 @@ const FORMAT_LABEL: Record<ExportFormat, string> = {
   json: 'Vestora file',
 };
 
-export function ExportBar({ holdings, baseCurrency, formats = ['xlsx', 'pdf', 'csv'] }: ExportBarProps) {
+export function ExportBar(  { holdings, formats = ['xlsx', 'pdf', 'csv'] }: ExportBarProps) {
   const [error, setError] = useState<string | null>(null);
   const empty = holdings.length === 0;
 
   const download = async (format: ExportFormat) => {
     setError(null);
     try {
-      await exportPortfolio(format, holdings, baseCurrency);
+      await exportPortfolio(format, holdings);
     } catch {
       setError(`Could not make the ${FORMAT_LABEL[format]} file. Please try again.`);
     }

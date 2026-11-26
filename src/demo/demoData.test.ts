@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import type { Holding } from '../types/wealth';
 import type { PersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
-import { convertCurrency } from '../utils/currency';
 import {
   DEFAULT_LOAN,
   loadBenchmarks,
@@ -54,9 +53,10 @@ test('a saved personal portfolio is used and carries no invented loan', () => {
   assert.equal(p.loan, null);
 });
 
-test('a saved portfolio keeps its own base currency', () => {
+test('a saved foreign portfolio is treated as INR', () => {
+  // A foreign-currency saved portfolio re-denominates on load; pickPortfolio is always INR.
   const p = pickPortfolio(saved({ baseCurrency: 'USD', holdings: [holding({ currency: 'USD' })] }));
-  assert.equal(p.baseCurrency, 'USD');
+  assert.equal(p.baseCurrency, 'INR');
 });
 
 test('an empty saved portfolio falls back to the sample', () => {
@@ -73,24 +73,24 @@ test('saved sample-mode data counts as the sample, not as the visitor’s own', 
 });
 
 test('a personal portfolio has no loan and its own source', () => {
-  const p = personalPortfolio([holding()], 'INR');
+  const p = personalPortfolio([holding()]);
   assert.equal(p.source, 'personal');
   assert.equal(p.loan, null);
   assert.equal(p.baseCurrency, 'INR');
   assert.equal(p.holdings.length, 1);
 });
 
-test('portfolioTotal converts mixed currencies to the base', () => {
+test('portfolioTotal sums holdings as stored', () => {
   const inr = holding({ id: 'a', currency: 'INR', currentValue: 100000 });
   const usd = holding({ id: 'b', currency: 'USD', currentValue: 1000 });
   assert.equal(
-    portfolioTotal({ holdings: [inr, usd], baseCurrency: 'INR' }),
-    100000 + convertCurrency(1000, 'USD', 'INR')
+    portfolioTotal({ holdings: [inr, usd] }),
+    100000 + 1000 // the USD fixture is a raw number; no conversion exists anymore
   );
 });
 
 test('portfolioTotal of nothing is 0', () => {
-  assert.equal(portfolioTotal({ holdings: [], baseCurrency: 'INR' }), 0);
+  assert.equal(portfolioTotal({ holdings: [] }), 0);
 });
 
 test('withTimeout gives the fallback when the promise never settles', async () => {

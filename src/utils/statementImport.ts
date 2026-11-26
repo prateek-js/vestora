@@ -138,13 +138,12 @@ function parseAmount(raw: string | number | undefined | null): number | null {
  * renormaliseHolding). Vestora stores everything in INR — the detected code
  * never lands on a holding as-is.
  */
-function parseCurrencyCode(raw: string | undefined, fallback: CurrencyCode): CurrencyCode {
-  if (!raw) return fallback;
+function parseCurrencyCode(raw: string | undefined): CurrencyCode {
+  if (!raw) return 'INR';
   const up = raw.trim().toUpperCase();
   if (up.includes('USD') || up.includes('$')) return 'USD';
   if (up.includes('EUR') || up.includes('€')) return 'EUR';
-  if (up.includes('INR') || up.includes('₹') || up.includes('RS')) return 'INR';
-  return fallback;
+  return 'INR';
 }
 
 /** Accepts YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, MM/DD/YYYY, DD-MMM-YYYY, or Excel serial numbers. */
@@ -314,8 +313,7 @@ export function detectFormat(rows: string[][]): StatementFormat | null {
 
 function parsePortfolioSheet(
   rows: string[][],
-  skipped: ParsedStatement['skipped'],
-  defaultCurrency: CurrencyCode
+  skipped: ParsedStatement['skipped']
 ): Holding[] {
   const headers = rows[0].map(norm);
   const col = {
@@ -364,7 +362,8 @@ function parsePortfolioSheet(
 
     const rawCat = col.category >= 0 ? row[col.category] : undefined;
     const category = mapCategoryString(rawCat, rawName);
-    const currency = col.currency >= 0 ? parseCurrencyCode(row[col.currency], defaultCurrency) : defaultCurrency;
+    // A detected foreign code marks the row for re-denomination; INR rows stay untouched.
+    const currency = col.currency >= 0 ? parseCurrencyCode(row[col.currency]) : 'INR';
     const rate = col.rate >= 0 ? parseAmount(row[col.rate]) : null;
     const gain30d = col.gain30d >= 0 ? parseAmount(row[col.gain30d]) : null;
     const schemeCode = col.schemeCode >= 0 ? parseAmount(row[col.schemeCode]) : null;
@@ -594,7 +593,6 @@ function parseMfCentral(rows: string[][], skipped: ParsedStatement['skipped']): 
 
 function parseRowsToStatement(
   rawRows: string[][],
-  defaultCurrency: CurrencyCode = 'INR',
   sheetName?: string
 ): ParsedStatement {
   const nonEmptyRows = rawRows.filter((r) => r.some((cell) => String(cell ?? '').trim() !== ''));
@@ -618,7 +616,7 @@ function parseRowsToStatement(
   const skipped: ParsedStatement['skipped'] = [];
   const holdings =
     format === 'PORTFOLIO_SHEET'
-      ? parsePortfolioSheet(rows, skipped, defaultCurrency)
+      ? parsePortfolioSheet(rows, skipped)
       : format === 'CAS'
         ? parseCas(rows, skipped)
         : format === 'FD_REGISTRY'
@@ -636,12 +634,9 @@ function parseRowsToStatement(
 /**
  * Parses a raw CSV/TSV string into holdings.
  */
-export function importStatement(
-  text: string,
-  defaultCurrency: CurrencyCode = 'INR'
-): ParsedStatement {
+export function importStatement(text: string): ParsedStatement {
   const rows = parseCsv(text);
-  return parseRowsToStatement(rows, defaultCurrency);
+  return parseRowsToStatement(rows);
 }
 
 /** Extracts sheet names from an Excel ArrayBuffer (.xlsx / .xls / .xlsm). */
@@ -653,8 +648,7 @@ export function getExcelSheetNames(buffer: ArrayBuffer): string[] {
 /** Converts a specific Excel sheet into a normalized string[][] matrix and parses it. */
 export function importExcelBuffer(
   buffer: ArrayBuffer,
-  sheetName?: string,
-  defaultCurrency: CurrencyCode = 'INR'
+  sheetName?: string
 ): WorkbookPreview {
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
   const sheetNames = wb.SheetNames;
@@ -682,7 +676,7 @@ export function importExcelBuffer(
     })
   );
 
-  const parsed = parseRowsToStatement(strRows, defaultCurrency, targetSheet);
+  const parsed = parseRowsToStatement(strRows, targetSheet);
   return {
     sheetNames,
     activeSheet: targetSheet,
@@ -691,7 +685,7 @@ export function importExcelBuffer(
 }
 
 /** Generates and downloads a clean, ready-to-edit .xlsx Excel template right in the browser. */
-export function downloadPortfolioExcelTemplate(_currency: CurrencyCode = 'INR'): void {
+export function downloadPortfolioExcelTemplate(): void {
   const sampleRows = [
     ['Instrument Name', 'Category', 'Institution', 'Invested Amount', 'Current Value', 'Currency', 'Interest Rate %', 'Purchase Date', 'Maturity Date'],
     ['Parag Parikh Flexi Cap Fund', 'Mutual Fund', 'PPFAS AMC', 450000, 612000, 'INR', '', '2022-04-12', ''],
@@ -793,10 +787,7 @@ function holdingToExportRow(h: Holding): (string | number)[] {
 }
 
 /** Builds the lossless, re-importable export workbook without touching the filesystem or DOM. */
-export function buildHoldingsWorkbook(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode = 'INR'
-): XLSX.WorkBook {
+export function buildHoldingsWorkbook(holdings: Holding[]): XLSX.WorkBook {
   const rows: (string | number)[][] = [EXPORT_HEADERS, ...holdings.map(holdingToExportRow)];
   const wsPortfolio = XLSX.utils.aoa_to_sheet(rows);
   wsPortfolio['!cols'] = [
@@ -821,7 +812,7 @@ export function buildHoldingsWorkbook(
   const summaryRows = [
     ['Vestora Portfolio Export'],
     ['Export Date', todayIso()],
-    ['Active Display Currency', baseCurrency],
+    ['Active Display Currency', 'INR'],
     ['Holdings Count', holdings.length],
     ['How to Restore', 'Upload this .xlsx file in Vestora via Import Excel Portfolio to resume your simulation anytime.'],
   ];
@@ -835,11 +826,8 @@ export function buildHoldingsWorkbook(
 }
 
 /** Exports the active portfolio to a lossless, re-importable .xlsx Excel workbook. */
-export function exportHoldingsToExcel(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode = 'INR'
-): void {
-  XLSX.writeFile(buildHoldingsWorkbook(holdings, baseCurrency), `vestora-portfolio-${todayIso()}.xlsx`);
+export function exportHoldingsToExcel(holdings: Holding[]): void {
+  XLSX.writeFile(buildHoldingsWorkbook(holdings), `vestora-portfolio-${todayIso()}.xlsx`);
 }
 
 function escapeCsvCell(value: string | number): string {

@@ -14,7 +14,7 @@ import {
 
 function draft(over: Partial<HoldingDraft> = {}): HoldingDraft {
   return {
-    ...emptyDraft('MUTUAL_FUND', 'INR'),
+    ...emptyDraft('MUTUAL_FUND'),
     name: 'Index fund',
     investedAmount: '100000',
     currentValue: '125000.5',
@@ -43,9 +43,8 @@ test('starter categories offer the three simplest kinds of holding', () => {
 });
 
 test('an empty draft starts blank with today as the purchase date', () => {
-  const d = emptyDraft('FIXED_DEPOSIT', 'USD');
+  const d = emptyDraft('FIXED_DEPOSIT');
   assert.equal(d.category, 'FIXED_DEPOSIT');
-  assert.equal(d.currency, 'USD');
   assert.equal(d.purchaseDate, todayIso());
   assert.equal(d.name, '');
   assert.equal(d.investedAmount, '');

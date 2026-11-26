@@ -1,5 +1,4 @@
-import type { CurrencyCode, Holding, MacroParameters, PortfolioAllocation } from '../types/wealth';
-import { convertCurrency } from '../utils/currency';
+import type { Holding, MacroParameters, PortfolioAllocation } from '../types/wealth';
 import { todayIso } from '../utils/maturity';
 import { calculateHomeLoanPrepaymentImpact } from '../utils/marketDirectory';
 import { computePortfolioAllocation, runMacroSimulation, type SimulationResult } from '../utils/simulationEngine';
@@ -37,7 +36,6 @@ export interface LoanInputs {
 
 export interface SplitInput {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   goal: DiversificationGoal;
   sourceId: string;
   moveAmountInBase: number;
@@ -79,10 +77,9 @@ export function isLockedIn(h: Holding): boolean {
 function destinationHolding(
   d: SuggestedDestination,
   amountInBase: number,
-  baseCurrency: CurrencyCode,
   id: string
 ): Holding {
-  const value = convertCurrency(amountInBase, baseCurrency, d.currency);
+  const value = amountInBase;
   return {
     id,
     name: d.title,
@@ -105,8 +102,8 @@ export function segmentOf(d: SuggestedDestination): SegmentId {
   const category = d.category ?? 'MUTUAL_FUND';
   if (category === 'FIXED_DEPOSIT' || category === 'RECURRING_DEPOSIT') return 'fd';
   if (category === 'SAVINGS_CASH') return 'savings';
-  const probe = destinationHolding({ ...d, currency: 'INR' }, 1, 'INR', 'probe');
-  const { currentVal } = analyzeAllocationProfile([probe], 'INR', 'BALANCED');
+  const probe = destinationHolding({ ...d, currency: 'INR' }, 1, 'probe');
+  const { currentVal } = analyzeAllocationProfile([probe], 'BALANCED');
   let best: keyof BucketMix = 'equity';
   for (const bucket of BUCKET_ORDER) {
     if (currentVal[bucket] > currentVal[best]) best = bucket;
@@ -132,7 +129,6 @@ export function buildDestinationCatalog(
   plans: SmartDiversificationPlan[],
   holdings: Holding[],
   benchmarks: LiveMarketBenchmarks | null,
-  baseCurrency: CurrencyCode,
   hasLoan: boolean
 ): SuggestedDestination[] {
   const byId = new Map<string, SuggestedDestination>();
@@ -175,7 +171,7 @@ export function buildDestinationCatalog(
         subtitle: 'Based on your current FDs',
         category: 'FIXED_DEPOSIT',
         institution: 'Bank',
-        currency: baseCurrency,
+        currency: 'INR',
         allocatedInBase: 0,
         expectedRatePct: median(rates),
         taxTag: 'SLAB_INCOME',
@@ -189,7 +185,7 @@ export function buildDestinationCatalog(
       kind: 'HOME_LOAN',
       title: 'Home-loan prepayment',
       subtitle: 'Pay down principal',
-      currency: baseCurrency,
+      currency: 'INR',
       allocatedInBase: 0,
     });
   }
@@ -197,12 +193,12 @@ export function buildDestinationCatalog(
 }
 
 export function evaluateSplit(input: SplitInput): SplitResult {
-  const { holdings, baseCurrency, goal, allocations, catalog, loan } = input;
-  const before = analyzeAllocationProfile(holdings, baseCurrency, goal);
-  const riskBefore = computePortfolioRiskScore(holdings, baseCurrency);
+  const { holdings, goal, allocations, catalog, loan } = input;
+  const before = analyzeAllocationProfile(holdings, goal);
+  const riskBefore = computePortfolioRiskScore(holdings);
 
   const source = holdings.find((h) => h.id === input.sourceId);
-  const sourceValue = source ? Math.max(0, convertCurrency(source.currentValue, source.currency, baseCurrency)) : 0;
+  const sourceValue = source ? Math.max(0, source.currentValue) : 0;
   const movable = source && !isLockedIn(source) ? sourceValue : 0;
   const effectiveMove = Math.min(Math.max(0, input.moveAmountInBase), movable);
 
@@ -243,13 +239,13 @@ export function evaluateSplit(input: SplitInput): SplitResult {
         loanInterestSaved = impact.interestSaved;
         loanMonthsSaved = impact.monthsSaved;
       } else {
-        holdingsAfter.push(destinationHolding(d, amountFor(d), baseCurrency, `split-${d.id}`));
+        holdingsAfter.push(destinationHolding(d, amountFor(d), `split-${d.id}`));
       }
     }
   }
 
-  const after = analyzeAllocationProfile(holdingsAfter, baseCurrency, goal);
-  const riskAfter = computePortfolioRiskScore(holdingsAfter, baseCurrency);
+  const after = analyzeAllocationProfile(holdingsAfter, goal);
+  const riskAfter = computePortfolioRiskScore(holdingsAfter);
   return {
     holdingsAfter,
     unallocatedInBase,
@@ -312,21 +308,21 @@ export function scaleAllocations(allocations: Record<string, number>, newTotal: 
  * mutual fund as equity, so a bond fund would look identical to an equity fund in a five-year outcome. Here a fund
  * is placed by what it holds, the same way the mix bars place it. Retirement money (EPF, PPF, NPS) stays its own bucket.
  */
-export function macroAllocation(holdings: Holding[], baseCurrency: CurrencyCode): PortfolioAllocation {
+export function macroAllocation(holdings: Holding[]): PortfolioAllocation {
   const sums: PortfolioAllocation = { equities: 0, fixedIncome: 0, goldCommodity: 0, retirementPensions: 0, liquidCash: 0 };
   for (const h of holdings) {
     if (isLockedIn(h)) {
-      sums.retirementPensions += Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency));
+      sums.retirementPensions += Math.max(0, h.currentValue);
       continue;
     }
-    const { currentVal } = analyzeAllocationProfile([h], baseCurrency, 'BALANCED');
+    const { currentVal } = analyzeAllocationProfile([h], 'BALANCED');
     sums.equities += currentVal.equity;
     sums.fixedIncome += currentVal.debt;
     sums.goldCommodity += currentVal.gold;
     sums.liquidCash += currentVal.cash;
   }
   const total = sums.equities + sums.fixedIncome + sums.goldCommodity + sums.retirementPensions + sums.liquidCash;
-  if (total <= 0) return computePortfolioAllocation([], baseCurrency);
+  if (total <= 0) return computePortfolioAllocation([]);
   const pct = (v: number) => Math.round((v / total) * 1000) / 10;
   return {
     equities: pct(sums.equities),
@@ -348,13 +344,12 @@ export function macroAllocation(holdings: Holding[], baseCurrency: CurrencyCode)
 export function playOutcome(
   before: Holding[],
   after: Holding[],
-  baseCurrency: CurrencyCode,
   params: MacroParameters,
   loanPrepay?: { amountInBase: number; ratePct: number }
 ): SimulationResult {
-  const total = before.reduce((sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency), 0);
-  const allocBefore = macroAllocation(before, baseCurrency);
-  const allocAfter = macroAllocation(after, baseCurrency);
+  const total = before.reduce((sum, h) => sum + h.currentValue, 0);
+  const allocBefore = macroAllocation(before);
+  const allocAfter = macroAllocation(after);
   const sim = runMacroSimulation(total, allocBefore, allocAfter, params);
   if (!loanPrepay || loanPrepay.amountInBase <= 0) return sim;
 

@@ -1,5 +1,4 @@
 import { useId } from 'react';
-import type { CurrencyCode } from '../../types/wealth';
 import { formatCurrency } from '../../utils/currency';
 import type { SuggestedDestination } from '../../utils/smartDiversification';
 import { SEGMENT_LABELS, segmentOf, type LoanInputs, type SegmentId } from '../splitEngine';
@@ -10,7 +9,6 @@ interface DestinationPickerProps {
   /** What is left of the amount moved. Never negative here: sliders stop at it. */
   unallocatedInBase: number;
   moveAmountInBase: number;
-  baseCurrency: CurrencyCode;
   loan: LoanInputs | null;
   canUseSuggestion: boolean;
   onChange: (id: string, amountInBase: number) => void;
@@ -30,7 +28,6 @@ function Row({
   value,
   max,
   step,
-  baseCurrency,
   loan,
   onChange,
 }: {
@@ -38,12 +35,11 @@ function Row({
   value: number;
   max: number;
   step: number;
-  baseCurrency: CurrencyCode;
   loan: LoanInputs | null;
   onChange: (amount: number) => void;
 }) {
   const uid = useId();
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
   return (
     <li className="border-t border-ink/10 py-3 first:border-t-0">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -86,14 +82,13 @@ export function DestinationPicker({
   allocations,
   unallocatedInBase,
   moveAmountInBase,
-  baseCurrency,
   loan,
   canUseSuggestion,
   onChange,
   onUseSuggestion,
   onClear,
 }: DestinationPickerProps) {
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
   const step = moveAmountInBase >= 100000 ? 1000 : moveAmountInBase >= 10000 ? 100 : 1;
   const left = Math.max(0, unallocatedInBase);
   const groups = ORDER.map((id) => ({ id, items: catalog.filter((d) => segmentOf(d) === id) })).filter(
@@ -146,7 +141,6 @@ export function DestinationPicker({
                     value={value}
                     max={room}
                     step={step}
-                    baseCurrency={baseCurrency}
                     loan={loan}
                     onChange={(amount) => onChange(d.id, amount)}
                   />

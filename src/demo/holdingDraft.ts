@@ -1,4 +1,4 @@
-import type { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
+import type { AssetCategory, Holding, TaxTag } from '../types/wealth';
 import { daysBetween, todayIso } from '../utils/maturity.ts';
 
 /** What the hand-entry form holds while typing: every field is plain text. */
@@ -8,7 +8,6 @@ export interface HoldingDraft {
   institution: string;
   investedAmount: string;
   currentValue: string;
-  currency: CurrencyCode;
   interestRatePct: string;
   purchaseDate: string;
   maturityDate: string;
@@ -22,14 +21,13 @@ export const STARTER_CATEGORIES: { label: string; category: AssetCategory }[] = 
   { label: 'Savings account', category: 'SAVINGS_CASH' },
 ];
 
-export function emptyDraft(category: AssetCategory, currency: CurrencyCode): HoldingDraft {
+export function emptyDraft(category: AssetCategory): HoldingDraft {
   return {
     name: '',
     category,
     institution: '',
     investedAmount: '',
     currentValue: '',
-    currency,
     interestRatePct: '',
     purchaseDate: todayIso(),
     maturityDate: '',
@@ -44,7 +42,6 @@ export function draftFromHolding(h: Holding): HoldingDraft {
     institution: h.institution ?? '',
     investedAmount: String(h.investedAmount),
     currentValue: String(h.currentValue),
-    currency: h.currency,
     interestRatePct: h.interestRatePct !== undefined ? String(h.interestRatePct) : '',
     purchaseDate: h.purchaseDate || todayIso(),
     maturityDate: h.maturityDate ?? '',
@@ -139,7 +136,7 @@ export function holdingFromDraft(
     institution: draft.institution.trim() || 'Direct Account',
     investedAmount: inv,
     currentValue: currVal,
-    currency: draft.currency,
+    currency: 'INR',
     interestRatePct: parsedRate,
     purchaseDate: draft.purchaseDate || todayIso(),
     maturityDate: draft.maturityDate || undefined,

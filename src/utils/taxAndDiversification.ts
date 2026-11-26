@@ -1,5 +1,4 @@
-import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency } from './currency';
+import { AssetCategory, Holding } from '../types/wealth';
 
 export interface TaxHarvestingAudit {
   eligibleLtcgGain: number; // in base currency
@@ -38,21 +37,18 @@ export interface PortfolioInsight {
   tabTarget?: 'radar' | 'tax' | 'simulator' | 'overview';
 }
 
-export function computeTaxHarvestingAudit(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): TaxHarvestingAudit {
+export function computeTaxHarvestingAudit(holdings: Holding[]): TaxHarvestingAudit {
   // Check equity funds & stocks for unrealized long-term gains
   let totalEquityLtcg = 0;
   holdings.forEach((h) => {
     if ((h.category === 'MUTUAL_FUND' || h.category === 'EQUITY_STOCK') && h.unrealizedGain > 0) {
-      const valInBase = convertCurrency(h.unrealizedGain, h.currency, baseCurrency);
+      const valInBase = h.unrealizedGain;
       totalEquityLtcg += valInBase;
     }
   });
 
-  // Thresholds: ₹1,25,000 INR or ~$1,500 USD or ~€1,350 EUR
-  const annualExemptionLimit = baseCurrency === 'INR' ? 125000 : baseCurrency === 'USD' ? 1500 : 1350;
+  // Statutory exemption cap on long-term equity gains reinvested in the same year.
+  const annualExemptionLimit = 125000;
   const harvestableNow = Math.min(totalEquityLtcg, annualExemptionLimit);
   // Estimated 12.5% tax saved on harvested amount
   const estimatedTaxSaved = harvestableNow * 0.125;
@@ -64,21 +60,18 @@ export function computeTaxHarvestingAudit(
     estimatedTaxSaved,
     recommendation:
       totalEquityLtcg > 0
-        ? `You have unrealized equity gains. Selling and immediately rebuying up to ${baseCurrency === 'INR' ? '₹1.25 Lakh' : '$1,500'} before the financial year-end resets your cost basis tax-free!`
+        ? 'You have unrealized equity gains. Selling and immediately rebuying up to ₹1.25 Lakh before the financial year-end resets your cost basis tax-free!'
         : 'No unrealized long-term capital gains available for tax harvesting at this time.',
   };
 }
 
-export function computeTaxSectionAudit(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): TaxSectionAudit {
+export function computeTaxSectionAudit(holdings: Holding[]): TaxSectionAudit {
   // 80C applies to EPF, PPF, ELSS (MUTUAL_FUND with 80C tag)
   let section80cTotal = 0;
   let nps80ccdTotal = 0;
 
   holdings.forEach((h) => {
-    const valInBase = convertCurrency(h.investedAmount, h.currency, baseCurrency);
+    const valInBase = h.investedAmount;
     if (h.category === 'EPF' || h.category === 'PPF' || h.taxTag === '80C') {
       section80cTotal += valInBase;
     }
@@ -87,8 +80,9 @@ export function computeTaxSectionAudit(
     }
   });
 
-  const section80cLimit = baseCurrency === 'INR' ? 150000 : baseCurrency === 'USD' ? 1800 : 1600;
-  const nps80ccdLimit = baseCurrency === 'INR' ? 50000 : baseCurrency === 'USD' ? 600 : 530;
+  // Statutory caps for the old regime.
+  const section80cLimit = 150000;
+  const nps80ccdLimit = 50000;
 
   const section80cShortfall = Math.max(0, section80cLimit - section80cTotal);
   const nps80ccdShortfall = Math.max(0, nps80ccdLimit - nps80ccdTotal);
@@ -107,13 +101,10 @@ export function computeTaxSectionAudit(
   };
 }
 
-export function detectConcentrationRisks(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): ConcentrationRisk[] {
+export function detectConcentrationRisks(holdings: Holding[]): ConcentrationRisk[] {
   const risks: ConcentrationRisk[] = [];
   const totalValuation = holdings.reduce(
-    (acc, h) => acc + convertCurrency(h.currentValue, h.currency, baseCurrency),
+    (acc, h) => acc + h.currentValue,
     0
   );
 
@@ -121,7 +112,7 @@ export function detectConcentrationRisks(
 
   // 1. Single Holding > 20%
   holdings.forEach((h) => {
-    const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+    const val = h.currentValue;
     const pct = (val / totalValuation) * 100;
     if (pct > 22 && h.category !== 'EPF') {
       risks.push({
@@ -138,7 +129,7 @@ export function detectConcentrationRisks(
   // 2. Asset Class > 45%
   const classValuations: Record<string, number> = {};
   holdings.forEach((h) => {
-    const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+    const val = h.currentValue;
     classValuations[h.category] = (classValuations[h.category] || 0) + val;
   });
 
@@ -159,10 +150,7 @@ export function detectConcentrationRisks(
   return risks;
 }
 
-export function generateAutomatedInsights(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): PortfolioInsight[] {
+export function generateAutomatedInsights(holdings: Holding[]): PortfolioInsight[] {
   const insights: PortfolioInsight[] = [];
 
   // 1. Check for Matured or Maturing Instruments
@@ -175,7 +163,7 @@ export function generateAutomatedInsights(
 
   if (maturedHoldings.length > 0) {
     const totalMatured = maturedHoldings.reduce(
-      (acc, h) => acc + convertCurrency(h.currentValue, h.currency, baseCurrency),
+      (acc, h) => acc + h.currentValue,
       0
     );
     insights.push({
@@ -184,7 +172,7 @@ export function generateAutomatedInsights(
       title: `${maturedHoldings.length} Maturing Instrument${maturedHoldings.length > 1 ? 's' : ''} Ready for Reinvestment`,
       description: `${maturedHoldings.map((h) => h.name).join(', ')} has already matured. Keeping these funds idle causes immediate cash drag vs. 7.5% - 10.8% compounding alternatives.`,
       actionableText: 'Review 8 Curated Reinvestment Solutions',
-      metric: `${convertCurrency(totalMatured, baseCurrency, baseCurrency).toLocaleString(undefined, { maximumFractionDigits: 0 })} Idle`,
+      metric: `${totalMatured.toLocaleString(undefined, { maximumFractionDigits: 0 })} Idle`,
       tabTarget: 'radar',
     });
   } else if (imminentHoldings.length > 0) {
@@ -200,13 +188,13 @@ export function generateAutomatedInsights(
   }
 
   // 2. Tax Harvesting Opportunity
-  const taxAudit = computeTaxHarvestingAudit(holdings, baseCurrency);
+  const taxAudit = computeTaxHarvestingAudit(holdings);
   if (taxAudit.harvestableNow > 0) {
     insights.push({
       id: 'ins-tax-harvesting',
       type: 'OPPORTUNITY',
       title: 'Tax-Gain Harvesting Opportunity Available',
-      description: `Harvest up to ${baseCurrency === 'INR' ? '₹1.25 Lakh' : '$1,500'} in LTCG to reset capital gains basis tax-free before March 31st.`,
+      description: 'Harvest up to ₹1.25 Lakh in LTCG to reset capital gains basis tax-free before March 31st.',
       actionableText: 'View Tax Optimization Breakdown',
       metric: `Save ~${taxAudit.estimatedTaxSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       tabTarget: 'tax',
@@ -214,13 +202,13 @@ export function generateAutomatedInsights(
   }
 
   // 3. Tax Section 80C & 80CCD
-  const sectionAudit = computeTaxSectionAudit(holdings, baseCurrency);
+  const sectionAudit = computeTaxSectionAudit(holdings);
   if (sectionAudit.nps80ccdShortfall > 0) {
     insights.push({
       id: 'ins-nps-deduction',
       type: 'OPTIMIZATION',
       title: 'Unclaimed Section 80CCD(1B) NPS Tax Benefit',
-      description: `You have not maxed out the dedicated ${baseCurrency === 'INR' ? '₹50,000' : '$600'} NPS tax deduction. Investing saves up to 31.2% in direct income tax.`,
+      description: 'You have not maxed out the dedicated ₹50,000 NPS tax deduction. Investing saves up to 31.2% in direct income tax.',
       actionableText: 'Explore NPS Allocation',
       metric: `Save ${Math.round(sectionAudit.nps80ccdShortfall * 0.312).toLocaleString()} Tax`,
       tabTarget: 'tax',
@@ -265,10 +253,7 @@ const CATEGORY_VOLATILITY_PCT: Record<AssetCategory, number> = {
   SAVINGS_CASH: 0.5,
 };
 
-export function computePortfolioRiskScore(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): PortfolioRiskScore {
+export function computePortfolioRiskScore(holdings: Holding[]): PortfolioRiskScore {
   if (holdings.length === 0) {
     return {
       score: 0,
@@ -282,7 +267,7 @@ export function computePortfolioRiskScore(
 
   const valued = holdings.map((h) => ({
     holding: h,
-    val: Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency)),
+    val: Math.max(0, h.currentValue),
   }));
 
   const totalValuation = valued.reduce((sum, item) => sum + item.val, 0);

@@ -1,5 +1,4 @@
-import { Holding, MacroParameters, PortfolioAllocation, CurrencyCode } from '../types/wealth';
-import { convertCurrency } from './currency';
+import { Holding, MacroParameters, PortfolioAllocation } from '../types/wealth';
 
 export interface TrajectoryPoint {
   year: number;
@@ -25,10 +24,7 @@ export interface SimulationResult {
   recommendedShuffleAdvice: string[];
 }
 
-export function computePortfolioAllocation(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): PortfolioAllocation {
+export function computePortfolioAllocation(holdings: Holding[]): PortfolioAllocation {
   let equitiesVal = 0;
   let fixedIncomeVal = 0;
   let goldVal = 0;
@@ -36,7 +32,7 @@ export function computePortfolioAllocation(
   let cashVal = 0;
 
   holdings.forEach((h) => {
-    const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+    const val = h.currentValue;
     switch (h.category) {
       case 'MUTUAL_FUND':
       case 'EQUITY_STOCK':

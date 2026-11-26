@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency, formatPercent } from './currency';
+import { Holding } from '../types/wealth';
+import { formatPercent } from './currency';
 import { todayIso } from './maturity';
 import {
   CATEGORY_META,
@@ -12,7 +12,6 @@ import {
 
 export interface PdfReportOptions {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   portfolioMode?: 'demo' | 'personal';
   profileName?: string;
   /** Defaults to true; pass false in unit checks to inspect the generated PDF without downloading. */
@@ -49,42 +48,19 @@ function hexToRgb(hex: string): Rgb {
 }
 
 /**
- * Formats currency using ASCII-safe prefixes ('INR ', '$', 'EUR ') because built-in
- * PDF Type1 fonts (Helvetica/Courier) do not include the Unicode Rupee glyph (₹).
+ * Formats currency with an ASCII-safe 'INR ' prefix because built-in PDF Type1
+ * fonts (Helvetica/Courier) do not include the Unicode Rupee glyph (₹).
  */
-export function formatPdfCurrency(
-  amount: number,
-  currency: CurrencyCode,
-  compact = false
-): string {
+export function formatPdfCurrency(amount: number, compact = false): string {
   const sign = amount < 0 ? '-' : '';
   const abs = Math.abs(amount);
 
-  if (currency === 'INR') {
-    if (compact) {
-      if (abs >= 10_000_000) return `${sign}INR ${(abs / 10_000_000).toFixed(2)} Cr`;
-      if (abs >= 100_000) return `${sign}INR ${(abs / 100_000).toFixed(2)} L`;
-      if (abs >= 1_000) return `${sign}INR ${(abs / 1_000).toFixed(1)}k`;
-      return `${sign}INR ${Math.round(abs).toLocaleString('en-IN')}`;
-    }
-    return `${sign}INR ${Math.round(abs).toLocaleString('en-IN')}`;
-  }
-
-  if (currency === 'USD') {
-    if (compact) {
-      if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
-      if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(1)}k`;
-      return `${sign}$${Math.round(abs).toLocaleString('en-US')}`;
-    }
-    return `${sign}$${Math.round(abs).toLocaleString('en-US')}`;
-  }
-
   if (compact) {
-    if (abs >= 1_000_000) return `${sign}EUR ${(abs / 1_000_000).toFixed(2)}M`;
-    if (abs >= 1_000) return `${sign}EUR ${(abs / 1_000).toFixed(1)}k`;
-    return `${sign}EUR ${Math.round(abs).toLocaleString('en-US')}`;
+    if (abs >= 10_000_000) return `${sign}INR ${(abs / 10_000_000).toFixed(2)} Cr`;
+    if (abs >= 100_000) return `${sign}INR ${(abs / 100_000).toFixed(2)} L`;
+    if (abs >= 1_000) return `${sign}INR ${(abs / 1_000).toFixed(1)}k`;
   }
-  return `${sign}EUR ${Math.round(abs).toLocaleString('en-US')}`;
+  return `${sign}INR ${Math.round(abs).toLocaleString('en-IN')}`;
 }
 
 function truncateText(text: string, maxLen: number): string {
@@ -134,8 +110,7 @@ function drawGrowthChart(
   y: number,
   w: number,
   h: number,
-  trendData: PortfolioTrendPoint[],
-  baseCurrency: CurrencyCode
+  trendData: PortfolioTrendPoint[]
 ): void {
   drawCardShell(doc, x, y, w, h);
 
@@ -230,7 +205,7 @@ function drawGrowthChart(
     doc.line(plotX, gy, plotX + plotW, gy);
     doc.setLineDashPattern([], 0);
     doc.setTextColor(...SLATE_500);
-    doc.text(formatPdfCurrency(tickVal, baseCurrency, true), plotX - 2, gy + 0.9, {
+    doc.text(formatPdfCurrency(tickVal, true), plotX - 2, gy + 0.9, {
       align: 'right',
     });
   }
@@ -276,8 +251,7 @@ function drawMomBarChart(
   h: number,
   momData: MomGrowthPoint[],
   avgMonthlyGrowth: number,
-  positiveMonths: number,
-  baseCurrency: CurrencyCode
+  positiveMonths: number
 ): void {
   drawCardShell(doc, x, y, w, h);
 
@@ -290,7 +264,7 @@ function drawMomBarChart(
   doc.setFontSize(7);
   doc.setTextColor(...(avgMonthlyGrowth >= 0 ? EMERALD_600 : ROSE_600));
   doc.text(
-    `Avg ${avgMonthlyGrowth >= 0 ? '+' : ''}${formatPdfCurrency(avgMonthlyGrowth, baseCurrency, true)} · ${positiveMonths}/${momData.length} pos`,
+    `Avg ${avgMonthlyGrowth >= 0 ? '+' : ''}${formatPdfCurrency(avgMonthlyGrowth, true)} · ${positiveMonths}/${momData.length} pos`,
     x + w - 4,
     y + 6.2,
     { align: 'right' }
@@ -332,7 +306,7 @@ function drawMomBarChart(
   doc.line(plotX, plotY, plotX + plotW, plotY);
   doc.setLineDashPattern([], 0);
   doc.setTextColor(...SLATE_500);
-  doc.text(formatPdfCurrency(paddedMax, baseCurrency, true), plotX - 1.5, plotY + 1, { align: 'right' });
+  doc.text(formatPdfCurrency(paddedMax, true), plotX - 1.5, plotY + 1, { align: 'right' });
 
   doc.setDrawColor(...SLATE_300);
   doc.setLineWidth(0.35);
@@ -344,7 +318,7 @@ function drawMomBarChart(
     doc.setLineDashPattern([1.2, 1.2], 0);
     doc.line(plotX, plotY + plotH, plotX + plotW, plotY + plotH);
     doc.setLineDashPattern([], 0);
-    doc.text(formatPdfCurrency(paddedMin, baseCurrency, true), plotX - 1.5, plotY + plotH + 0.5, {
+    doc.text(formatPdfCurrency(paddedMin, true), plotX - 1.5, plotY + plotH + 0.5, {
       align: 'right',
     });
   }
@@ -374,8 +348,7 @@ function drawAllocationPanel(
   y: number,
   w: number,
   h: number,
-  breakdown: ReturnType<typeof computePortfolioSummaryMetrics>['categoryBreakdown'],
-  baseCurrency: CurrencyCode
+  breakdown: ReturnType<typeof computePortfolioSummaryMetrics>['categoryBreakdown']
 ): void {
   drawCardShell(doc, x, y, w, h);
 
@@ -442,7 +415,7 @@ function drawAllocationPanel(
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...SLATE_900);
-    doc.text(formatPdfCurrency(item.value, baseCurrency, true), x + w - 16, rowY, {
+    doc.text(formatPdfCurrency(item.value, true), x + w - 16, rowY, {
       align: 'right',
     });
 
@@ -456,7 +429,6 @@ function drawAllocationPanel(
 
 export function generatePortfolioPdfReport({
   holdings,
-  baseCurrency,
   portfolioMode = 'personal',
   profileName,
   download = true,
@@ -475,7 +447,7 @@ export function generatePortfolioPdfReport({
   const contentWidth = pageWidth - margin * 2;
   const reportDate = todayIso();
 
-  const metrics = computePortfolioSummaryMetrics(holdings, baseCurrency);
+  const metrics = computePortfolioSummaryMetrics(holdings);
 
   // 1. Dark Obsidian Header Banner with Faceted Emerald Accent Bar & Brand Mark
   doc.setFillColor(...SLATE_900);
@@ -519,7 +491,7 @@ export function generatePortfolioPdfReport({
   doc.setFontSize(7.5);
   doc.setTextColor(...SLATE_300);
   doc.text(
-    `${sessionLabel}  |  Base Currency: ${baseCurrency}  |  ${holdings.length} Holdings`,
+    `${sessionLabel}  |  INR  |  ${holdings.length} Holdings`,
     pageWidth - margin - 5,
     margin + 14.5,
     { align: 'right' }
@@ -538,8 +510,8 @@ export function generatePortfolioPdfReport({
     kpiW,
     kpiH,
     'Total Net Worth',
-    formatPdfCurrency(metrics.totalValuation, baseCurrency),
-    `30d: ${metrics.thirtyDayChangeAmount >= 0 ? '+' : ''}${formatPercent(metrics.thirtyDayChangePct)} (${metrics.thirtyDayChangeAmount >= 0 ? '+' : ''}${formatPdfCurrency(metrics.thirtyDayChangeAmount, baseCurrency, true)})`,
+    formatPdfCurrency(metrics.totalValuation),
+    `30d: ${metrics.thirtyDayChangeAmount >= 0 ? '+' : ''}${formatPercent(metrics.thirtyDayChangePct)} (${metrics.thirtyDayChangeAmount >= 0 ? '+' : ''}${formatPdfCurrency(metrics.thirtyDayChangeAmount, true)})`,
     SLATE_900,
     metrics.thirtyDayChangeAmount >= 0 ? EMERALD_600 : ROSE_600
   );
@@ -553,7 +525,7 @@ export function generatePortfolioPdfReport({
     kpiW,
     kpiH,
     'Invested Capital',
-    formatPdfCurrency(metrics.totalInvested, baseCurrency),
+    formatPdfCurrency(metrics.totalInvested),
     `${multiple}x cost multiple across ${holdings.length} positions`
   );
 
@@ -564,7 +536,7 @@ export function generatePortfolioPdfReport({
     kpiW,
     kpiH,
     'Unrealized Gain',
-    `${metrics.totalGain >= 0 ? '+' : ''}${formatPdfCurrency(metrics.totalGain, baseCurrency)}`,
+    `${metrics.totalGain >= 0 ? '+' : ''}${formatPdfCurrency(metrics.totalGain)}`,
     `${formatPercent(metrics.totalGainPct)} overall return`,
     metrics.totalGain >= 0 ? EMERALD_600 : ROSE_600,
     metrics.totalGain >= 0 ? EMERALD_600 : ROSE_600
@@ -618,7 +590,7 @@ export function generatePortfolioPdfReport({
     kpiW,
     kpiH,
     'Matured / Due 30d',
-    formatPdfCurrency(metrics.totalMaturedAmount, baseCurrency),
+    formatPdfCurrency(metrics.totalMaturedAmount),
     `${metrics.maturedHoldings.length} matured · ${metrics.maturingSoonHoldings.length} due within 30d`,
     metrics.maturedHoldings.length > 0 ? AMBER_600 : SLATE_900
   );
@@ -626,7 +598,7 @@ export function generatePortfolioPdfReport({
   // 3. Growth Line & Area Chart (Full Width)
   const growthChartY = row2Y + kpiH + 4.5;
   const growthChartH = 62;
-  drawGrowthChart(doc, margin, growthChartY, contentWidth, growthChartH, metrics.trendData, baseCurrency);
+  drawGrowthChart(doc, margin, growthChartY, contentWidth, growthChartH, metrics.trendData);
 
   // 4. Lower Analytics Row: MoM Bar Chart + Asset Allocation Breakdown
   const lowerY = growthChartY + growthChartH + 4.5;
@@ -642,8 +614,7 @@ export function generatePortfolioPdfReport({
     lowerH,
     metrics.momData,
     metrics.avgMonthlyGrowth,
-    metrics.positiveMonths,
-    baseCurrency
+    metrics.positiveMonths
   );
 
   drawAllocationPanel(
@@ -652,8 +623,7 @@ export function generatePortfolioPdfReport({
     lowerY,
     rightW,
     lowerH,
-    metrics.categoryBreakdown,
-    baseCurrency
+    metrics.categoryBreakdown
   );
 
   // 5. Key Portfolio Highlights Box
@@ -672,7 +642,7 @@ export function generatePortfolioPdfReport({
   } else {
     if (metrics.bestMonth) {
       highlights.push(
-        `Strongest 12M expansion month: ${metrics.bestMonth.fullDate} (${metrics.bestMonth.netGrowth >= 0 ? '+' : ''}${formatPdfCurrency(metrics.bestMonth.netGrowth, baseCurrency, true)}, ${formatPercent(metrics.bestMonth.netGrowthPct)}).`
+        `Strongest 12M expansion month: ${metrics.bestMonth.fullDate} (${metrics.bestMonth.netGrowth >= 0 ? '+' : ''}${formatPdfCurrency(metrics.bestMonth.netGrowth, true)}, ${formatPercent(metrics.bestMonth.netGrowthPct)}).`
       );
     }
     if (metrics.surgeHoldings30d.length > 0) {
@@ -691,7 +661,7 @@ export function generatePortfolioPdfReport({
     }
     if (metrics.maturedHoldings.length > 0 || metrics.maturingSoonHoldings.length > 0) {
       highlights.push(
-        `Maturity attention: ${metrics.maturedHoldings.length} matured (${formatPdfCurrency(metrics.totalMaturedAmount, baseCurrency, true)}) and ${metrics.maturingSoonHoldings.length} maturing within 30 days.`
+        `Maturity attention: ${metrics.maturedHoldings.length} matured (${formatPdfCurrency(metrics.totalMaturedAmount, true)}) and ${metrics.maturingSoonHoldings.length} maturing within 30 days.`
       );
     } else {
       highlights.push(
@@ -722,20 +692,20 @@ export function generatePortfolioPdfReport({
     doc.setFontSize(8);
     doc.setTextColor(...SLATE_500);
     doc.text(
-      `All ${holdings.length} active positions as of ${reportDate}. Summary KPIs are normalized to ${baseCurrency}; ledger rows display each holding in its native currency.`,
+      `All ${holdings.length} active positions as of ${reportDate}. All amounts are INR.`,
       margin,
       margin + 9.5
     );
 
     const sortedHoldings = [...holdings].sort(
       (a, b) =>
-        convertCurrency(b.currentValue, b.currency, baseCurrency) -
-        convertCurrency(a.currentValue, a.currency, baseCurrency)
+        b.currentValue -
+        a.currentValue
     );
 
     const tableRows = sortedHoldings.map((h) => {
       const catLabel = CATEGORY_META[h.category]?.shortLabel ?? h.category;
-      const gainStr = `${h.unrealizedGain >= 0 ? '+' : ''}${formatPdfCurrency(h.unrealizedGain, h.currency, true)} (${formatPercent(h.unrealizedGainPct, 1)})`;
+      const gainStr = `${h.unrealizedGain >= 0 ? '+' : ''}${formatPdfCurrency(h.unrealizedGain, true)} (${formatPercent(h.unrealizedGainPct, 1)})`;
       const rateOr30d =
         typeof h.interestRatePct === 'number'
           ? `${h.interestRatePct.toFixed(2)}% p.a.`
@@ -752,8 +722,8 @@ export function generatePortfolioPdfReport({
         h.name,
         catLabel,
         h.institution,
-        formatPdfCurrency(h.investedAmount, h.currency),
-        formatPdfCurrency(h.currentValue, h.currency),
+        formatPdfCurrency(h.investedAmount),
+        formatPdfCurrency(h.currentValue),
         gainStr,
         rateOr30d,
         maturityLabel,

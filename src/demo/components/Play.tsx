@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { convertCurrency, formatCurrency } from '../../utils/currency';
+import { formatCurrency } from '../../utils/currency';
 import { TARGET_MIX_BY_GOAL } from '../../utils/smartDiversification';
 import { gapSentence } from '../balance';
 import { describeConditions } from '../conditions';
@@ -22,10 +22,10 @@ interface PlayProps {
 }
 
 export function Play({ portfolio, journey, split, set, onNext, onEditConditions }: PlayProps) {
-  const { holdings, baseCurrency, loan } = portfolio;
+  const { holdings, loan } = portfolio;
   const { plans, catalog, input, result, outcome } = split;
   const target = TARGET_MIX_BY_GOAL[journey.goal].weights;
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
 
   // First visit: start from the plan the app would suggest, so the screen already shows a change.
   useEffect(() => {
@@ -37,10 +37,10 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
     }
     const first = holdings.find((h) => h.category !== 'EPF' && h.category !== 'PPF' && h.category !== 'NPS');
     if (first) {
-      const value = Math.round(convertCurrency(first.currentValue, first.currency, baseCurrency));
+      const value = Math.round(first.currentValue);
       set({ sourceId: first.id, moveAmountInBase: value, allocations: {} });
     }
-  }, [journey.sourceId, plans, input, holdings, baseCurrency, set]);
+  }, [journey.sourceId, plans, input, holdings, set]);
 
   const suggestion = plans.find((p) => p.sourceHolding.id === journey.sourceId) ?? null;
   const placed = placedTotal(input) > 0;
@@ -48,7 +48,7 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
   const pickSource = (id: string) => {
     const h = holdings.find((x) => x.id === id);
     if (!h) return;
-    const value = Math.round(convertCurrency(h.currentValue, h.currency, baseCurrency));
+    const value = Math.round(h.currentValue);
     set({ sourceId: id, moveAmountInBase: value, allocations: {} });
   };
   const setAmount = (amount: number) =>
@@ -72,7 +72,6 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
           <section className="rounded-2xl bg-paper p-5 md:p-6">
             <SourcePicker
               holdings={holdings}
-              baseCurrency={baseCurrency}
               sourceId={journey.sourceId}
               moveAmountInBase={journey.moveAmountInBase}
               onPick={pickSource}
@@ -86,7 +85,6 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
                 allocations={journey.allocations}
                 unallocatedInBase={result.unallocatedInBase}
                 moveAmountInBase={journey.moveAmountInBase}
-                baseCurrency={baseCurrency}
                 loan={loan}
                 canUseSuggestion={suggestion !== null}
                 onChange={setAllocation}
@@ -105,7 +103,6 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
             result={result}
             outcome={outcome}
             target={target}
-            baseCurrency={baseCurrency}
             horizonYears={journey.factors.projectionHorizonYears}
             conditions={describeConditions(journey.factors)}
             loanRatePct={loan ? loan.ratePct : null}

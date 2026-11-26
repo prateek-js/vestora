@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import type { AssetCategory, CurrencyCode, Holding } from '../../types/wealth';
+import type { AssetCategory, Holding } from '../../types/wealth';
 import { holdingFromDraft, type HoldingDraft } from '../holdingDraft';
 
 interface HoldingFormProps {
@@ -24,7 +24,6 @@ export const CATEGORY_LABEL: Record<AssetCategory, string> = {
   SAVINGS_CASH: 'Savings account or cash',
 };
 
-const CURRENCIES: CurrencyCode[] = ['INR', 'USD', 'EUR'];
 
 const fieldClass = 'mt-1 block w-full rounded-lg border border-ink/30 bg-paper px-3 py-2 text-ink';
 const labelClass = 'block text-sm font-semibold';
@@ -107,18 +106,7 @@ export function HoldingForm({ initial, existing, onSave, onCancel }: HoldingForm
           <label htmlFor={id('currency')} className={labelClass}>
             Currency
           </label>
-          <select
-            id={id('currency')}
-            value={draft.currency}
-            onChange={(e) => set('currency', e.target.value as CurrencyCode)}
-            className={fieldClass}
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+          <div id={id('currency')} className={fieldClass}>INR</div>
         </div>
         {text('investedAmount', 'Amount you put in', { decimal: true })}
         {text('currentValue', 'Worth today', { decimal: true })}

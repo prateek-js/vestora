@@ -122,7 +122,7 @@ function portfolio(): Holding[] {
 }
 
 test('rows are the largest benchmarkable holdings, capped at the limit', () => {
-  const { rows, unbenchmarked } = buildBenchmarkRows(portfolio(), 'INR', null, TODAY);
+  const { rows, unbenchmarked } = buildBenchmarkRows(portfolio(), null, TODAY);
   assert.equal(rows.length, 6);
   assert.deepEqual(
     rows.map((r) => r.holding.id),
@@ -134,7 +134,7 @@ test('rows are the largest benchmarkable holdings, capped at the limit', () => {
 });
 
 test('without live data the benchmark yield is the stored fallback', () => {
-  const { rows } = buildBenchmarkRows(portfolio(), 'INR', null, TODAY);
+  const { rows } = buildBenchmarkRows(portfolio(), null, TODAY);
   assert.equal(rows[0].benchmarkId, 'NIFTY50');
   assert.equal(rows[0].benchmarkPct, 12.8);
   assert.equal(rows[0].benchmarkName, 'UTI Nifty 50 Index Direct');
@@ -142,10 +142,10 @@ test('without live data the benchmark yield is the stored fallback', () => {
 });
 
 test('each row names its benchmark by category, so a fund is never shown against itself', () => {
-  const { rows } = buildBenchmarkRows(portfolio(), 'INR', null, TODAY);
+  const { rows } = buildBenchmarkRows(portfolio(), null, TODAY);
   assert.equal(rows[0].benchmarkLabel, 'the Nifty 50 index');
   const label = (name: string, category: Holding['category'] = 'MUTUAL_FUND') =>
-    buildBenchmarkRows([holding({ name, category })], 'INR', null, TODAY).rows[0].benchmarkLabel;
+    buildBenchmarkRows([holding({ name, category })], null, TODAY).rows[0].benchmarkLabel;
   assert.equal(label('Parag Parikh Flexi Cap Fund'), 'flexi-cap funds');
   assert.equal(label('HDFC Arbitrage Fund'), 'arbitrage funds');
   assert.equal(label('SBI Liquid Fund'), 'liquid funds');
@@ -156,18 +156,18 @@ test('each row names its benchmark by category, so a fund is never shown against
 });
 
 test('live 3-year CAGR replaces the fallback when available', () => {
-  const { rows } = buildBenchmarkRows(portfolio(), 'INR', liveWith(15), TODAY);
+  const { rows } = buildBenchmarkRows(portfolio(), liveWith(15), TODAY);
   assert.equal(rows[0].benchmarkPct, 15);
 });
 
 test('a live fund with no CAGR still falls back to the stored yield', () => {
-  const { rows } = buildBenchmarkRows(portfolio(), 'INR', liveWith(null), TODAY);
+  const { rows } = buildBenchmarkRows(portfolio(), liveWith(null), TODAY);
   assert.equal(rows[0].benchmarkPct, 12.8);
 });
 
 test('a benchmarkable holding with no computable return is listed as unbenchmarked', () => {
   const fresh = holding({ id: 'new', name: 'Nifty 50 Index Fund new', purchaseDate: '2026-11-01' });
-  const { rows, unbenchmarked } = buildBenchmarkRows([fresh], 'INR', null, TODAY);
+  const { rows, unbenchmarked } = buildBenchmarkRows([fresh], null, TODAY);
   assert.equal(rows.length, 0);
   assert.deepEqual(unbenchmarked.map((h) => h.id), ['new']);
 });

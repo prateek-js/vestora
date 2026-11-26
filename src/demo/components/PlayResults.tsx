@@ -1,5 +1,4 @@
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { CurrencyCode } from '../../types/wealth';
 import { formatCurrency } from '../../utils/currency';
 import type { SimulationResult } from '../../utils/simulationEngine';
 import type { BucketMix } from '../../utils/smartDiversification';
@@ -12,7 +11,6 @@ interface PlayResultsProps {
   result: SplitResult;
   outcome: SimulationResult;
   target: BucketMix;
-  baseCurrency: CurrencyCode;
   horizonYears: number;
   /** The economic conditions behind the five-year figures, in words. */
   conditions: string;
@@ -25,13 +23,12 @@ export function PlayResults({
   result,
   outcome,
   target,
-  baseCurrency,
   horizonYears,
   conditions,
   loanRatePct,
   onEditConditions,
 }: PlayResultsProps) {
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
   const beam = beamState(result.mixAfter, target);
   const sentence = gapSentence(result.mixAfter, target);
   const pans = panWeights(result.mixAfter);

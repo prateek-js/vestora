@@ -1,12 +1,11 @@
 import {
   AssetCategory,
-  CurrencyCode,
   Holding,
   MacroParameters,
   PortfolioAllocation,
   TaxTag,
 } from '../types/wealth';
-import { convertCurrency, formatCurrency, formatPercent } from './currency';
+import { formatCurrency, formatPercent } from './currency';
 import { isoFromToday, todayIso, withDerivedMaturity } from './maturity';
 import { CATEGORY_META, computePortfolioSummaryMetrics } from './portfolioMetrics';
 import {
@@ -24,10 +23,9 @@ import { importExcelBuffer, importStatement, StatementFormat } from './statement
 
 export type ChatActionKind =
   | { type: 'UNDO_HOLDINGS'; snapshot: Holding[]; label?: string }
-  | { type: 'APPLY_IMPORT'; holdings: Holding[]; mode: 'replace' | 'append'; fileName: string; currency?: CurrencyCode }
+  | { type: 'APPLY_IMPORT'; holdings: Holding[]; mode: 'replace' | 'append'; fileName: string }
   | { type: 'EXPORT'; format: 'xlsx' | 'csv' | 'pdf' | 'json' }
   | { type: 'NAVIGATE'; tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator' }
-  | { type: 'SET_CURRENCY'; currency: CurrencyCode }
   | { type: 'START_BLANK' }
   | { type: 'RESET_SAMPLE' }
   | { type: 'REBALANCE_HOLDING'; holdingId: string }
@@ -51,7 +49,6 @@ export interface ChatMetricRow {
 
 export interface ChatEngineContext {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   portfolioMode: 'demo' | 'personal';
   profileName: string;
 }
@@ -59,10 +56,9 @@ export interface ChatEngineContext {
 export interface ChatEngineCallbacks {
   onAddHolding: (holding: Holding) => void;
   onUpdateHolding: (holding: Holding) => void;
-  onReplaceHoldings: (holdings: Holding[], detectedCurrency?: CurrencyCode) => void;
+  onReplaceHoldings: (holdings: Holding[]) => void;
   onAppendHoldings: (holdings: Holding[]) => void;
   onDeleteHolding: (id: string) => void;
-  onSetBaseCurrency: (currency: CurrencyCode) => void;
   onNavigateToTab: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
   onExportExcel: () => void;
   onExportCsv: () => void;
@@ -162,7 +158,6 @@ function extractAccountReference(input: string): ExtractedAccountRef {
 }
 
 interface ExtractedAmounts {
-  currency: CurrencyCode;
   amounts: number[];
 }
 
@@ -178,12 +173,7 @@ function stripNonMoneyNumbers(input: string): string {
     .replace(/\b(?:in|by|from|since|until|till)\s+(?:19|20)\d{2}\b/gi, ' ');
 }
 
-function extractAmounts(input: string, fallbackCurrency: CurrencyCode): ExtractedAmounts {
-  let currency = fallbackCurrency;
-  if (/\bUSD\b|\$/i.test(input)) currency = 'USD';
-  else if (/\bEUR\b|€/i.test(input)) currency = 'EUR';
-  else if (/\bINR\b|₹|\bRS\.?\b/i.test(input)) currency = 'INR';
-
+function extractAmounts(input: string): ExtractedAmounts {
   const { cleanedInput } = extractAccountReference(input);
   const sanitized = stripNonMoneyNumbers(cleanedInput);
 
@@ -199,7 +189,7 @@ function extractAmounts(input: string, fallbackCurrency: CurrencyCode): Extracte
     }
   }
 
-  return { currency, amounts };
+  return { amounts };
 }
 
 function inferCategoryFromText(text: string): { category: AssetCategory; taxTag: TaxTag; defaultRate?: number } {
@@ -300,8 +290,6 @@ const UPPERCASE_ACRONYMS = new Set([
   'NCD',
   'SIP',
   'INR',
-  'USD',
-  'EUR',
   'S&P',
   'A/C',
   'FRSB',
@@ -410,10 +398,10 @@ interface ParsedAddHoldingResult {
   accountDigits?: string;
 }
 
-function parseAddHoldingCommand(input: string, fallbackCurrency: CurrencyCode): ParsedAddHoldingResult | null {
+function parseAddHoldingCommand(input: string): ParsedAddHoldingResult | null {
   const { mask, digits, cleanedInput } = extractAccountReference(input);
   const { category, taxTag, defaultRate } = inferCategoryFromText(cleanedInput);
-  const { currency, amounts } = extractAmounts(cleanedInput, fallbackCurrency);
+  const { amounts } = extractAmounts(cleanedInput);
 
   // Check for explicit invested / current clauses first
   const investedClause = cleanedInput.match(
@@ -460,7 +448,7 @@ function parseAddHoldingCommand(input: string, fallbackCurrency: CurrencyCode): 
     accountNumberMask: mask ?? `CHT-${Date.now().toString().slice(-4)}`,
     investedAmount,
     currentValue,
-    currency,
+    currency: 'INR',
     interestRatePct,
     purchaseDate: todayIso(),
     maturityDate,
@@ -539,8 +527,6 @@ const EDIT_STOPWORDS = new Set([
   'thousand',
   'million',
   'inr',
-  'usd',
-  'eur',
 ]);
 
 function extractHoldingMaskDigits(holding: Holding): string | null {
@@ -645,7 +631,7 @@ function parseEditHoldingPatch(
   const changedLabels: string[] = [];
   let investedAmount = target.investedAmount;
   let currentValue = target.currentValue;
-  let currency = target.currency;
+  const currency = 'INR';
   let interestRatePct = target.interestRatePct;
   let maturityDate = target.maturityDate;
   let name = target.name;
@@ -662,13 +648,6 @@ function parseEditHoldingPatch(
   }
 
   const scrubbed = stripTargetIdentifierNumbers(input, target);
-
-  if (/\bUSD\b|\$/i.test(scrubbed)) currency = 'USD';
-  else if (/\bEUR\b|€/i.test(scrubbed)) currency = 'EUR';
-  else if (/\bINR\b|₹|\bRS\.?\b/i.test(scrubbed)) currency = 'INR';
-  if (currency !== target.currency) {
-    changedLabels.push(`currency → ${currency}`);
-  }
 
   // Extract explicit invested vs current values first
   const investedClause = scrubbed.match(
@@ -699,7 +678,7 @@ function parseEditHoldingPatch(
   }
 
   if (!matchedExplicitInvested && !matchedExplicitCurrent) {
-    const { amounts } = extractAmounts(scrubbed, currency);
+    const { amounts } = extractAmounts(scrubbed);
     if (amounts.length >= 2) {
       investedAmount = amounts[0];
       currentValue = amounts[1];
@@ -833,16 +812,13 @@ function formatFormatLabel(fmt: StatementFormat): string {
   }
 }
 
-export async function parseFileForChat(
-  file: File,
-  baseCurrency: CurrencyCode
-): Promise<ChatReplyPayload> {
+export async function parseFileForChat(file: File): Promise<ChatReplyPayload> {
   const lower = file.name.toLowerCase();
   const isExcel = /\.(xlsx|xls|xlsm|xlsb|ods)$/i.test(lower);
 
   if (isExcel) {
     const buf = await file.arrayBuffer();
-    const preview = importExcelBuffer(buf, undefined, baseCurrency);
+    const preview = importExcelBuffer(buf);
     if (preview.parsed.holdings.length === 0) {
       return {
         title: `Could not read holdings from ${file.name}`,
@@ -850,7 +826,7 @@ export async function parseFileForChat(
       };
     }
     const totalVal = preview.parsed.holdings.reduce(
-      (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+      (sum, h) => sum + h.currentValue,
       0
     );
     return {
@@ -859,7 +835,7 @@ export async function parseFileForChat(
       metrics: [
         { label: 'Parsed Holdings', value: `${preview.parsed.holdings.length}`, tone: 'emerald' },
         { label: 'Skipped Rows', value: `${preview.parsed.skipped.length}`, tone: 'neutral' },
-        { label: 'Total Value', value: formatCurrency(totalVal, baseCurrency, { compact: true }), tone: 'emerald' },
+        { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
       ],
       actions: [
         {
@@ -889,9 +865,8 @@ export async function parseFileForChat(
   const text = await file.text();
   if (lower.endsWith('.json')) {
     const parsed = parsePortfolioExport(text);
-    const targetCurrency = parsed.baseCurrency ?? baseCurrency;
     const totalVal = parsed.holdings.reduce(
-      (sum, h) => sum + convertCurrency(h.currentValue, h.currency, targetCurrency),
+      (sum, h) => sum + h.currentValue,
       0
     );
     return {
@@ -899,8 +874,8 @@ export async function parseFileForChat(
       text: `Validated ${parsed.holdings.length} holdings locally from your portable JSON backup.`,
       metrics: [
         { label: 'Holdings', value: `${parsed.holdings.length}`, tone: 'emerald' },
-        { label: 'Base Currency', value: targetCurrency, tone: 'neutral' },
-        { label: 'Total Value', value: formatCurrency(totalVal, targetCurrency, { compact: true }), tone: 'emerald' },
+        { label: 'Base Currency', value: 'INR', tone: 'neutral' },
+        { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
       ],
       actions: [
         {
@@ -911,7 +886,6 @@ export async function parseFileForChat(
             holdings: parsed.holdings,
             mode: 'replace',
             fileName: file.name,
-            currency: parsed.baseCurrency ?? undefined,
           },
         },
         {
@@ -928,7 +902,7 @@ export async function parseFileForChat(
     };
   }
 
-  const parsedCsv = importStatement(text, baseCurrency);
+  const parsedCsv = importStatement(text);
   if (parsedCsv.holdings.length === 0) {
     return {
       title: `No holdings found in ${file.name}`,
@@ -936,7 +910,7 @@ export async function parseFileForChat(
     };
   }
   const totalVal = parsedCsv.holdings.reduce(
-    (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+    (sum, h) => sum + h.currentValue,
     0
   );
   return {
@@ -945,7 +919,7 @@ export async function parseFileForChat(
     metrics: [
       { label: 'Parsed Holdings', value: `${parsedCsv.holdings.length}`, tone: 'emerald' },
       { label: 'Skipped Rows', value: `${parsedCsv.skipped.length}`, tone: 'neutral' },
-      { label: 'Total Value', value: formatCurrency(totalVal, baseCurrency, { compact: true }), tone: 'emerald' },
+      { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
     ],
     actions: [
       {
@@ -979,16 +953,16 @@ export function processLocalChatMessage(
 ): ChatReplyPayload {
   const input = rawMessage.trim();
   const lower = input.toLowerCase();
-  const { holdings, baseCurrency } = ctx;
+  const { holdings } = ctx;
 
   // 1. Multiline CSV / TSV text pasted directly into chat
   const lines = input.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length >= 2 && (input.includes(',') || input.includes('\t'))) {
     try {
-      const parsed = importStatement(input, baseCurrency);
+      const parsed = importStatement(input);
       if (parsed.holdings.length > 0) {
         const totalVal = parsed.holdings.reduce(
-          (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+          (sum, h) => sum + h.currentValue,
           0
         );
         return {
@@ -996,7 +970,7 @@ export function processLocalChatMessage(
           text: `Parsed ${parsed.holdings.length} holdings locally (${formatFormatLabel(parsed.format)}). Choose how to apply them:`,
           metrics: [
             { label: 'Parsed Rows', value: `${parsed.holdings.length}`, tone: 'emerald' },
-            { label: 'Total Value', value: formatCurrency(totalVal, baseCurrency, { compact: true }), tone: 'emerald' },
+            { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
           ],
           actions: [
             {
@@ -1093,15 +1067,19 @@ export function processLocalChatMessage(
   }
 
   // 4. Currency switching
-  if (/\b(currency|switch|convert|show|use)\b/i.test(lower) && /\b(usd|inr|eur|\$|₹|€)\b/i.test(lower)) {
-    const nextCcy: CurrencyCode = /\busd|\$/i.test(lower) ? 'USD' : /\beur|€/i.test(lower) ? 'EUR' : 'INR';
-    cb.onSetBaseCurrency(nextCcy);
-    const metrics = computePortfolioSummaryMetrics(holdings, nextCcy);
+  // 4. Currency requests. Vestora is INR-only: any switch/set-currency ask —
+  // "switch to USD", "make <holding> EUR" — just acknowledges; nothing changes.
+  if (
+    /\b(usd|inr|eur|dollar|euro|rupee|\$|₹|€)\b|\$|₹|€/i.test(lower) &&
+    (/\b(currency|switch|convert|show|use|make|set|change|denominate|track)\b/i.test(lower) ||
+      /(?:in|to|into)\s+(?:usd|eur|\$|€)/i.test(lower)) &&
+    !/^(?:please\s+)?(?:add|buy|invest|deposit|top\s*up|put|log|record|save)\b/i.test(lower)
+  ) {
     return {
-      title: `Switched Display Currency to ${nextCcy}`,
-      text: `All valuations, charts, and chat readouts are now normalized to ${nextCcy}.`,
+      title: 'Currency Is Locked to INR',
+      text: 'Vestora tracks holdings in INR.',
       metrics: [
-        { label: 'Total Net Worth', value: formatCurrency(metrics.totalValuation, nextCcy, { compact: true }), tone: 'emerald' },
+        { label: 'Total Net Worth', value: formatCurrency(holdings.reduce((s, h) => s + h.currentValue, 0)), tone: 'emerald' },
         { label: 'Holdings', value: `${holdings.length}`, tone: 'neutral' },
       ],
     };
@@ -1145,7 +1123,7 @@ export function processLocalChatMessage(
       cb.onDeleteHolding(target.id);
       return {
         title: `Removed ${target.name}`,
-        text: `Deleted ${target.name} (${formatCurrency(target.currentValue, target.currency)}) from your local ledger.`,
+        text: `Deleted ${target.name} (${formatCurrency(target.currentValue)}) from your local ledger.`,
         actions: [
           {
             label: 'Undo Delete',
@@ -1210,8 +1188,8 @@ export function processLocalChatMessage(
         title: `Edit ${target.name}`,
         text: `Current values are shown below. Click "Open Edit Form" to modify any field, or reply like: "Update ${target.name} value to 6L".`,
         metrics: [
-          { label: 'Invested', value: formatCurrency(target.investedAmount, target.currency), tone: 'neutral' },
-          { label: 'Current Value', value: formatCurrency(target.currentValue, target.currency), tone: 'emerald' },
+          { label: 'Invested', value: formatCurrency(target.investedAmount), tone: 'neutral' },
+          { label: 'Current Value', value: formatCurrency(target.currentValue), tone: 'emerald' },
           ...(target.accountNumberMask
             ? [{ label: 'Account Ref', value: target.accountNumberMask, tone: 'neutral' as const }]
             : []),
@@ -1236,8 +1214,8 @@ export function processLocalChatMessage(
       title: `Updated ${updated.name}`,
       text: `Applied changes (${changedLabels.join(', ')}) locally on your device.`,
       metrics: [
-        { label: 'Invested', value: formatCurrency(updated.investedAmount, updated.currency), tone: 'neutral' },
-        { label: 'Current Value', value: formatCurrency(updated.currentValue, updated.currency), tone: 'emerald' },
+        { label: 'Invested', value: formatCurrency(updated.investedAmount), tone: 'neutral' },
+        { label: 'Current Value', value: formatCurrency(updated.currentValue), tone: 'emerald' },
         {
           label: 'Net Return',
           value: formatPercent(updated.unrealizedGainPct, 1),
@@ -1273,7 +1251,7 @@ export function processLocalChatMessage(
     if (matches.length === 1) {
       const target = matches[0];
       const scrubbed = stripTargetIdentifierNumbers(input, target);
-      const { amounts } = extractAmounts(scrubbed, target.currency);
+      const { amounts } = extractAmounts(scrubbed);
       if (amounts.length > 0) {
         const delta = amounts[0];
         const nextCurrent = Math.max(0, Number((target.currentValue - delta).toFixed(2)));
@@ -1290,20 +1268,20 @@ export function processLocalChatMessage(
         const snapshot = [...holdings];
         return {
           title: `Confirm Withdrawal from ${target.name}`,
-          text: `Subtract ${formatCurrency(delta, target.currency)} from ${target.name}${target.accountNumberMask ? ` (${target.accountNumberMask})` : ''}?`,
+          text: `Subtract ${formatCurrency(delta)} from ${target.name}${target.accountNumberMask ? ` (${target.accountNumberMask})` : ''}?`,
           metrics: [
-            { label: 'Current Balance', value: formatCurrency(target.currentValue, target.currency), tone: 'neutral' },
-            { label: 'New Balance', value: formatCurrency(nextCurrent, target.currency), tone: 'amber' },
+            { label: 'Current Balance', value: formatCurrency(target.currentValue), tone: 'neutral' },
+            { label: 'New Balance', value: formatCurrency(nextCurrent), tone: 'amber' },
           ],
           actions: [
             {
-              label: `Confirm (-${formatCurrency(delta, target.currency, { compact: true })})`,
+              label: `Confirm (-${formatCurrency(delta)})`,
               variant: 'primary',
               action: {
                 type: 'CONFIRM_UPDATE_HOLDING',
                 updated,
                 snapshot,
-                summary: `Withdrew ${formatCurrency(delta, target.currency)} from ${target.name}.`,
+                summary: `Withdrew ${formatCurrency(delta)} from ${target.name}.`,
               },
             },
             {
@@ -1323,7 +1301,7 @@ export function processLocalChatMessage(
       lower
     )
   ) {
-    const parsedResult = parseAddHoldingCommand(input, baseCurrency);
+    const parsedResult = parseAddHoldingCommand(input);
     if (!parsedResult) {
       return {
         title: 'Add Holding — Form or Plain Text',
@@ -1371,7 +1349,7 @@ export function processLocalChatMessage(
     const matchedExisting = existingByDigits ?? existingByName;
     if (matchedExisting) {
       const addedInTargetCcy = Number(
-        convertCurrency(parsed.currentValue, parsed.currency, matchedExisting.currency).toFixed(2)
+        parsed.currentValue.toFixed(2)
       );
       const nextInvested = Number((matchedExisting.investedAmount + addedInTargetCcy).toFixed(2));
       const nextCurrent = Number((matchedExisting.currentValue + addedInTargetCcy).toFixed(2));
@@ -1388,16 +1366,16 @@ export function processLocalChatMessage(
 
       return {
         title: `Existing Holding Matched: ${matchedExisting.name}`,
-        text: `Found ${matchedExisting.name}${matchedExisting.accountNumberMask ? ` (${matchedExisting.accountNumberMask})` : ''} in your portfolio. Do you want to add ${formatCurrency(addedInTargetCcy, matchedExisting.currency)} to it, or create a separate entry?`,
+        text: `Found ${matchedExisting.name}${matchedExisting.accountNumberMask ? ` (${matchedExisting.accountNumberMask})` : ''} in your portfolio. Do you want to add ${formatCurrency(addedInTargetCcy)} to it, or create a separate entry?`,
         metrics: [
           {
             label: 'Current Balance',
-            value: formatCurrency(matchedExisting.currentValue, matchedExisting.currency),
+            value: formatCurrency(matchedExisting.currentValue),
             tone: 'neutral',
           },
           {
             label: 'New Balance',
-            value: formatCurrency(nextCurrent, matchedExisting.currency),
+            value: formatCurrency(nextCurrent),
             tone: 'emerald',
           },
           ...(matchedExisting.accountNumberMask
@@ -1407,13 +1385,13 @@ export function processLocalChatMessage(
         ],
         actions: [
           {
-            label: `Top Up (+${formatCurrency(addedInTargetCcy, matchedExisting.currency, { compact: true })})`,
+            label: `Top Up (+${formatCurrency(addedInTargetCcy)})`,
             variant: 'primary',
             action: {
               type: 'CONFIRM_UPDATE_HOLDING',
               updated: toppedUp,
               snapshot,
-              summary: `Added ${formatCurrency(addedInTargetCcy, matchedExisting.currency)} to ${matchedExisting.name}. New balance: ${formatCurrency(nextCurrent, matchedExisting.currency)}.`,
+              summary: `Added ${formatCurrency(addedInTargetCcy)} to ${matchedExisting.name}. New balance: ${formatCurrency(nextCurrent)}.`,
             },
           },
           {
@@ -1435,9 +1413,9 @@ export function processLocalChatMessage(
       { label: 'Instrument', value: parsed.name, tone: 'neutral' },
       { label: 'Category', value: catLabel, tone: 'neutral' },
       ...(parsed.investedAmount !== parsed.currentValue
-        ? [{ label: 'Invested', value: formatCurrency(parsed.investedAmount, parsed.currency), tone: 'neutral' as const }]
+        ? [{ label: 'Invested', value: formatCurrency(parsed.investedAmount), tone: 'neutral' as const }]
         : []),
-      { label: 'Amount / Value', value: formatCurrency(parsed.currentValue, parsed.currency), tone: 'emerald' },
+      { label: 'Amount / Value', value: formatCurrency(parsed.currentValue), tone: 'emerald' },
       ...(parsed.accountNumberMask && !parsed.accountNumberMask.startsWith('CHT-')
         ? [{ label: 'Account Ref', value: parsed.accountNumberMask, tone: 'neutral' as const }]
         : []),
@@ -1480,10 +1458,10 @@ export function processLocalChatMessage(
 
     const params = parseSimulationParams(input);
     const totalWorth = holdings.reduce(
-      (s, h) => s + convertCurrency(h.currentValue, h.currency, baseCurrency),
+      (s, h) => s + h.currentValue,
       0
     );
-    const currentAlloc = computePortfolioAllocation(holdings, baseCurrency);
+    const currentAlloc = computePortfolioAllocation(holdings);
     const calibrated = computeInputBasedShuffle(params, currentAlloc);
     const sim = runMacroSimulation(totalWorth, currentAlloc, calibrated.allocation, params);
 
@@ -1493,17 +1471,17 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Starting Net Worth',
-          value: formatCurrency(totalWorth, baseCurrency, { compact: true }),
+          value: formatCurrency(totalWorth),
           tone: 'neutral',
         },
         {
           label: `Stress Outcome (${params.projectionHorizonYears}Y)`,
-          value: formatCurrency(sim.finalScenarioNetWorth, baseCurrency, { compact: true }),
+          value: formatCurrency(sim.finalScenarioNetWorth),
           tone: sim.scenarioAlphaVsBaselinePct >= 0 ? 'emerald' : 'amber',
         },
         {
           label: 'Shuffled Advantage',
-          value: `+${formatCurrency(Math.max(0, sim.shuffledAdvantageVsScenario), baseCurrency, { compact: true })}`,
+          value: `+${formatCurrency(Math.max(0, sim.shuffledAdvantageVsScenario))}`,
           tone: 'emerald',
         },
         {
@@ -1529,7 +1507,7 @@ export function processLocalChatMessage(
 
   // 9. Maturity / Cash Drag query
   if (/\b(matur|due|expir|radar|idle cash)\b/i.test(lower)) {
-    const metrics = computePortfolioSummaryMetrics(holdings, baseCurrency);
+    const metrics = computePortfolioSummaryMetrics(holdings);
     const urgent = [...metrics.maturedHoldings, ...metrics.maturingSoonHoldings];
     if (urgent.length === 0) {
       return {
@@ -1541,7 +1519,7 @@ export function processLocalChatMessage(
 
     const previewNames = urgent
       .slice(0, 3)
-      .map((h) => `${h.name} (${formatCurrency(h.currentValue, h.currency, { compact: true })})`)
+      .map((h) => `${h.name} (${formatCurrency(h.currentValue)})`)
       .join(', ');
 
     const firstTarget = urgent[0];
@@ -1551,7 +1529,7 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Matured Now',
-          value: `${metrics.maturedHoldings.length} (${formatCurrency(metrics.totalMaturedAmount, baseCurrency, { compact: true })})`,
+          value: `${metrics.maturedHoldings.length} (${formatCurrency(metrics.totalMaturedAmount)})`,
           tone: metrics.maturedHoldings.length > 0 ? 'amber' : 'neutral',
         },
         {
@@ -1577,9 +1555,9 @@ export function processLocalChatMessage(
 
   // 10. Tax & Concentration query
   if (/\b(tax|80c|80ccd|nps|ltcg|harvest|concentrat|audit)\b/i.test(lower)) {
-    const harvest = computeTaxHarvestingAudit(holdings, baseCurrency);
-    const sec = computeTaxSectionAudit(holdings, baseCurrency);
-    const conc = detectConcentrationRisks(holdings, baseCurrency);
+    const harvest = computeTaxHarvestingAudit(holdings);
+    const sec = computeTaxSectionAudit(holdings);
+    const conc = detectConcentrationRisks(holdings);
     const topConc = conc[0]?.title ?? 'Well-diversified across positions';
 
     return {
@@ -1588,17 +1566,17 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Harvestable LTCG',
-          value: formatCurrency(harvest.harvestableNow, baseCurrency, { compact: true }),
+          value: formatCurrency(harvest.harvestableNow),
           tone: harvest.harvestableNow > 0 ? 'emerald' : 'neutral',
         },
         {
           label: '80C + 80CCD Gap',
-          value: formatCurrency(sec.section80cShortfall + sec.nps80ccdShortfall, baseCurrency, { compact: true }),
+          value: formatCurrency(sec.section80cShortfall + sec.nps80ccdShortfall),
           tone: sec.section80cShortfall + sec.nps80ccdShortfall > 0 ? 'amber' : 'emerald',
         },
         {
           label: 'Est. Tax Savings',
-          value: formatCurrency(harvest.estimatedTaxSaved + sec.potentialTaxSaved, baseCurrency, { compact: true }),
+          value: formatCurrency(harvest.estimatedTaxSaved + sec.potentialTaxSaved),
           tone: 'emerald',
         },
       ],
@@ -1640,16 +1618,16 @@ export function processLocalChatMessage(
     const top5 = [...holdings]
       .sort(
         (a, b) =>
-          convertCurrency(b.currentValue, b.currency, baseCurrency) -
-          convertCurrency(a.currentValue, a.currency, baseCurrency)
+          b.currentValue -
+          a.currentValue
       )
       .slice(0, 5);
     return {
-      title: `Top ${top5.length} of ${holdings.length} Holdings (${baseCurrency})`,
+      title: `Top ${top5.length} of ${holdings.length} Holdings (INR)`,
       text: top5
         .map(
           (h, i) =>
-            `${i + 1}. ${h.name} — ${formatCurrency(h.currentValue, h.currency, { compact: true })} (${formatPercent(h.unrealizedGainPct, 1)})`
+            `${i + 1}. ${h.name} — ${formatCurrency(h.currentValue)} (${formatPercent(h.unrealizedGainPct, 1)})`
         )
         .join('\n'),
       actions: [{ label: 'Open Full Ledger', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } }],
@@ -1686,15 +1664,15 @@ export function processLocalChatMessage(
       };
     }
 
-    const metrics = computePortfolioSummaryMetrics(holdings, baseCurrency);
+    const metrics = computePortfolioSummaryMetrics(holdings);
     return {
       title: `Portfolio Snapshot (${ctx.portfolioMode === 'demo' ? ctx.profileName : 'Personal'})`,
       text: `All calculations run locally in your browser. ${metrics.maturedHoldings.length} matured positions and ${metrics.maturingSoonHoldings.length} due within 30 days.`,
       metrics: [
-        { label: 'Net Worth', value: formatCurrency(metrics.totalValuation, baseCurrency, { compact: true }), tone: 'emerald' },
+        { label: 'Net Worth', value: formatCurrency(metrics.totalValuation), tone: 'emerald' },
         {
           label: 'Total Gain',
-          value: `${metrics.totalGain >= 0 ? '+' : ''}${formatCurrency(metrics.totalGain, baseCurrency, { compact: true })} (${formatPercent(metrics.totalGainPct, 1)})`,
+          value: `${metrics.totalGain >= 0 ? '+' : ''}${formatCurrency(metrics.totalGain)} (${formatPercent(metrics.totalGainPct, 1)})`,
           tone: metrics.totalGain >= 0 ? 'emerald' : 'rose',
         },
         {

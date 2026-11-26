@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { convertCurrency, formatCurrency } from '../../utils/currency';
+import { formatCurrency } from '../../utils/currency';
 import { analyzeAllocationProfile, TARGET_MIX_BY_GOAL } from '../../utils/smartDiversification';
 import { balanceScore, beamState, gapSentence } from '../balance';
 import { BUCKET_COLOR, BUCKET_LABEL } from '../buckets';
@@ -103,13 +103,13 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, hasP
   const firstRender = useRef(true);
 
   const own = useMemo(
-    () => analyzeAllocationProfile(portfolio.holdings, portfolio.baseCurrency, 'BALANCED').currentPct,
+    () => analyzeAllocationProfile(portfolio.holdings, 'BALANCED').currentPct,
     [portfolio]
   );
   const total = useMemo(
     () =>
       portfolio.holdings.reduce(
-        (sum, h) => sum + convertCurrency(h.currentValue, h.currency, portfolio.baseCurrency),
+        (sum, h) => sum + h.currentValue,
         0
       ),
     [portfolio]
@@ -217,7 +217,7 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, hasP
                   ? 'You are using the portfolio you built, with '
                   : 'We will use a sample with '}
               {portfolio.holdings.length} investments worth{' '}
-              <span className="num font-semibold">{formatCurrency(total, portfolio.baseCurrency, { compact: true })}</span>.
+              <span className="num font-semibold">{formatCurrency(total)}</span>.
               You can change anything. Your numbers stay on this device.
             </p>
           </>

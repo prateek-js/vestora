@@ -1,7 +1,6 @@
 import { useCallback, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { VestoraLogo } from '../components/VestoraLogo';
-import type { CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency } from '../utils/currency';
+import type { Holding } from '../types/wealth';
 import { loadPersistedPortfolio } from '../utils/portfolioStorage';
 import type { LiveMarketBenchmarks } from '../utils/smartDiversification';
 import { ChapterBar } from './components/ChapterBar';
@@ -29,7 +28,6 @@ const ChatPanelLazy = lazy(() => import('./components/ChatPanel').then((m) => ({
 type Choice = 'sample' | 'saved' | 'personal';
 interface PersonalData {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
 }
 
 /** Ask the editor, from anywhere, to open its add or edit form. */
@@ -66,7 +64,7 @@ export default function DemoApp() {
   const saved = useMemo<DemoPortfolio>(() => pickPortfolio(loadPersistedPortfolio()), []);
   const savedAvailable = saved.source === 'saved';
   const portfolio = useMemo<DemoPortfolio>(() => {
-    if (choice === 'personal' && personal) return personalPortfolio(personal.holdings, personal.baseCurrency);
+    if (choice === 'personal' && personal) return personalPortfolio(personal.holdings);
     if (choice === 'saved' && savedAvailable) return saved;
     return sample;
   }, [choice, personal, sample, saved, savedAvailable]);
@@ -124,7 +122,7 @@ export default function DemoApp() {
   const go = (chapter: Chapter) => {
     if (emptyPersonal && chapter !== 'story' && chapter !== 'mine') return;
     if (chapter === 'mine') {
-      setPersonal((p) => p ?? { holdings: [], baseCurrency: 'INR' });
+      setPersonal((p) => p ?? { holdings: [] });
       setChoice('personal');
     }
     setReached((r) => (r.includes(chapter) ? r : [...r, chapter]));
@@ -136,7 +134,7 @@ export default function DemoApp() {
   // (a copy) so a sample or saved path never lands on an empty editor. Only the
   // story's "Add my investments" button starts empty.
   const goMineFromChat = () => {
-    setPersonal((p) => p ?? { holdings: [...portfolio.holdings], baseCurrency: portfolio.baseCurrency });
+    setPersonal((p) => p ?? { holdings: [...portfolio.holdings] });
     setChoice('personal');
     setReached((r) => (r.includes('mine') ? r : [...r, 'mine']));
     set({ chapter: 'mine' });
@@ -149,7 +147,7 @@ export default function DemoApp() {
 
   // Every change to the visitor's investments starts from a copy of whatever portfolio is on screen, so a saved one is never touched.
   const updatePersonal = (fn: (p: PersonalData) => PersonalData) =>
-    setPersonal((p) => fn(p ?? { holdings: [...portfolio.holdings], baseCurrency: portfolio.baseCurrency }));
+    setPersonal((p) => fn(p ?? { holdings: [...portfolio.holdings] }));
   const editPersonal = (fn: (h: Holding[]) => Holding[]) => {
     setChoice('personal');
     updatePersonal((p) => ({ ...p, holdings: fn(p.holdings) }));
@@ -168,7 +166,7 @@ export default function DemoApp() {
     window.scrollTo({ top: 0 });
   }, [emptyPersonal, chatOpened, state.chapter, set]);
   const addMine = () => {
-    setPersonal((p) => p ?? { holdings: [], baseCurrency: 'INR' });
+    setPersonal((p) => p ?? { holdings: [] });
     setChoice('personal');
     go('mine');
   };
@@ -185,7 +183,7 @@ export default function DemoApp() {
     if (!h) return;
     set({
       sourceId: id,
-      moveAmountInBase: Math.max(0, Math.round(convertCurrency(h.currentValue, h.currency, portfolio.baseCurrency))),
+      moveAmountInBase: Math.max(0, Math.round(h.currentValue)),
       allocations: {},
     });
     go('play');
@@ -225,7 +223,6 @@ export default function DemoApp() {
         {choice === 'personal' && personal && personal.holdings.length > 0 && !emptyPersonal && (
           <PersonalBanner
             holdings={personal.holdings}
-            baseCurrency={personal.baseCurrency}
             onEdit={state.chapter === 'mine' ? undefined : () => go('mine')}
           />
         )}
@@ -245,12 +242,8 @@ export default function DemoApp() {
             <Suspense fallback={<p className="py-10 text-lg">Loading your investments</p>}>
               <Editor
                 holdings={personal.holdings}
-                baseCurrency={personal.baseCurrency}
                 onChange={(nextHoldings) => editPersonal(() => nextHoldings)}
-                onImported={(imported) =>
-                  updatePersonal(() => ({ holdings: imported.holdings, baseCurrency: imported.baseCurrency }))
-                }
-                onBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
+                onImported={(imported) => updatePersonal(() => ({ holdings: imported.holdings }))}
                 onContinue={next}
                 openRequest={openRequest}
                 onOpenRequestHandled={handleOpenRequestHandled}
@@ -312,9 +305,7 @@ export default function DemoApp() {
               onClose={handleChatClose}
               notes={chatNotes}
               holdings={portfolio.holdings}
-              baseCurrency={portfolio.baseCurrency}
               onEdit={editPersonal}
-              onSetBaseCurrency={(baseCurrency) => updatePersonal((p) => ({ ...p, baseCurrency }))}
               onGoChapter={(c) => (c === 'mine' ? goMineFromChat() : go(c))}
               onRebalanceHolding={rebalanceHolding}
               onOpenForm={openChatForm}

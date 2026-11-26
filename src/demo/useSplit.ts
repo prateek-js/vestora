@@ -24,13 +24,12 @@ export function useSplit(
   benchmarks: LiveMarketBenchmarks | null,
   journey: JourneyState
 ): SplitView {
-  const { holdings, baseCurrency, loan } = portfolio;
+  const { holdings, loan } = portfolio;
 
   const plans = useMemo(
     () =>
       generateSmartDiversificationPlans(
         holdings,
-        baseCurrency,
         {
           goal: journey.goal,
           taxSlabPct: 30,
@@ -41,18 +40,17 @@ export function useSplit(
         },
         benchmarks
       ).plans,
-    [holdings, baseCurrency, loan, journey.goal, benchmarks]
+    [holdings, loan, journey.goal, benchmarks]
   );
 
   const catalog = useMemo(
-    () => buildDestinationCatalog(plans, holdings, benchmarks, baseCurrency, loan !== null),
-    [plans, holdings, benchmarks, baseCurrency, loan]
+    () => buildDestinationCatalog(plans, holdings, benchmarks, loan !== null),
+    [plans, holdings, benchmarks, loan]
   );
 
   const input = useMemo<SplitInput>(
     () => ({
       holdings,
-      baseCurrency,
       goal: journey.goal,
       sourceId: journey.sourceId ?? '',
       moveAmountInBase: journey.moveAmountInBase,
@@ -60,7 +58,7 @@ export function useSplit(
       catalog,
       loan,
     }),
-    [holdings, baseCurrency, journey.goal, journey.sourceId, journey.moveAmountInBase, journey.allocations, catalog, loan]
+    [holdings, journey.goal, journey.sourceId, journey.moveAmountInBase, journey.allocations, catalog, loan]
   );
 
   const result = useMemo(() => evaluateSplit(input), [input]);
@@ -69,11 +67,10 @@ export function useSplit(
       playOutcome(
         holdings,
         result.holdingsAfter,
-        baseCurrency,
         journey.factors,
         loan && result.loanPrepaidInBase > 0 ? { amountInBase: result.loanPrepaidInBase, ratePct: loan.ratePct } : undefined
       ),
-    [holdings, result.holdingsAfter, result.loanPrepaidInBase, baseCurrency, journey.factors, loan]
+    [holdings, result.holdingsAfter, result.loanPrepaidInBase, journey.factors, loan]
   );
 
   return { plans, catalog, input, result, outcome };

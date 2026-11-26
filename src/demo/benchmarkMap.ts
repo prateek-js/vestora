@@ -1,5 +1,4 @@
-import type { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency } from '../utils/currency';
+import type { AssetCategory, Holding } from '../types/wealth';
 import {
   AMFI_BENCHMARK_CONFIG,
   type BenchmarkKey,
@@ -96,7 +95,6 @@ export function benchmarkYieldPct(id: BenchmarkId, benchmarks: LiveMarketBenchma
 
 export function buildBenchmarkRows(
   holdings: Holding[],
-  baseCurrency: CurrencyCode,
   benchmarks: LiveMarketBenchmarks | null,
   todayIso: string,
   limit = 6
@@ -113,7 +111,7 @@ export function buildBenchmarkRows(
     }
     const benchmarkPct = benchmarkYieldPct(benchmarkId, benchmarks);
     candidates.push({
-      value: convertCurrency(holding.currentValue, holding.currency, baseCurrency),
+      value: holding.currentValue,
       row: {
         holding,
         benchmarkId,

@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Holding } from '../types/wealth';
 import { refreshMutualFundNavs, searchFunds, NavRefreshOutcome } from '../utils/navRefresh';
 import { formatCurrency } from '../utils/currency';
-import { CurrencyCode } from '../types/wealth';
 import { X, RefreshCw, CheckCircle2, AlertCircle, Search, Link2 } from 'lucide-react';
 
 interface NavRefreshModalProps {
   isOpen: boolean;
   onClose: () => void;
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   onHoldingsRefreshed: (holdings: Holding[]) => void;
 }
 
@@ -19,7 +17,6 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
   isOpen,
   onClose,
   holdings,
-  baseCurrency,
   onHoldingsRefreshed,
 }) => {
   const [phase, setPhase] = useState<Phase>('confirm');
@@ -195,9 +192,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                     </div>
                     <div className="text-emerald-700 font-mono font-semibold text-xs shrink-0 ml-3">
                       {formatCurrency(
-                        outcome.updatedHoldings.find((h) => h.id === u.id)?.currentValue ?? 0,
-                        baseCurrency,
-                        { compact: true }
+                        outcome.updatedHoldings.find((h) => h.id === u.id)?.currentValue ?? 0
                       )}
                     </div>
                   </div>

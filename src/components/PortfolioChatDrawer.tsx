@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CurrencyCode, Holding } from '../types/wealth';
+import { Holding } from '../types/wealth';
 import {
   ChatActionItem,
   ChatActionKind,
@@ -31,15 +31,13 @@ interface ChatMessage {
 
 interface PortfolioChatDrawerProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   portfolioMode: 'demo' | 'personal';
   profileName: string;
   onAddHolding: (holding: Holding) => void;
   onUpdateHolding: (holding: Holding) => void;
   onDeleteHolding: (id: string) => void;
-  onReplaceHoldings: (holdings: Holding[], detectedCurrency?: CurrencyCode) => void;
+  onReplaceHoldings: (holdings: Holding[]) => void;
   onAppendHoldings: (holdings: Holding[]) => void;
-  onSetBaseCurrency: (currency: CurrencyCode) => void;
   onNavigateToTab: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
   onStartBlank: () => void;
   onResetToSample: () => void;
@@ -86,7 +84,6 @@ const WELCOME_MESSAGE = (): ChatMessage => ({
 
 export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
   holdings,
-  baseCurrency,
   portfolioMode,
   profileName,
   onAddHolding,
@@ -94,7 +91,6 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
   onDeleteHolding,
   onReplaceHoldings,
   onAppendHoldings,
-  onSetBaseCurrency,
   onNavigateToTab,
   onStartBlank,
   onResetToSample,
@@ -172,14 +168,13 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
 
     const reply = processLocalChatMessage(
       trimmed,
-      { holdings, baseCurrency, portfolioMode, profileName },
+      { holdings, portfolioMode, profileName },
       {
         onAddHolding,
         onUpdateHolding,
         onReplaceHoldings,
         onAppendHoldings,
         onDeleteHolding,
-        onSetBaseCurrency,
         onNavigateToTab,
         onExportExcel,
         onExportCsv,
@@ -201,7 +196,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const reply = await parseFileForChat(file, baseCurrency);
+      const reply = await parseFileForChat(file);
       appendAssistantMessage(reply);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Could not parse this file locally.';
@@ -226,7 +221,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         return;
       case 'APPLY_IMPORT':
         if (action.mode === 'replace') {
-          onReplaceHoldings(action.holdings, action.currency);
+          onReplaceHoldings(action.holdings);
           appendAssistantMessage({
             title: `Replaced Portfolio from ${action.fileName}`,
             text: `Loaded ${action.holdings.length} holdings into your private device ledger.`,
@@ -253,9 +248,6 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         return;
       case 'NAVIGATE':
         onNavigateToTab(action.tab);
-        return;
-      case 'SET_CURRENCY':
-        onSetBaseCurrency(action.currency);
         return;
       case 'START_BLANK':
         onStartBlank();

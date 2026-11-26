@@ -1,6 +1,6 @@
 import { useId, useMemo } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { convertCurrency, formatCurrency } from '../../utils/currency';
+import { formatCurrency } from '../../utils/currency';
 import { todayIso } from '../../utils/maturity';
 import { runMacroSimulation } from '../../utils/simulationEngine';
 import {
@@ -40,11 +40,11 @@ const primaryButton = 'rounded-full bg-ink px-6 py-3 font-semibold text-paper tr
 
 export function SeeIt({ portfolio, benchmarks, benchmarkStatus, journey, set, onNext }: SeeItProps) {
   const goalId = useId();
-  const { holdings, baseCurrency } = portfolio;
+  const { holdings } = portfolio;
 
   const analysis = useMemo(
-    () => analyzeAllocationProfile(holdings, baseCurrency, journey.goal),
-    [holdings, baseCurrency, journey.goal]
+    () => analyzeAllocationProfile(holdings, journey.goal),
+    [holdings, journey.goal]
   );
   const target = TARGET_MIX_BY_GOAL[journey.goal].weights;
   const beam = beamState(analysis.currentPct, target);
@@ -52,24 +52,24 @@ export function SeeIt({ portfolio, benchmarks, benchmarkStatus, journey, set, on
   const pans = panWeights(analysis.currentPct);
 
   const { rows, unbenchmarked } = useMemo(
-    () => buildBenchmarkRows(holdings, baseCurrency, benchmarks, todayIso()),
-    [holdings, baseCurrency, benchmarks]
+    () => buildBenchmarkRows(holdings, benchmarks, todayIso()),
+    [holdings, benchmarks]
   );
 
   const total = useMemo(
-    () => holdings.reduce((sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency), 0),
-    [holdings, baseCurrency]
+    () => holdings.reduce((sum, h) => sum + h.currentValue, 0),
+    [holdings]
   );
   const sim = useMemo(() => {
-    const alloc = macroAllocation(holdings, baseCurrency);
+    const alloc = macroAllocation(holdings);
     return runMacroSimulation(total, alloc, alloc, journey.factors);
-  }, [holdings, baseCurrency, total, journey.factors]);
+  }, [holdings, total, journey.factors]);
   const chartData = sim.trajectory.map((t) => ({
     year: t.label,
     baseline: Math.round(t.baselineNominal),
     scenario: Math.round(t.scenarioNominal),
   }));
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
   const horizon = journey.factors.projectionHorizonYears;
   const chartSummary = `In ${horizon} ${horizon === 1 ? 'year' : 'years'} your portfolio could be worth ${money(sim.finalBaselineNetWorth)} in calm conditions, or ${money(sim.finalScenarioNetWorth)} with the conditions you chose.`;
 

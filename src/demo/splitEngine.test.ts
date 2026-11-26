@@ -67,7 +67,6 @@ const loan = { principal: 4500000, ratePct: 8.55, yearsLeft: 15 };
 function input(over: Partial<SplitInput> = {}): SplitInput {
   return {
     holdings,
-    baseCurrency: 'INR',
     goal: 'BALANCED',
     sourceId: 'sav',
     moveAmountInBase: 400000,
@@ -78,8 +77,8 @@ function input(over: Partial<SplitInput> = {}): SplitInput {
   };
 }
 
-const totalInr = (hs: Holding[]) =>
-  hs.reduce((s, h) => s + (h.currency === 'USD' ? h.currentValue * 86.5 : h.currentValue), 0);
+// INR-only: every amount is summed as stored; no FX conversion exists anymore.
+const totalInr = (hs: Holding[]) => hs.reduce((s, h) => s + h.currentValue, 0);
 
 // ---------------------------------------------------------------- segments
 
@@ -145,11 +144,11 @@ test('mixes are in base currency even when a holding is in USD', () => {
   assert.ok(Math.abs(sum(r.mixAfter) - 100) <= 2, `after sums to ${sum(r.mixAfter)}`);
 });
 
-test('a destination in another currency receives the converted amount', () => {
+test('a destination amount is stored as given, with no FX conversion', () => {
   const r = evaluateSplit(input({ allocations: { 'd-us': 86500 }, moveAmountInBase: 86500 }));
   const added = r.holdingsAfter.find((h) => h.name === 'US Treasury 10Y')!;
   assert.equal(added.currency, 'USD');
-  assert.ok(Math.abs(added.currentValue - 1000) < 1e-6, `got ${added.currentValue}`);
+  assert.equal(added.currentValue, 86500);
 });
 
 test('allocating more than the amount moved is flagged, not silently trimmed', () => {
@@ -218,14 +217,14 @@ const planWith = (destinations: SuggestedDestination[]) =>
 
 test('the catalog dedupes plan destinations and zeroes their planned amounts', () => {
   const planned = { ...dEq, allocatedInBase: 55555 };
-  const c = buildDestinationCatalog([planWith([planned]), planWith([planned])], [], null, 'INR', false);
+  const c = buildDestinationCatalog([planWith([planned]), planWith([planned])], [], null, false);
   const eq = c.filter((d) => d.id === 'd-eq');
   assert.equal(eq.length, 1);
   assert.equal(eq[0].allocatedInBase, 0);
 });
 
 test('the catalog fills missing segments from the stored benchmark funds', () => {
-  const c = buildDestinationCatalog([], [], null, 'INR', false);
+  const c = buildDestinationCatalog([], [], null, false);
   const segs = new Set(c.map(segmentOf));
   assert.deepEqual([...segs].sort(), ['debt', 'equity', 'gold', 'savings']);
   const eq = c.find((d) => segmentOf(d) === 'equity')!;
@@ -234,9 +233,9 @@ test('the catalog fills missing segments from the stored benchmark funds', () =>
 
 test('there is no loan segment unless a loan is known', () => {
   const withLoanPlan = [planWith([dLoan, dEq])];
-  const without = buildDestinationCatalog(withLoanPlan, [], null, 'INR', false);
+  const without = buildDestinationCatalog(withLoanPlan, [], null, false);
   assert.equal(without.some((d) => segmentOf(d) === 'loan'), false);
-  const withLoan = buildDestinationCatalog([], [], null, 'INR', true);
+  const withLoan = buildDestinationCatalog([], [], null, true);
   assert.equal(withLoan.filter((d) => segmentOf(d) === 'loan').length, 1);
 });
 
@@ -244,15 +243,15 @@ test('the FD option uses the median rate of the portfolio FDs, and is omitted wi
   const fds = [7, 8, 7.5].map((r, i) =>
     holding({ id: `fd${i}`, category: 'FIXED_DEPOSIT', interestRatePct: r })
   );
-  const c = buildDestinationCatalog([], fds, null, 'INR', false);
+  const c = buildDestinationCatalog([], fds, null, false);
   const fd = c.find((d) => segmentOf(d) === 'fd')!;
   assert.equal(fd.expectedRatePct, 7.5);
-  const none = buildDestinationCatalog([], [mf], null, 'INR', false);
+  const none = buildDestinationCatalog([], [mf], null, false);
   assert.equal(none.some((d) => segmentOf(d) === 'fd'), false);
 });
 
 test('catalog ids are unique', () => {
-  const c = buildDestinationCatalog([planWith([dEq, dDebt])], [], null, 'INR', true);
+  const c = buildDestinationCatalog([planWith([dEq, dDebt])], [], null, true);
   assert.equal(new Set(c.map((d) => d.id)).size, c.length);
 });
 
@@ -284,11 +283,12 @@ const planFrom = (source: Holding, move: number, ...ds: [SuggestedDestination, n
   }) as unknown as SmartDiversificationPlan;
 
 test('pickStartingPlan chooses the suggested plan that gets the mix closest to target', () => {
-  // Equity is heavy in this portfolio: moving savings into equity makes it worse, trimming the fund helps.
-  const worse = planFrom(sav, 400000, [dEq, 400000]);
-  const better = planFrom(mf, 300000, [dDebt, 300000]);
-  assert.equal(pickStartingPlan([worse, better], input()), better);
-  assert.equal(pickStartingPlan([better, worse], input()), better);
+  // The legacy USD fixture now counts as a plain 10,000 INR number, so equity is
+  // under target: moving savings into equity helps, trimming the fund into debt overshoots debt.
+  const helpful = planFrom(sav, 400000, [dEq, 400000]);
+  const harmful = planFrom(mf, 300000, [dDebt, 300000]);
+  assert.equal(pickStartingPlan([harmful, helpful], input()), helpful);
+  assert.equal(pickStartingPlan([helpful, harmful], input()), helpful);
 });
 
 test('pickStartingPlan keeps the first plan on a tie and returns null when there are none', () => {
@@ -319,8 +319,8 @@ test('scaleAllocations never rounds the split above the new total', () => {
 
 test('macroAllocation counts a bond fund as fixed income, unlike the simulator’s own category-only rule', () => {
   const bondFund = holding({ id: 'b', name: 'ICICI Pru Corporate Bond Fund', currentValue: 100000 });
-  assert.equal(macroAllocation([bondFund], 'INR').fixedIncome, 100);
-  assert.equal(computePortfolioAllocation([bondFund], 'INR').fixedIncome, 0, 'the app treats it as equity');
+  assert.equal(macroAllocation([bondFund]).fixedIncome, 100);
+  assert.equal(computePortfolioAllocation([bondFund]).fixedIncome, 0, 'the app treats it as equity');
 });
 
 test('macroAllocation puts each kind of holding in its own bucket', () => {
@@ -331,22 +331,21 @@ test('macroAllocation puts each kind of holding in its own bucket', () => {
       holding({ id: '3', name: 'HDFC Gold ETF Fund of Fund', currentValue: 100000 }),
       holding({ id: '4', name: 'SBI Liquid Fund', currentValue: 100000 }),
       holding({ id: '5', name: 'EPF', category: 'EPF', currentValue: 100000 }),
-    ],
-    'INR'
+    ]
   );
   assert.deepEqual(a, { equities: 20, fixedIncome: 20, goldCommodity: 20, retirementPensions: 20, liquidCash: 20 });
 });
 
 test('macroAllocation agrees with the app when no debt, gold or liquid funds are involved', () => {
-  const mine = macroAllocation(holdings, 'INR');
-  const apps = computePortfolioAllocation(holdings, 'INR');
+  const mine = macroAllocation(holdings);
+  const apps = computePortfolioAllocation(holdings);
   for (const key of Object.keys(apps) as (keyof typeof apps)[]) {
     assert.ok(Math.abs(mine[key] - apps[key]) <= 1, `${key}: ${mine[key]} vs ${apps[key]}`);
   }
 });
 
 test('macroAllocation falls back to the app’s default for an empty portfolio', () => {
-  assert.deepEqual(macroAllocation([], 'INR'), computePortfolioAllocation([], 'INR'));
+  assert.deepEqual(macroAllocation([]), computePortfolioAllocation([]));
 });
 
 // ---------------------------------------------------------------- outcome
@@ -362,14 +361,14 @@ const params5: MacroParameters = {
 test('money used to prepay a loan is counted as earning the loan rate, not as still invested', () => {
   const split = evaluateSplit(input({ moveAmountInBase: 200000, allocations: { 'd-loan': 200000 }, loan }));
   const prepay = { amountInBase: split.loanPrepaidInBase, ratePct: loan.ratePct };
-  const out = playOutcome(holdings, split.holdingsAfter, 'INR', params5, prepay);
+  const out = playOutcome(holdings, split.holdingsAfter, params5, prepay);
   const total = totalInr(holdings);
 
   // Paying down a loan does not change net worth on day one.
   assert.ok(Math.abs(out.trajectory[0].shuffledNominal - total) < 1, `day one: ${out.trajectory[0].shuffledNominal} vs ${total}`);
 
   // Afterwards: what remains invested grows under the chosen conditions, the prepaid part grows at the loan rate.
-  const remaining = runMacroSimulation(total - 200000, macroAllocation(holdings, 'INR'), macroAllocation(split.holdingsAfter, 'INR'), params5);
+  const remaining = runMacroSimulation(total - 200000, macroAllocation(holdings), macroAllocation(split.holdingsAfter), params5);
   const expected = remaining.trajectory[5].shuffledNominal + 200000 * Math.pow(1 + loan.ratePct / 100, 5);
   assert.ok(Math.abs(out.trajectory[5].shuffledNominal - expected) < 1, `year five: ${out.trajectory[5].shuffledNominal} vs ${expected}`);
   assert.ok(Math.abs(out.finalShuffledNetWorth - out.trajectory[5].shuffledNominal) <= 1, 'final matches the last point, to rounding');
@@ -378,8 +377,8 @@ test('money used to prepay a loan is counted as earning the loan rate, not as st
 
 test('crediting a loan prepayment leaves the "change nothing" line alone', () => {
   const split = evaluateSplit(input({ moveAmountInBase: 200000, allocations: { 'd-loan': 200000 }, loan }));
-  const plain = playOutcome(holdings, split.holdingsAfter, 'INR', params5);
-  const credited = playOutcome(holdings, split.holdingsAfter, 'INR', params5, { amountInBase: 200000, ratePct: loan.ratePct });
+  const plain = playOutcome(holdings, split.holdingsAfter, params5);
+  const credited = playOutcome(holdings, split.holdingsAfter, params5, { amountInBase: 200000, ratePct: loan.ratePct });
   assert.equal(credited.finalScenarioNetWorth, plain.finalScenarioNetWorth);
   assert.equal(credited.finalBaselineNetWorth, plain.finalBaselineNetWorth);
 });
@@ -393,7 +392,7 @@ test('playOutcome runs the macro simulation over the chosen horizon', () => {
     projectionHorizonYears: 5,
   };
   const after = evaluateSplit(input()).holdingsAfter;
-  const out = playOutcome(holdings, after, 'INR', params);
+  const out = playOutcome(holdings, after, params);
   assert.equal(out.trajectory.length, 6);
   assert.notEqual(out.finalShuffledNetWorth, out.finalScenarioNetWorth);
 });

@@ -1,5 +1,5 @@
 import { CurrencyCode, Holding, TaxTag } from '../types/wealth';
-import { convertCurrency, formatCurrency } from './currency';
+import { formatCurrency } from './currency';
 import {
   calculateHomeLoanPrepaymentImpact,
   fetchLiveGoldInrSpot,
@@ -197,7 +197,6 @@ function classifyHoldingBucket(h: Holding): MacroBucket {
 
 export function analyzeAllocationProfile(
   holdings: Holding[],
-  baseCurrency: CurrencyCode,
   goal: DiversificationGoal
 ): AllocationProfileAnalysis {
   const targetPct = TARGET_MIX_BY_GOAL[goal].weights;
@@ -208,7 +207,7 @@ export function analyzeAllocationProfile(
   const maturedHoldings: Holding[] = [];
 
   holdings.forEach((h) => {
-    const val = Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency));
+    const val = Math.max(0, h.currentValue);
 
     if (h.category === 'SAVINGS_CASH') cashHoldings.push(h);
     if (h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0)) {
@@ -259,13 +258,13 @@ export function analyzeAllocationProfile(
     topHolding,
     cashHoldings: cashHoldings.sort(
       (a, b) =>
-        convertCurrency(b.currentValue, b.currency, baseCurrency) -
-        convertCurrency(a.currentValue, a.currency, baseCurrency)
+        b.currentValue -
+        a.currentValue
     ),
     maturedHoldings: maturedHoldings.sort(
       (a, b) =>
-        convertCurrency(b.currentValue, b.currency, baseCurrency) -
-        convertCurrency(a.currentValue, a.currency, baseCurrency)
+        b.currentValue -
+        a.currentValue
     ),
   };
 }
@@ -344,13 +343,12 @@ function buildMfDestination(
 
 function simulatePlanRisk(
   holdings: Holding[],
-  baseCurrency: CurrencyCode,
   sourceHolding: Holding,
   moveAmountInBase: number,
   destinations: SuggestedDestination[],
   beforeRisk: ReturnType<typeof computePortfolioRiskScore>
 ) {
-  const sourceVal = Math.max(0, convertCurrency(sourceHolding.currentValue, sourceHolding.currency, baseCurrency));
+  const sourceVal = Math.max(0, sourceHolding.currentValue);
   const movedRatio = sourceVal > 0 ? Math.min(1, moveAmountInBase / sourceVal) : 0;
 
   const sim: Holding[] = [];
@@ -371,7 +369,7 @@ function simulatePlanRisk(
 
   destinations.forEach((dest, idx) => {
     if (dest.kind === 'HOME_LOAN' || dest.allocatedInBase <= 0) return;
-    const valDest = convertCurrency(dest.allocatedInBase, baseCurrency, dest.currency);
+    const valDest = dest.allocatedInBase;
     sim.push({
       id: `smart-sim-${idx}`,
       name: dest.title,
@@ -388,7 +386,7 @@ function simulatePlanRisk(
     });
   });
 
-  const afterRisk = computePortfolioRiskScore(sim, baseCurrency);
+  const afterRisk = computePortfolioRiskScore(sim);
   return {
     riskBefore: beforeRisk.score,
     riskAfter: afterRisk.score,
@@ -402,20 +400,19 @@ function simulatePlanRisk(
  */
 export function generateSmartDiversificationPlans(
   holdings: Holding[],
-  baseCurrency: CurrencyCode,
   prefs: SmartDiversificationPreferences,
   benchmarks: LiveMarketBenchmarks | null
 ): {
   analysis: AllocationProfileAnalysis;
   plans: SmartDiversificationPlan[];
 } {
-  const analysis = analyzeAllocationProfile(holdings, baseCurrency, prefs.goal);
+  const analysis = analyzeAllocationProfile(holdings, prefs.goal);
   const plans: SmartDiversificationPlan[] = [];
   if (holdings.length === 0 || analysis.totalValuation <= 0) {
     return { analysis, plans };
   }
 
-  const beforeRisk = computePortfolioRiskScore(holdings, baseCurrency);
+  const beforeRisk = computePortfolioRiskScore(holdings);
   const taxMultiplier = 1 - prefs.taxSlabPct / 100;
   const isLive = Boolean(benchmarks && benchmarks.liveFundCount > 0);
 
@@ -430,8 +427,8 @@ export function generateSmartDiversificationPlans(
     const diff = score(b) - score(a);
     if (diff !== 0) return diff;
     return (
-      convertCurrency(b.currentValue, b.currency, baseCurrency) -
-      convertCurrency(a.currentValue, a.currency, baseCurrency)
+      b.currentValue -
+      a.currentValue
     );
   });
 
@@ -445,7 +442,7 @@ export function generateSmartDiversificationPlans(
       movableHoldings.find((h) => h.category !== 'EPF' && h.category !== 'PPF');
 
     if (loanSource) {
-      const sourceVal = convertCurrency(loanSource.currentValue, loanSource.currency, baseCurrency);
+      const sourceVal = loanSource.currentValue;
       const sourceGrossPct =
         loanSource.interestRatePct ?? (loanSource.category === 'SAVINGS_CASH' ? 3.5 : 7.0);
       const sourcePostTaxPct =
@@ -472,8 +469,8 @@ export function generateSmartDiversificationPlans(
             id: 'home-loan-prepay',
             kind: 'HOME_LOAN',
             title: 'Home Loan Principal Prepayment',
-            subtitle: `${prefs.homeLoanRatePct.toFixed(2)}% tax-free return · Saves ${formatCurrency(impact.interestSaved, baseCurrency, { compact: true })} interest (${impact.monthsSaved} mos off)`,
-            currency: baseCurrency,
+            subtitle: `${prefs.homeLoanRatePct.toFixed(2)}% tax-free return · Saves ${formatCurrency(impact.interestSaved)} interest (${impact.monthsSaved} mos off)`,
+            currency: 'INR',
             allocatedInBase: prepayAmt,
             loanRatePct: prefs.homeLoanRatePct,
             loanInterestSaved: impact.interestSaved,
@@ -486,17 +483,17 @@ export function generateSmartDiversificationPlans(
         }
 
         const totalMoved = destinations.reduce((s, d) => s + d.allocatedInBase, 0);
-        const risk = simulatePlanRisk(holdings, baseCurrency, loanSource, totalMoved, destinations, beforeRisk);
+        const risk = simulatePlanRisk(holdings, loanSource, totalMoved, destinations, beforeRisk);
 
         plans.push({
           id: 'smart-loan-arbitrage',
           categoryLabel: 'Debt vs. Post-Tax Yield Arbitrage',
-          title: `Retire ${formatCurrency(prepayAmt, baseCurrency, { compact: true })} Home Loan Principal`,
+          title: `Retire ${formatCurrency(prepayAmt)} Home Loan Principal`,
           rationale: `${loanSource.name} yields ~${sourcePostTaxPct.toFixed(1)}% after your ${prefs.taxSlabPct}% tax slab, while your home loan costs ${prefs.homeLoanRatePct.toFixed(2)}% tax-free (~${impact.preTaxEquivalent30Pct.toFixed(1)}% pre-tax equivalent). Shifting 70% to principal payoff and 30% to equity-taxed arbitrage locks in guaranteed wealth creation.`,
           sourceHolding: loanSource,
           moveAmountInBase: totalMoved,
           destinations,
-          benefitSummary: `+${formatCurrency(impact.interestSaved, baseCurrency, { compact: true })} interest saved · ${impact.monthsSaved} mos shaved`,
+          benefitSummary: `+${formatCurrency(impact.interestSaved)} interest saved · ${impact.monthsSaved} mos shaved`,
           ...risk,
           isLiveApiBacked: isLive,
         });
@@ -509,7 +506,7 @@ export function generateSmartDiversificationPlans(
   // ---------------------------------------------------------------------------
   const idleSource = analysis.maturedHoldings[0] ?? analysis.cashHoldings[0];
   if (idleSource) {
-    const idleVal = convertCurrency(idleSource.currentValue, idleSource.currency, baseCurrency);
+    const idleVal = idleSource.currentValue;
     const targetCashReserve = (analysis.totalValuation * analysis.targetPct.cash) / 100;
     const isMat =
       idleSource.isMatured || (idleSource.daysToMaturity !== undefined && idleSource.daysToMaturity <= 0);
@@ -558,7 +555,7 @@ export function generateSmartDiversificationPlans(
         destinations.push(buildMfDestination('GOLD_FOF', goldAmt, benchmarks));
       }
 
-      const risk = simulatePlanRisk(holdings, baseCurrency, idleSource, safeMove, destinations, beforeRisk);
+      const risk = simulatePlanRisk(holdings, idleSource, safeMove, destinations, beforeRisk);
       const eqRate = destinations.find((d) => d.schemeCode === 120716)?.expectedRatePct ?? 12.8;
       const gsecBenchRate = benchmarks?.indiaGsecs[0]?.rateOrYieldPct ?? 6.8;
 
@@ -567,7 +564,7 @@ export function generateSmartDiversificationPlans(
         categoryLabel: isMat ? 'Matured Capital Re-Deployment' : 'Idle Cash Optimization',
         title: isMat
           ? `Deploy Matured ${idleSource.name}`
-          : `Put ${formatCurrency(safeMove, baseCurrency, { compact: true })} Excess Savings to Work`,
+          : `Put ${formatCurrency(safeMove)} Excess Savings to Work`,
         rationale: isMat
           ? `${idleSource.name} has already matured and stops compounding efficiently if left idle. Splitting across live market funds matches your ${TARGET_MIX_BY_GOAL[prefs.goal].label} profile.`
           : `Cash represents ${analysis.currentPct.cash}% of your portfolio vs. your ${analysis.targetPct.cash}% target. Moving the surplus into ${prefs.taxSlabPct >= 20 ? 'equity-taxed Arbitrage (12.5% LTCG vs ' + prefs.taxSlabPct + '% slab)' : `Live GoI Sovereign Bonds (~${gsecBenchRate.toFixed(2)}%)`} and Nifty 50 Index (~${eqRate.toFixed(1)}% 3Y CAGR) stops inflation erosion while keeping T+2 liquidity.`,
@@ -626,7 +623,7 @@ export function generateSmartDiversificationPlans(
         destinations.push(buildMfDestination('CORP_BOND', trimAmt - half, benchmarks));
       }
 
-      const risk = simulatePlanRisk(holdings, baseCurrency, topH, trimAmt, destinations, beforeRisk);
+      const risk = simulatePlanRisk(holdings, topH, trimAmt, destinations, beforeRisk);
       const newTopShare = Math.round(
         ((analysis.topHolding.valInBase - trimAmt) / analysis.totalValuation) * 100
       );
@@ -635,7 +632,7 @@ export function generateSmartDiversificationPlans(
         id: 'smart-concentration-trim',
         categoryLabel: 'Concentration Risk Reduction',
         title: `Trim ${topH.name} (${analysis.topHolding.sharePct}% → ${newTopShare}%)`,
-        rationale: `${topH.name} currently accounts for ${analysis.topHolding.sharePct}% of your entire net worth (above the 20% single-instrument threshold). Rotating ${formatCurrency(trimAmt, baseCurrency, { compact: true })} into uncorrelated market funds lowers single-asset drawdown risk.`,
+        rationale: `${topH.name} currently accounts for ${analysis.topHolding.sharePct}% of your entire net worth (above the 20% single-instrument threshold). Rotating ${formatCurrency(trimAmt)} into uncorrelated market funds lowers single-asset drawdown risk.`,
         sourceHolding: topH,
         moveAmountInBase: trimAmt,
         destinations,
@@ -649,7 +646,7 @@ export function generateSmartDiversificationPlans(
   // ---------------------------------------------------------------------------
   // PLAN 5: Section 80CCD(1B) Live NPS Tier-I Tax-Shield Plan
   // ---------------------------------------------------------------------------
-  const taxSection = computeTaxSectionAudit(holdings, baseCurrency);
+  const taxSection = computeTaxSectionAudit(holdings);
   const npsSource =
     analysis.cashHoldings[0] ??
     analysis.maturedHoldings[0] ??
@@ -662,7 +659,7 @@ export function generateSmartDiversificationPlans(
     benchmarks &&
     benchmarks.npsSchemes.length > 0
   ) {
-    const srcVal = convertCurrency(npsSource.currentValue, npsSource.currency, baseCurrency);
+    const srcVal = npsSource.currentValue;
     const npsMove = Math.min(Math.round(srcVal * 0.5), Math.round(taxSection.nps80ccdShortfall));
 
     if (npsMove >= 1000) {
@@ -712,17 +709,17 @@ export function generateSmartDiversificationPlans(
       }
 
       const taxSaved = Math.round(npsMove * (prefs.taxSlabPct / 100));
-      const risk = simulatePlanRisk(holdings, baseCurrency, npsSource, npsMove, destinations, beforeRisk);
+      const risk = simulatePlanRisk(holdings, npsSource, npsMove, destinations, beforeRisk);
 
       plans.push({
         id: 'smart-nps-80ccd',
         categoryLabel: 'Section 80CCD(1B) Live NPS Shield',
-        title: `Allocate ${formatCurrency(npsMove, baseCurrency, { compact: true })} to Top-Ranked NPS Tier I`,
-        rationale: `You have unused Section 80CCD(1B) NPS deduction room. Deploying into live ${topEqNps.schemeName} (${topEqNps.cagr3yPct?.toFixed(1) ?? '11.5'}% 3Y CAGR) saves ~${formatCurrency(taxSaved, baseCurrency, { compact: true })} in direct income tax at your ${prefs.taxSlabPct}% slab.`,
+        title: `Allocate ${formatCurrency(npsMove)} to Top-Ranked NPS Tier I`,
+        rationale: `You have unused Section 80CCD(1B) NPS deduction room. Deploying into live ${topEqNps.schemeName} (${topEqNps.cagr3yPct?.toFixed(1) ?? '11.5'}% 3Y CAGR) saves ~${formatCurrency(taxSaved)} in direct income tax at your ${prefs.taxSlabPct}% slab.`,
         sourceHolding: npsSource,
         moveAmountInBase: npsMove,
         destinations,
-        benefitSummary: `Saves ~${formatCurrency(taxSaved, baseCurrency, { compact: true })} income tax · 80CCD(1B)`,
+        benefitSummary: `Saves ~${formatCurrency(taxSaved)} income tax · 80CCD(1B)`,
         ...risk,
         isLiveApiBacked: true,
       });

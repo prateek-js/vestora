@@ -30,7 +30,6 @@ import {
 interface ValidatePortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  baseCurrency: CurrencyCode;
   currentHoldings: Holding[];
   initialTab?: BuilderTab;
   onApplyHoldings: (holdings: Holding[], strategy: 'replace' | 'append') => void;
@@ -92,7 +91,7 @@ function defaultTaxTagFor(category: AssetCategory): TaxTag {
   }
 }
 
-function createEmptyDraft(currency: CurrencyCode): ManualDraftRow {
+function createEmptyDraft(): ManualDraftRow {
   return {
     tempId: `row-${Math.random().toString(36).slice(2, 8)}`,
     name: '',
@@ -100,7 +99,7 @@ function createEmptyDraft(currency: CurrencyCode): ManualDraftRow {
     institution: '',
     investedAmount: '',
     currentValue: '',
-    currency,
+    currency: 'INR',
     interestRatePct: '',
     maturityDate: '',
   };
@@ -109,7 +108,6 @@ function createEmptyDraft(currency: CurrencyCode): ManualDraftRow {
 export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
   isOpen,
   onClose,
-  baseCurrency,
   currentHoldings,
   initialTab = 'excel',
   onApplyHoldings,
@@ -132,8 +130,8 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
 
   // Manual batch entry state
   const [draftRows, setDraftRows] = useState<ManualDraftRow[]>([
-    createEmptyDraft(baseCurrency),
-    createEmptyDraft(baseCurrency),
+    createEmptyDraft(),
+    createEmptyDraft(),
   ]);
   const [manualError, setManualError] = useState('');
 
@@ -148,9 +146,9 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
       setFileBuffer(null);
       setSheetNames([]);
       setActiveSheet('');
-      setDraftRows([createEmptyDraft(baseCurrency), createEmptyDraft(baseCurrency)]);
+      setDraftRows([createEmptyDraft(), createEmptyDraft()]);
     }
-  }, [isOpen, baseCurrency, initialTab]);
+  }, [isOpen, initialTab]);
 
   const manualSummary = useMemo(() => {
     let validCount = 0;
@@ -175,7 +173,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
   const processExcelBuffer = (buffer: ArrayBuffer, name: string, requestedSheet?: string) => {
     setExcelError('');
     try {
-      const result = importExcelBuffer(buffer, requestedSheet, baseCurrency);
+      const result = importExcelBuffer(buffer, requestedSheet);
       setFileBuffer(buffer);
       setFileName(name);
       setSheetNames(result.sheetNames);
@@ -219,7 +217,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const result = importStatement(String(reader.result ?? ''), baseCurrency);
+          const result = importStatement(String(reader.result ?? ''));
           setFileBuffer(null);
           setSheetNames([]);
           setActiveSheet('');
@@ -316,7 +314,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
           institution: r.institution.trim() || 'Self-Reported',
           investedAmount: inv,
           currentValue: val,
-          currency: r.currency,
+          currency: 'INR',
           interestRatePct: rate !== undefined && Number.isFinite(rate) ? rate : undefined,
           purchaseDate: todayIso(),
           maturityDate: r.maturityDate.trim() || undefined,
@@ -525,7 +523,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
                     <button
                       type="button"
-                      onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
+                      onClick={() => downloadPortfolioExcelTemplate()}
                       className="px-4 py-2 text-xs font-semibold text-ink bg-paper hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap"
                     >
                       <Download className="w-3.5 h-3.5 text-emerald-700" />
@@ -606,10 +604,10 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                                 {h.category.replace('_', ' ')}
                               </td>
                               <td className="py-2 px-3 text-right font-mono tabular-nums text-ink/70">
-                                {formatCurrency(h.investedAmount, h.currency, { showDecimals: false })}
+                                {formatCurrency(h.investedAmount)}
                               </td>
                               <td className="py-2 px-3 text-right font-mono tabular-nums font-medium text-ink">
-                                {formatCurrency(h.currentValue, h.currency, { showDecimals: false })}
+                                {formatCurrency(h.currentValue)}
                               </td>
                               <td className="py-2 px-3 text-center">
                                 <button
@@ -744,16 +742,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-1 flex items-center justify-end gap-1">
-                      <select
-                        aria-label="Currency"
-                        value={row.currency}
-                        onChange={(e) => handleUpdateDraft(row.tempId, 'currency', e.target.value)}
-                        className="bg-paper border border-slate-700 rounded-lg px-1.5 py-1.5 text-2xs font-mono text-ink/70 focus:outline-none"
-                      >
-                        <option value="INR">INR</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                      </select>
+                      <span className="px-1.5 py-1.5 text-2xs font-mono text-ink/70">INR</span>
                       {draftRows.length > 1 && (
                         <button
                           type="button"
@@ -774,7 +763,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <button
                   type="button"
-                  onClick={() => setDraftRows((prev) => [...prev, createEmptyDraft(baseCurrency)])}
+                  onClick={() => setDraftRows((prev) => [...prev, createEmptyDraft()])}
                   className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/30 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -784,7 +773,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                 <div className="text-xs font-mono text-ink/70 tabular-nums">
                   Ready: <span className="text-ink font-semibold">{manualSummary.validCount}</span> rows · Total Value:{' '}
                   <span className="text-emerald-700 font-semibold">
-                    {formatCurrency(manualSummary.totalValue, baseCurrency, { showDecimals: false })}
+                    {formatCurrency(manualSummary.totalValue)}
                   </span>
                 </div>
               </div>
@@ -807,7 +796,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={() => exportHoldingsToExcel(currentHoldings, baseCurrency)}
+                      onClick={() => exportHoldingsToExcel(currentHoldings)}
                       className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <Download className="w-3.5 h-3.5" />

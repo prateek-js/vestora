@@ -50,7 +50,6 @@ const money = (n: number) => `Rs${Math.round(n)}`;
 function build(allocations: Record<string, number>, over: Partial<SplitInput> = {}) {
   const input: SplitInput = {
     holdings: [sav, mf],
-    baseCurrency: 'INR',
     goal: 'BALANCED',
     sourceId: 'sav',
     moveAmountInBase: 400000,

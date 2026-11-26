@@ -1,11 +1,10 @@
 import { useId } from 'react';
-import type { CurrencyCode, Holding } from '../../types/wealth';
-import { convertCurrency, formatCurrency } from '../../utils/currency';
+import type { Holding } from '../../types/wealth';
+import { formatCurrency } from '../../utils/currency';
 import { isLockedIn } from '../splitEngine';
 
 interface SourcePickerProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   sourceId: string | null;
   moveAmountInBase: number;
   onPick: (id: string) => void;
@@ -18,10 +17,10 @@ function isMatured(h: Holding): boolean {
   return Boolean(h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0));
 }
 
-export function SourcePicker({ holdings, baseCurrency, sourceId, moveAmountInBase, onPick, onAmount }: SourcePickerProps) {
+export function SourcePicker({ holdings, sourceId, moveAmountInBase, onPick, onAmount }: SourcePickerProps) {
   const uid = useId();
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
-  const valueOf = (h: Holding) => Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency));
+  const money = (n: number) => formatCurrency(n);
+  const valueOf = (h: Holding) => Math.max(0, h.currentValue);
   const sorted = [...holdings].sort((a, b) => valueOf(b) - valueOf(a));
   const source = holdings.find((h) => h.id === sourceId) ?? null;
   const sourceValue = source ? Math.round(valueOf(source)) : 0;

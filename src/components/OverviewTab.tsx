@@ -15,8 +15,8 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency, formatCurrency, formatPercent } from '../utils/currency';
+import { AssetCategory, Holding } from '../types/wealth';
+import { formatCurrency, formatPercent } from '../utils/currency';
 import {
   generateAutomatedInsights,
   computePortfolioRiskScore,
@@ -70,10 +70,9 @@ interface TrendChartTooltipProps {
     };
   }>;
   label?: string;
-  baseCurrency: CurrencyCode;
 }
 
-const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, label, baseCurrency }) => {
+const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const isPositive = data.unrealizedGain >= 0;
@@ -87,20 +86,20 @@ const TrendChartTooltip: React.FC<TrendChartTooltipProps> = ({ active, payload, 
           <div className="flex items-center justify-between gap-4">
             <span className="text-ink/70">Avg Valuation</span>
             <span className="font-mono font-semibold text-ink tabular-nums">
-              {formatCurrency(data.valuation, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(data.valuation)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-ink/70">Invested Base</span>
             <span className="font-mono text-ink/70 tabular-nums">
-              {formatCurrency(data.invested, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(data.invested)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700/60">
             <span className="text-ink/70">Net Gain</span>
             <span className={`font-mono font-medium tabular-nums ${isPositive ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isPositive ? '+' : ''}
-              {formatCurrency(data.unrealizedGain, baseCurrency, { compact: true })} ({formatPercent(data.gainPct)})
+              {formatCurrency(data.unrealizedGain)} ({formatPercent(data.gainPct)})
             </span>
           </div>
         </div>
@@ -114,10 +113,9 @@ interface MomGrowthTooltipProps {
   active?: boolean;
   payload?: Array<{ payload: MomGrowthPoint }>;
   label?: string;
-  baseCurrency: CurrencyCode;
 }
 
-const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, label, baseCurrency }) => {
+const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const isPositive = data.netGrowth >= 0;
@@ -135,26 +133,26 @@ const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, la
             <span className="text-ink/70">Net Growth (MoM)</span>
             <span className={`font-mono font-semibold tabular-nums ${isPositive ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isPositive ? '+' : ''}
-              {formatCurrency(data.netGrowth, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(data.netGrowth)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-ink/70">Market Return</span>
             <span className={`font-mono tabular-nums ${data.marketGain >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
               {data.marketGain >= 0 ? '+' : ''}
-              {formatCurrency(data.marketGain, baseCurrency, { compact: true })}
+              {formatCurrency(data.marketGain)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-ink/70">Capital Added</span>
             <span className="font-mono text-ink/70 tabular-nums">
-              +{formatCurrency(data.capitalFlow, baseCurrency, { compact: true })}
+              +{formatCurrency(data.capitalFlow)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700/60">
             <span className="text-ink/70">Month-End Value</span>
             <span className="font-mono text-ink tabular-nums">
-              {formatCurrency(data.endingValuation, baseCurrency, { compact: true })}
+              {formatCurrency(data.endingValuation)}
             </span>
           </div>
         </div>
@@ -166,7 +164,6 @@ const MomGrowthTooltip: React.FC<MomGrowthTooltipProps> = ({ active, payload, la
 
 interface OverviewTabProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   portfolioMode: 'demo' | 'personal';
   profileName: string;
   onNavigateToTab: (tab: 'radar' | 'rebalance' | 'tax' | 'simulator' | 'overview') => void;
@@ -180,7 +177,6 @@ interface OverviewTabProps {
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
   holdings,
-  baseCurrency,
   portfolioMode,
   profileName,
   onNavigateToTab,
@@ -201,17 +197,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   // KPI Calculations in Base Currency
   const totalValuation = useMemo(() => {
     return holdings.reduce(
-      (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+      (sum, h) => sum + h.currentValue,
       0
     );
-  }, [holdings, baseCurrency]);
+  }, [holdings]);
 
   const totalInvested = useMemo(() => {
     return holdings.reduce(
-      (sum, h) => sum + convertCurrency(h.investedAmount, h.currency, baseCurrency),
+      (sum, h) => sum + h.investedAmount,
       0
     );
-  }, [holdings, baseCurrency]);
+  }, [holdings]);
 
   const totalGain = totalValuation - totalInvested;
   const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
@@ -294,10 +290,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const totalMaturedAmount = useMemo(() => {
     return maturedHoldings.reduce(
-      (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+      (sum, h) => sum + h.currentValue,
       0
     );
-  }, [maturedHoldings, baseCurrency]);
+  }, [maturedHoldings]);
 
   // Asset Class Allocation Breakdown
   const categoryStats = useMemo(() => {
@@ -310,7 +306,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     };
 
     holdings.forEach((h) => {
-      const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+      const val = h.currentValue;
       if (h.category === 'MUTUAL_FUND' || h.category === 'EQUITY_STOCK') {
         buckets.EQUITY.amount += val;
         buckets.EQUITY.count += 1;
@@ -335,7 +331,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     });
 
     return buckets;
-  }, [holdings, baseCurrency]);
+  }, [holdings]);
 
   // Granular Asset Category Data for Donut Chart
   const categoryDonutData = useMemo(() => {
@@ -345,7 +341,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     >();
 
     holdings.forEach((h) => {
-      const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+      const val = h.currentValue;
       const meta = CATEGORY_META[h.category] || {
         label: h.category.replace('_', ' '),
         shortLabel: h.category.replace('_', ' '),
@@ -370,7 +366,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     return Array.from(map.values())
       .filter((item) => item.value > 0)
       .sort((a, b) => b.value - a.value);
-  }, [holdings, baseCurrency]);
+  }, [holdings]);
 
   // Broad Asset Class Data for Donut Chart
   const broadClassDonutData = useMemo(() => {
@@ -404,13 +400,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   // Automated Insights
   const automatedInsights = useMemo(() => {
-    return generateAutomatedInsights(holdings, baseCurrency);
-  }, [holdings, baseCurrency]);
+    return generateAutomatedInsights(holdings);
+  }, [holdings]);
 
   // Portfolio Risk Score (1-100) based on allocation & holding volatility
   const riskScore = useMemo(() => {
-    return computePortfolioRiskScore(holdings, baseCurrency);
-  }, [holdings, baseCurrency]);
+    return computePortfolioRiskScore(holdings);
+  }, [holdings]);
 
   // Holdings gaining >15% over the last 30 days
   const surgeHoldings30d = useMemo(() => {
@@ -498,7 +494,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
+              onClick={() => downloadPortfolioExcelTemplate()}
               className="px-3.5 py-2 text-xs font-medium text-ink bg-paper hover:bg-ink/5 border border-slate-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
               <Download className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
@@ -506,7 +502,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
+              onClick={() => exportHoldingsToExcel(holdings)}
               disabled={holdings.length === 0}
               className="px-3.5 py-2 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 disabled:opacity-45 disabled:cursor-not-allowed border border-emerald-500/40 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
             >
@@ -518,7 +514,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               onClick={() =>
                 generatePortfolioPdfReport({
                   holdings,
-                  baseCurrency,
                   portfolioMode,
                   profileName,
                 })
@@ -546,7 +541,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </div>
 
               <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-ink tabular-nums">
-                {formatCurrency(totalValuation, baseCurrency, { compact: false, showDecimals: false })}
+                {formatCurrency(totalValuation)}
               </div>
 
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono tabular-nums">
@@ -567,13 +562,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 </span>
                 <span className="text-ink/70">
                   ({thirtyDayStats.changeAmount >= 0 ? '+' : ''}
-                  {formatCurrency(thirtyDayStats.changeAmount, baseCurrency, { compact: true })} last 30d)
+                  {formatCurrency(thirtyDayStats.changeAmount)} last 30d)
                 </span>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-700 flex items-center justify-between gap-3 text-xs text-ink/70 font-mono tabular-nums">
-              <span>Invested {formatCurrency(totalInvested, baseCurrency, { compact: true })}</span>
+              <span>Invested {formatCurrency(totalInvested)}</span>
               <span>
                 {holdings.length} {holdings.length === 1 ? 'holding' : 'holdings'}
               </span>
@@ -678,7 +673,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <strong className="font-semibold text-amber-800">
                     {maturedHoldings.length} matured holding{maturedHoldings.length > 1 ? 's' : ''}
                   </strong>{' '}
-                  ({formatCurrency(totalMaturedAmount, baseCurrency, { compact: true })}) sitting idle.
+                  ({formatCurrency(totalMaturedAmount)}) sitting idle.
                 </>
               ) : (
                 <>
@@ -743,7 +738,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
           <div className="text-xs text-ink/70">Invested Capital</div>
           <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-ink mt-1.5 tabular-nums">
-            {formatCurrency(totalInvested, baseCurrency, { compact: false, showDecimals: false })}
+            {formatCurrency(totalInvested)}
           </div>
           <div className="text-xs text-ink/70 mt-1.5 font-mono tabular-nums">
             {totalInvested > 0
@@ -760,7 +755,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             }`}
           >
             {totalGain >= 0 ? '+' : ''}
-            {formatCurrency(totalGain, baseCurrency, { compact: false, showDecimals: false })}
+            {formatCurrency(totalGain)}
           </div>
           <div className="text-xs mt-1.5 font-mono tabular-nums">
             <span className={totalGain >= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold'}>
@@ -773,7 +768,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5">
           <div className="text-xs text-ink/70">Matured / Due 30d</div>
           <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-amber-700 mt-1.5 tabular-nums">
-            {formatCurrency(totalMaturedAmount, baseCurrency, { compact: false, showDecimals: false })}
+            {formatCurrency(totalMaturedAmount)}
           </div>
           <div className="text-xs text-ink/70 mt-1.5">
             {maturedHoldings.length} matured · {maturingSoonHoldings.length} upcoming
@@ -901,11 +896,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
+                    tickFormatter={(val) => formatCurrency(val)}
                     domain={['auto', 'auto']}
                     width={62}
                   />
-                  <Tooltip content={<TrendChartTooltip baseCurrency={baseCurrency} />} />
+                  <Tooltip content={<TrendChartTooltip />} />
                   <Area
                     type="monotone"
                     dataKey="valuation"
@@ -938,7 +933,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   Invested Capital
                 </span>
               </div>
-              <span className="font-mono text-2xs text-ink/70">{baseCurrency}</span>
+              <span className="font-mono text-2xs text-ink/70">INR</span>
             </div>
           </div>
 
@@ -996,7 +991,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           <div className="bg-paper border border-slate-700 px-3 py-2 rounded-lg shadow-ink/10 text-xs font-mono">
                             <div className="font-semibold text-ink">{data.label}</div>
                             <div className="text-ink mt-0.5 tabular-nums">
-                              {formatCurrency(data.value, baseCurrency, { compact: false, showDecimals: false })} ({pct.toFixed(1)}%)
+                              {formatCurrency(data.value)} ({pct.toFixed(1)}%)
                             </div>
                           </div>
                         );
@@ -1039,7 +1034,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       {activeDonutData[hoveredSliceIndex].shortLabel}
                     </span>
                     <span className="text-sm font-bold font-mono text-ink tabular-nums mt-0.5">
-                      {formatCurrency(activeDonutData[hoveredSliceIndex].value, baseCurrency, { compact: true })}
+                      {formatCurrency(activeDonutData[hoveredSliceIndex].value)}
                     </span>
                     <span className="text-2xs font-mono text-ink/70">
                       {totalValuation > 0
@@ -1051,7 +1046,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <>
                     <span className="text-2xs text-ink/70">Total</span>
                     <span className="text-sm font-bold font-mono text-ink tabular-nums mt-0.5">
-                      {formatCurrency(totalValuation, baseCurrency, { compact: true })}
+                      {formatCurrency(totalValuation)}
                     </span>
                   </>
                 )}
@@ -1078,7 +1073,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     </div>
                     <div className="flex items-center gap-2.5 shrink-0 font-mono tabular-nums">
                       <span className="text-ink">
-                        {formatCurrency(item.value, baseCurrency, { compact: true })}
+                        {formatCurrency(item.value)}
                       </span>
                       <span className="text-ink/70 w-11 text-right">{pct.toFixed(1)}%</span>
                     </div>
@@ -1103,7 +1098,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <span className="text-ink/70">Avg MoM: </span>
                   <span className={`font-semibold ${momSummary.avgMonthlyGrowth >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
                     {momSummary.avgMonthlyGrowth >= 0 ? '+' : ''}
-                    {formatCurrency(momSummary.avgMonthlyGrowth, baseCurrency, { compact: true })}
+                    {formatCurrency(momSummary.avgMonthlyGrowth)}
                   </span>
                 </div>
                 {momSummary.bestMonth && (
@@ -1140,13 +1135,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(val) => formatCurrency(val, baseCurrency, { compact: true })}
+                    tickFormatter={(val) => formatCurrency(val)}
                     width={64}
                   />
                   <ReferenceLine y={0} stroke="#14213d" strokeWidth={1.25} />
                   <Tooltip
                     cursor={{ fill: "rgba(20, 33, 61, 0.05)" }}
-                    content={<MomGrowthTooltip baseCurrency={baseCurrency} />}
+                    content={<MomGrowthTooltip />}
                   />
                   <Bar dataKey="netGrowth" maxBarSize={42} radius={[4, 4, 4, 4]}>
                     {visibleMomData.map((entry) => (
@@ -1237,7 +1232,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
               <button
                 type="button"
-                onClick={() => exportHoldingsToExcel(holdings, baseCurrency)}
+                onClick={() => exportHoldingsToExcel(holdings)}
                 title="Save portfolio as Excel (.xlsx) to re-import later"
                 className="px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-800 border border-emerald-500/35 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
@@ -1260,7 +1255,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 onClick={() =>
                   generatePortfolioPdfReport({
                     holdings,
-                    baseCurrency,
                     portfolioMode,
                     profileName,
                   })
@@ -1329,8 +1323,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       </tr>
                     ) : (
                       filteredHoldings.map((h) => {
-                        const valInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
-                        const invInBase = convertCurrency(h.investedAmount, h.currency, baseCurrency);
+                        const valInBase = h.currentValue;
+                        const invInBase = h.investedAmount;
                         const gainInBase = valInBase - invInBase;
                         const gain30d = getHolding30DayGainPct(h);
                         const isSurge30d = gain30d !== undefined && gain30d > 15;
@@ -1348,8 +1342,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             <td className="py-4 px-4">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-medium text-ink">
-                                  {h.name}
-                                  {h.currency !== baseCurrency && (
+                                      {h.name}
+                                  {h.currency !== 'INR' && (
                                     <span className="ml-1.5 text-2xs font-mono text-ink/70">
                                       ({h.currency})
                                     </span>
@@ -1378,11 +1372,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             </td>
 
                             <td className="py-4 px-4 text-right font-mono text-ink/70 tabular-nums">
-                              {formatCurrency(invInBase, baseCurrency, { showDecimals: false })}
+                              {formatCurrency(invInBase)}
                             </td>
 
                             <td className="py-4 px-4 text-right font-mono font-medium text-ink tabular-nums">
-                              {formatCurrency(valInBase, baseCurrency, { showDecimals: false })}
+                              {formatCurrency(valInBase)}
                             </td>
 
                             <td className="py-4 px-4 text-right font-mono tabular-nums">
@@ -1394,7 +1388,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                 {formatPercent(h.unrealizedGainPct)}
                               </div>
                               <div className="text-2xs text-ink/70">
-                                {formatCurrency(gainInBase, baseCurrency, { compact: true })}
+                                {formatCurrency(gainInBase)}
                               </div>
                             </td>
 

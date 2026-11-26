@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
+import { AssetCategory, Holding, TaxTag } from '../types/wealth';
 import { daysBetween, todayIso } from '../utils/maturity';
 import { X, Plus, Pencil, AlertCircle } from 'lucide-react';
 
 interface AddHoldingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  baseCurrency: CurrencyCode;
   editingHolding?: Holding | null;
   draftHolding?: Holding | null;
   onAddHolding: (holding: Holding) => void;
@@ -16,7 +15,6 @@ interface AddHoldingModalProps {
 export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   isOpen,
   onClose,
-  baseCurrency,
   editingHolding = null,
   draftHolding = null,
   onAddHolding,
@@ -30,7 +28,6 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
   const [accountNumberMask, setAccountNumberMask] = useState('');
   const [investedAmount, setInvestedAmount] = useState<string>('');
   const [currentValue, setCurrentValue] = useState<string>('');
-  const [currency, setCurrency] = useState<CurrencyCode>(baseCurrency);
   const [interestRatePct, setInterestRatePct] = useState<string>('');
   const [purchaseDate, setPurchaseDate] = useState(todayIso());
   const [maturityDate, setMaturityDate] = useState('');
@@ -49,7 +46,6 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       setAccountNumberMask(source.accountNumberMask ?? '');
       setInvestedAmount(String(source.investedAmount));
       setCurrentValue(String(source.currentValue));
-      setCurrency(source.currency);
       setInterestRatePct(
         source.interestRatePct !== undefined ? String(source.interestRatePct) : ''
       );
@@ -64,14 +60,13 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       setAccountNumberMask('');
       setInvestedAmount('');
       setCurrentValue('');
-      setCurrency(baseCurrency);
       setInterestRatePct('');
       setPurchaseDate(todayIso());
       setMaturityDate('');
       setTaxTag('LTCG_EQUITY');
       setNotes('');
     }
-  }, [isOpen, editingHolding, draftHolding, baseCurrency]);
+  }, [isOpen, editingHolding, draftHolding]);
 
   if (!isOpen) return null;
 
@@ -121,7 +116,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
       accountNumberMask: accountNumberMask.trim() || undefined,
       investedAmount: inv,
       currentValue: currVal,
-      currency,
+      currency: 'INR',
       interestRatePct: parsedRate,
       purchaseDate: purchaseDate || todayIso(),
       maturityDate: maturityDate || undefined,
@@ -230,15 +225,9 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             {/* Currency */}
             <div>
               <label className="block text-ink/70 mb-1 font-medium">Currency</label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                className="w-full bg-mist border border-slate-700 rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-emerald-500"
-              >
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-              </select>
+              <div className="w-full bg-mist border border-slate-700 rounded-lg px-3 py-2 text-ink font-mono">
+                INR (₹)
+              </div>
             </div>
 
             {/* Invested Amount */}

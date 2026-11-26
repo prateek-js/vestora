@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CurrencyCode, Holding } from '../../types/wealth';
+import type { Holding } from '../../types/wealth';
 import { DEMO_PROFILES } from '../../data/mockData';
 import { useDialogA11y } from '../../utils/dialogA11y';
 import { sampleHoldingsFor } from '../../utils/portfolioStorage';
@@ -21,10 +21,8 @@ interface ChatPanelProps {
   /** Assistant lines appended from the app shell (e.g. the empty-list routing note). */
   notes: { id: string; text: string }[];
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   /** Every change to the visitor's investments goes through here. */
   onEdit: (fn: (h: Holding[]) => Holding[]) => void;
-  onSetBaseCurrency: (c: CurrencyCode) => void;
   onGoChapter: (c: Chapter) => void;
   onRebalanceHolding: (id: string) => void;
   onOpenForm: (req: { mode: 'add'; draft?: Holding } | { mode: 'edit'; holding: Holding }) => void;
@@ -71,9 +69,7 @@ export function ChatPanel({
   onClose,
   notes,
   holdings,
-  baseCurrency,
   onEdit,
-  onSetBaseCurrency,
   onGoChapter,
   onRebalanceHolding,
   onOpenForm,
@@ -125,7 +121,7 @@ export function ChatPanel({
     const fail = () =>
       append({ title: 'Download failed', text: `Could not make the ${EXPORT_LABEL[format]} file. Please try again.` });
     try {
-      const result = exportPortfolio(format, holdings, baseCurrency);
+      const result = exportPortfolio(format, holdings);
       if (result) result.catch(fail);
     } catch {
       fail();
@@ -135,13 +131,11 @@ export function ChatPanel({
   const callbacks: ChatEngineCallbacks = {
     onAddHolding: (holding) => onEdit((hs) => [...hs, holding]),
     onUpdateHolding: (holding) => onEdit((hs) => hs.map((h) => (h.id === holding.id ? holding : h))),
-    onReplaceHoldings: (next, detectedCurrency) => {
+    onReplaceHoldings: (next) => {
       onEdit(() => next);
-      if (detectedCurrency) onSetBaseCurrency(detectedCurrency);
     },
     onAppendHoldings: (next) => onEdit((hs) => [...hs, ...next]),
     onDeleteHolding: (id) => onEdit((hs) => hs.filter((h) => h.id !== id)),
-    onSetBaseCurrency,
     onNavigateToTab: (tab) => {
       const chapter = chapterForTab(tab);
       if (chapter) {
@@ -163,7 +157,7 @@ export function ChatPanel({
     if (!override) setInput('');
     setMessages((prev) => [...prev, { id: messageId('usr'), sender: 'user' as const, text }]);
     append(
-      processLocalChatMessage(text, { holdings, baseCurrency, portfolioMode: 'personal', profileName: 'You' }, callbacks)
+      processLocalChatMessage(text, { holdings, portfolioMode: 'personal', profileName: 'You' }, callbacks)
     );
   };
 
@@ -173,7 +167,7 @@ export function ChatPanel({
       { id: messageId('usr'), sender: 'user' as const, text: `Attached file: ${file.name}` },
     ]);
     try {
-      append(await parseFileForChat(file, baseCurrency));
+      append(await parseFileForChat(file));
     } catch (err) {
       append({
         title: `Could not read ${file.name}`,
@@ -197,7 +191,7 @@ export function ChatPanel({
         return;
       case 'APPLY_IMPORT':
         if (action.mode === 'replace') {
-          callbacks.onReplaceHoldings(action.holdings, action.currency);
+          callbacks.onReplaceHoldings(action.holdings);
           append({
             title: `Loaded ${action.fileName}`,
             text: `${action.holdings.length} holdings from ${action.fileName} replaced your list.`,
@@ -216,9 +210,6 @@ export function ChatPanel({
         return;
       case 'NAVIGATE':
         callbacks.onNavigateToTab(action.tab);
-        return;
-      case 'SET_CURRENCY':
-        onSetBaseCurrency(action.currency);
         return;
       case 'START_BLANK':
         onEdit(() => []);

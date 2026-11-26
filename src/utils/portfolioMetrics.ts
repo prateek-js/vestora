@@ -1,5 +1,4 @@
-import { AssetCategory, CurrencyCode, Holding } from '../types/wealth';
-import { convertCurrency } from './currency';
+import { AssetCategory, Holding } from '../types/wealth';
 import {
   computePortfolioRiskScore,
   getHolding30DayGainPct,
@@ -135,16 +134,13 @@ export interface PortfolioSummaryMetrics {
   surgeHoldings30d: { holding: Holding; gain30d: number }[];
 }
 
-export function computePortfolioSummaryMetrics(
-  holdings: Holding[],
-  baseCurrency: CurrencyCode
-): PortfolioSummaryMetrics {
+export function computePortfolioSummaryMetrics(holdings: Holding[]): PortfolioSummaryMetrics {
   const totalValuation = holdings.reduce(
-    (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+    (sum, h) => sum + h.currentValue,
     0
   );
   const totalInvested = holdings.reduce(
-    (sum, h) => sum + convertCurrency(h.investedAmount, h.currency, baseCurrency),
+    (sum, h) => sum + h.investedAmount,
     0
   );
   const totalGain = totalValuation - totalInvested;
@@ -154,7 +150,7 @@ export function computePortfolioSummaryMetrics(
   let fixedIncomeWeightedRate = 0;
   holdings.forEach((h) => {
     if (typeof h.interestRatePct === 'number' && Number.isFinite(h.interestRatePct)) {
-      const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+      const val = h.currentValue;
       fixedIncomeValue += val;
       fixedIncomeWeightedRate += val * h.interestRatePct;
     }
@@ -196,13 +192,13 @@ export function computePortfolioSummaryMetrics(
       h.daysToMaturity <= 30
   );
   const totalMaturedAmount = maturedHoldings.reduce(
-    (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
+    (sum, h) => sum + h.currentValue,
     0
   );
 
   const catMap = new Map<AssetCategory, { value: number; count: number }>();
   holdings.forEach((h) => {
-    const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+    const val = h.currentValue;
     const prev = catMap.get(h.category);
     if (prev) {
       prev.value += val;
@@ -232,7 +228,7 @@ export function computePortfolioSummaryMetrics(
     })
     .sort((a, b) => b.value - a.value);
 
-  const riskScore = computePortfolioRiskScore(holdings, baseCurrency);
+  const riskScore = computePortfolioRiskScore(holdings);
 
   const surgeHoldings30d = holdings
     .map((h) => ({ holding: h, gain30d: getHolding30DayGainPct(h) }))

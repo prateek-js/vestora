@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CurrencyCode, DebtPrepaymentRecord, Holding, ReinvestmentSolution } from './types/wealth';
+import { DebtPrepaymentRecord, Holding, ReinvestmentSolution } from './types/wealth';
 import { DEMO_PROFILES, CURATED_REINVESTMENT_SOLUTIONS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { OverviewTab } from './components/OverviewTab';
@@ -23,7 +23,6 @@ import {
   savePersistedPortfolio,
 } from './utils/portfolioStorage';
 import { isoFromToday, todayIso, withDerivedMaturity } from './utils/maturity';
-import { convertCurrency } from './utils/currency';
 import { trackEvent } from './utils/analytics';
 import { NavRefreshModal } from './components/NavRefreshModal';
 import { buildExport, downloadPortfolioExport, parsePortfolioExport } from './utils/backupRestore';
@@ -59,7 +58,6 @@ export default function App() {
     // writes the first portfolio through the normal save effect.
     return {
       profileId: 'custom',
-      baseCurrency: DEMO_PROFILES[0].baseCurrency,
       holdings: [] as Holding[],
       mode: 'personal' as const,
       prepayments: [] as DebtPrepaymentRecord[],
@@ -83,7 +81,6 @@ export default function App() {
     syncDocumentSeo(seoView);
     if (nextHash) window.history.replaceState(null, '', nextHash);
   }, [activeTab]);
-  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initial.baseCurrency);
   const [currentProfileId, setCurrentProfileId] = useState<string>(initial.profileId);
   const [holdings, setHoldings] = useState<Holding[]>(initial.holdings);
   const [prepayments, setPrepayments] = useState<DebtPrepaymentRecord[]>(initial.prepayments);
@@ -147,12 +144,12 @@ export default function App() {
     if (welcomeOpen) return;
     savePersistedPortfolio({
       profileId: currentProfileId,
-      baseCurrency,
+      baseCurrency: 'INR',
       holdings,
       mode: portfolioMode,
       prepayments,
     });
-  }, [welcomeOpen, currentProfileId, baseCurrency, holdings, portfolioMode, prepayments]);
+  }, [welcomeOpen, currentProfileId, holdings, portfolioMode, prepayments]);
 
   const currentProfile =
     DEMO_PROFILES.find((p) => p.id === currentProfileId) ?? DEMO_PROFILES[0];
@@ -249,7 +246,7 @@ export default function App() {
       accountNumberMask: `DEP-${Date.now().toString().slice(-4)}`,
       investedAmount: deployedAmount,
       currentValue: deployedAmount,
-      currency: baseCurrency,
+      currency: 'INR',
       interestRatePct: solution.expectedAnnualYieldPct,
       purchaseDate: todayIso(),
       unrealizedGain: 0,
@@ -279,7 +276,7 @@ export default function App() {
     const source = holdings.find((h) => h.id === sourceHoldingId);
     if (!source || movedAmountInBase <= 0 || destinations.length === 0) return;
 
-    const sourceValueInBase = convertCurrency(source.currentValue, source.currency, baseCurrency);
+    const sourceValueInBase = source.currentValue;
     const movedRatio = sourceValueInBase > 0 ? Math.min(1, movedAmountInBase / sourceValueInBase) : 1;
 
     const updatedHoldings: Holding[] = [];
@@ -320,7 +317,7 @@ export default function App() {
           sourceName: source.name,
           loanLabel: dest.title,
           amountInBase: dest.allocatedInBase,
-          currency: baseCurrency,
+          currency: 'INR',
           loanRatePct: dest.loanRatePct ?? 8.5,
           interestSaved: dest.loanInterestSaved ?? 0,
           monthsSaved: dest.loanMonthsSaved ?? 0,
@@ -329,7 +326,7 @@ export default function App() {
       }
 
       const amountInDestCurrency = Number(
-        convertCurrency(dest.allocatedInBase, baseCurrency, dest.currency).toFixed(2)
+        dest.allocatedInBase.toFixed(2)
       );
       const navOrPrice = dest.navOrPrice && dest.navOrPrice > 0 ? dest.navOrPrice : undefined;
       const units = navOrPrice ? Number((amountInDestCurrency / navOrPrice).toFixed(4)) : undefined;
@@ -378,7 +375,6 @@ export default function App() {
     setHoldings(sampleHoldingsFor(profile));
     setPrepayments([]);
     setRebalanceSourceId(null);
-    setBaseCurrency(profile.baseCurrency);
     setPortfolioMode('demo');
     setIsResetConfirmOpen(false);
     trackEvent('portfolio_reset');
@@ -404,13 +400,13 @@ export default function App() {
 
   // Export a portable JSON backup of the current ledger
   const handleExportPortfolio = () => {
-    downloadPortfolioExport(buildExport(currentProfileId, baseCurrency, holdings));
+    downloadPortfolioExport(buildExport(currentProfileId, holdings));
     trackEvent('portfolio_exported', { holdings: holdings.length });
   };
 
   // Export current portfolio to Excel (.xlsx) or CSV (.csv)
   const handleExportExcel = () => {
-    exportHoldingsToExcel(holdings, baseCurrency);
+    exportHoldingsToExcel(holdings);
     trackEvent('portfolio_exported_xlsx', { holdings: holdings.length });
   };
 
@@ -422,7 +418,6 @@ export default function App() {
   const handleExportPdf = () => {
     generatePortfolioPdfReport({
       holdings,
-      baseCurrency,
       portfolioMode,
       profileName: currentProfile.name,
     });
@@ -442,7 +437,7 @@ export default function App() {
     reader.onload = () => {
       try {
         if (isExcel) {
-          const preview = importExcelBuffer(reader.result as ArrayBuffer, undefined, baseCurrency);
+          const preview = importExcelBuffer(reader.result as ArrayBuffer);
           if (preview.parsed.holdings.length === 0) {
             throw new Error('No recognizable holdings found in this Excel workbook.');
           }
@@ -458,7 +453,7 @@ export default function App() {
 
         const text = String(reader.result ?? '');
         if (lower.endsWith('.csv') || lower.endsWith('.tsv')) {
-          const parsed = importStatement(text, baseCurrency);
+          const parsed = importStatement(text);
           if (parsed.holdings.length === 0) {
             throw new Error('No recognizable holdings found in this CSV file.');
           }
@@ -474,7 +469,6 @@ export default function App() {
 
         const result = parsePortfolioExport(text);
         setHoldings(result.holdings);
-        if (result.baseCurrency) setBaseCurrency(result.baseCurrency);
         setPortfolioMode('personal');
         setActiveTab('overview');
         setRestoreError('');
@@ -564,7 +558,6 @@ export default function App() {
         {activeTab === 'overview' && (
           <OverviewTab
             holdings={holdings}
-            baseCurrency={baseCurrency}
             portfolioMode={portfolioMode}
             profileName={currentProfile.name}
             onNavigateToTab={(tab) => setActiveTab(tab)}
@@ -586,7 +579,6 @@ export default function App() {
         {activeTab === 'rebalance' && (
           <RebalanceTab
             holdings={holdings}
-            baseCurrency={baseCurrency}
             initialSourceHoldingId={rebalanceSourceId}
             prepayments={prepayments}
             onExecuteRebalance={handleExecuteRebalance}
@@ -598,7 +590,6 @@ export default function App() {
         {activeTab === 'radar' && (
           <MaturityRadarTab
             holdings={holdings}
-            baseCurrency={baseCurrency}
             onDeploySolution={(h, s) => {
               setReinvestHolding(h);
               setReinvestSolution(s);
@@ -611,11 +602,11 @@ export default function App() {
         )}
 
         {activeTab === 'tax' && (
-          <TaxAndInsightsTab holdings={holdings} baseCurrency={baseCurrency} />
+          <TaxAndInsightsTab holdings={holdings} />
         )}
 
         {activeTab === 'simulator' && (
-          <MacroSimulatorTab holdings={holdings} baseCurrency={baseCurrency} />
+          <MacroSimulatorTab holdings={holdings} />
         )}
       </main>
 
@@ -657,7 +648,6 @@ export default function App() {
       <ValidatePortfolioModal
         isOpen={isValidateModalOpen}
         onClose={() => setIsValidateModalOpen(false)}
-        baseCurrency={baseCurrency}
         currentHoldings={holdings}
         initialTab={validateInitialTab}
         onApplyHoldings={handleApplyValidatedHoldings}
@@ -668,7 +658,6 @@ export default function App() {
       <AddHoldingModal
         isOpen={isAddModalOpen}
         onClose={closeAddEditModal}
-        baseCurrency={baseCurrency}
         editingHolding={editingHolding}
         draftHolding={draftHolding}
         onAddHolding={handleAddHolding}
@@ -678,7 +667,6 @@ export default function App() {
       <UploadStatementModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        baseCurrency={baseCurrency}
         onImportHoldings={handleImportHoldings}
       />
 
@@ -686,7 +674,6 @@ export default function App() {
         isOpen={isNavRefreshOpen}
         onClose={() => setIsNavRefreshOpen(false)}
         holdings={holdings}
-        baseCurrency={baseCurrency}
         onHoldingsRefreshed={setHoldings}
       />
 
@@ -698,7 +685,6 @@ export default function App() {
         }}
         holding={reinvestHolding}
         solution={reinvestSolution}
-        baseCurrency={baseCurrency}
         onExecuteReinvestment={handleExecuteReinvestment}
       />
 
@@ -817,20 +803,17 @@ export default function App() {
 
       <PortfolioChatDrawer
         holdings={holdings}
-        baseCurrency={baseCurrency}
         portfolioMode={portfolioMode}
         profileName={currentProfile.name}
         onAddHolding={handleAddHolding}
         onUpdateHolding={handleUpdateHolding}
         onDeleteHolding={handleDeleteHolding}
-        onReplaceHoldings={(nextHoldings, detectedCurrency) => {
+        onReplaceHoldings={(nextHoldings) => {
           setHoldings(nextHoldings);
-          if (detectedCurrency) setBaseCurrency(detectedCurrency);
           setPortfolioMode('personal');
           setCurrentProfileId('custom');
         }}
         onAppendHoldings={handleImportHoldings}
-        onSetBaseCurrency={setBaseCurrency}
         onNavigateToTab={setActiveTab}
         onStartBlank={handleStartBlank}
         onResetToSample={handleResetToSample}

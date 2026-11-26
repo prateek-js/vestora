@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CurrencyCode, Holding } from '../types/wealth';
+import { Holding } from '../types/wealth';
 import {
   downloadPortfolioExcelTemplate,
   importExcelBuffer,
@@ -14,7 +14,6 @@ import { X, FileText, ArrowRight, ShieldCheck, UploadCloud, Download, AlertTrian
 interface UploadStatementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  baseCurrency?: CurrencyCode;
   onImportHoldings: (newHoldings: Holding[]) => void;
 }
 
@@ -39,7 +38,6 @@ function downloadTemplate(format: StatementFormat): void {
 export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   isOpen,
   onClose,
-  baseCurrency = 'INR',
   onImportHoldings,
 }) => {
   const [parsed, setParsed] = useState<ParsedStatement | null>(null);
@@ -67,7 +65,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
   const ingestText = (text: string, name: string) => {
     setError('');
     try {
-      const result = importStatement(text, baseCurrency);
+      const result = importStatement(text);
       if (result.holdings.length === 0 && result.skipped.length === 0) {
         setError('Statement parsed but no data rows matched the expected columns.');
         setParsed(null);
@@ -96,7 +94,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
       reader.onload = () => {
         if (reader.result instanceof ArrayBuffer) {
           try {
-            const workbookResult = importExcelBuffer(reader.result, undefined, baseCurrency);
+            const workbookResult = importExcelBuffer(reader.result);
             if (workbookResult.parsed.holdings.length === 0) {
               setError('Excel workbook parsed, but no valid holding rows matched.');
               setParsed(null);
@@ -222,7 +220,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                 </label>
                 <button
                   type="button"
-                  onClick={() => downloadPortfolioExcelTemplate(baseCurrency)}
+                  onClick={() => downloadPortfolioExcelTemplate()}
                   className="text-2xs font-medium text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
                 >
                   <Download className="w-3 h-3" />

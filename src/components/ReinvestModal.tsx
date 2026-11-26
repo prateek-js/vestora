@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { CurrencyCode, Holding, ReinvestmentSolution } from '../types/wealth';
-import { convertCurrency, formatCurrency } from '../utils/currency';
+import { Holding, ReinvestmentSolution } from '../types/wealth';
+import { formatCurrency } from '../utils/currency';
 import { X, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface ReinvestModalProps {
@@ -8,7 +8,6 @@ interface ReinvestModalProps {
   onClose: () => void;
   holding: Holding | null;
   solution: ReinvestmentSolution | null;
-  baseCurrency: CurrencyCode;
   onExecuteReinvestment: (sourceHolding: Holding, solution: ReinvestmentSolution, deployedAmount: number) => void;
 }
 
@@ -17,7 +16,6 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
   onClose,
   holding,
   solution,
-  baseCurrency,
   onExecuteReinvestment,
 }) => {
   // Hooks must run unconditionally — the early return comes after them.
@@ -26,13 +24,13 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
 
   useEffect(() => {
     if (isOpen && holding) {
-      setAllocatedAmount(convertCurrency(holding.currentValue, holding.currency, baseCurrency));
+      setAllocatedAmount(holding.currentValue);
     }
-  }, [isOpen, holding, baseCurrency]);
+  }, [isOpen, holding]);
 
   if (!isOpen || !holding || !solution) return null;
 
-  const sourceValuation = convertCurrency(holding.currentValue, holding.currency, baseCurrency);
+  const sourceValuation = holding.currentValue;
 
   const handleConfirm = () => {
     onExecuteReinvestment(holding, solution, allocatedAmount);
@@ -85,7 +83,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                 <div className="max-w-[45%]">
                   <div className="font-bold text-ink truncate">{holding.name}</div>
                   <div className="text-amber-800 font-mono font-semibold mt-0.5">
-                    {formatCurrency(sourceValuation, baseCurrency)}
+                    {formatCurrency(sourceValuation)}
                   </div>
                   <div className="text-2xs text-ink/70">Matured Capital</div>
                 </div>
@@ -107,7 +105,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
             {/* Allocation Amount Control */}
             <div>
               <label className="block text-ink/70 mb-1 font-medium">
-                Amount to Deploy ({baseCurrency}):
+                Amount to Deploy (INR):
               </label>
               <input
                 type="number"
@@ -116,7 +114,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
                 className="w-full bg-mist border border-slate-700 rounded-lg px-3 py-2 text-ink font-mono font-bold text-sm focus:outline-none focus:border-emerald-500"
               />
               <div className="flex justify-between text-2xs text-ink/70 font-mono mt-1">
-                <span>Full Balance: {formatCurrency(sourceValuation, baseCurrency)}</span>
+                <span>Full Balance: {formatCurrency(sourceValuation)}</span>
                 <button
                   type="button"
                   onClick={() => setAllocatedAmount(sourceValuation)}
@@ -132,7 +130,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <div>
                 <span className="text-ink/70 block">Projected 1st-Year Yield:</span>
                 <span className="text-emerald-700 font-bold text-xs">
-                  +{formatCurrency(projectedAnnualIncome, baseCurrency)}
+                  +{formatCurrency(projectedAnnualIncome)}
                 </span>
               </div>
               <div>

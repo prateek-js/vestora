@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { CurrencyCode, Holding, ReinvestmentSolution, RiskProfile } from '../types/wealth';
+import { Holding, ReinvestmentSolution, RiskProfile } from '../types/wealth';
 import { CURATED_REINVESTMENT_SOLUTIONS } from '../data/mockData';
-import { convertCurrency, formatCurrency } from '../utils/currency';
+import { formatCurrency } from '../utils/currency';
 import {
   Clock,
   Shield,
@@ -53,14 +53,12 @@ function getTimelineBarWidthPct(days: number): number {
 
 interface MaturityRadarTabProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   onDeploySolution: (holding: Holding, solution: ReinvestmentSolution) => void;
   onOpenMarketRebalance?: (holding: Holding) => void;
 }
 
 export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
   holdings,
-  baseCurrency,
   onDeploySolution,
   onOpenMarketRebalance,
 }) => {
@@ -92,7 +90,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
       }
 
       const isMat = Boolean(h.isMatured) || days <= 0;
-      const valueInBase = convertCurrency(h.currentValue, h.currency, baseCurrency);
+      const valueInBase = h.currentValue;
 
       let windowKey: Exclude<MaturityWindowFilter, 'ALL'> = 'BEYOND_90';
       let windowLabel = '> 90 days';
@@ -135,7 +133,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
       openEndedCount: openEnded,
       bucketTotals: totals,
     };
-  }, [holdings, baseCurrency]);
+  }, [holdings]);
 
   const visibleTimelineEntries = useMemo(() => {
     if (timelineFilter === 'ALL') return timelineEntries;
@@ -178,7 +176,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
   }, [selectedRiskTier]);
 
   const activeHoldingValuation = activeHolding
-    ? convertCurrency(activeHolding.currentValue, activeHolding.currency, baseCurrency)
+    ? activeHolding.currentValue
     : 0;
 
   return (
@@ -203,8 +201,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               {formatCurrency(
                 maturingHoldings
                   .filter((h) => h.isMatured)
-                  .reduce((sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency), 0),
-                baseCurrency
+                  .reduce((sum, h) => sum + h.currentValue, 0)
               )}
             </span>
           </div>
@@ -261,7 +258,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.urgent30Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.urgent30Value, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(bucketTotals.urgent30Value)}
             </div>
           </div>
 
@@ -271,7 +268,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window60Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.window60Value, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(bucketTotals.window60Value)}
             </div>
           </div>
 
@@ -281,7 +278,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.window90Value, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(bucketTotals.window90Value)}
             </div>
           </div>
 
@@ -291,7 +288,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.beyond90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.beyond90Value, baseCurrency, { compact: false, showDecimals: false })}
+              {formatCurrency(bucketTotals.beyond90Value)}
             </div>
           </div>
         </div>
@@ -416,7 +413,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                       {/* Valuation & Explicit Window Text */}
                       <div className="md:col-span-2 flex md:flex-col items-center md:items-end justify-between gap-1 font-mono tabular-nums">
                         <span className="text-xs font-bold text-ink">
-                          {formatCurrency(valueInBase, baseCurrency, { compact: true })}
+                          {formatCurrency(valueInBase)}
                         </span>
                         <span className={`text-2xs font-semibold ${labelColorClass}`}>
                           {windowLabel}
@@ -462,7 +459,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {maturingHoldings.map((h) => {
               const isSelected = activeHolding?.id === h.id;
-              const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+              const val = h.currentValue;
               const isMat = h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0);
 
               return (
@@ -494,7 +491,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
                   <div className="mt-2 flex items-baseline justify-between">
                     <div className="text-base font-bold font-mono text-ink tabular-nums">
-                      {formatCurrency(val, baseCurrency, { compact: false })}
+                      {formatCurrency(val)}
                     </div>
                     <div className="text-2xs text-ink/70">
                       {h.category.replace('_', ' ')}
@@ -526,7 +523,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <div className="text-sm font-bold text-ink font-mono flex items-center gap-2">
                 <span>{activeHolding.name}</span>
                 <span className="text-emerald-700">
-                  ({formatCurrency(activeHoldingValuation, baseCurrency)})
+                  ({formatCurrency(activeHoldingValuation)})
                 </span>
               </div>
             </div>
@@ -666,7 +663,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                   <div className="mt-3 text-2xs text-ink/70 flex items-center justify-between px-1">
                     <span>Projected 1st-Year Yield on Staged Capital:</span>
                     <span className="text-emerald-700 font-mono font-bold">
-                      +{formatCurrency(projectedGainAnnual, baseCurrency, { showDecimals: false })}
+                      +{formatCurrency(projectedGainAnnual)}
                     </span>
                   </div>
                 )}

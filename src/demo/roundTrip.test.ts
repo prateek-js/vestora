@@ -59,12 +59,12 @@ function core(h: Holding) {
 }
 
 function viaExcel(holdings: Holding[]): Holding[] {
-  const buf = XLSX.write(buildHoldingsWorkbook(holdings, 'INR'), { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
-  return importExcelBuffer(buf, 'Portfolio', 'INR').parsed.holdings;
+  const buf = XLSX.write(buildHoldingsWorkbook(holdings), { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+  return importExcelBuffer(buf, 'Portfolio').parsed.holdings;
 }
 
 function viaCsv(holdings: Holding[]): Holding[] {
-  return importStatement(buildHoldingsCsv(holdings), 'INR').holdings;
+  return importStatement(buildHoldingsCsv(holdings)).holdings;
 }
 
 test('excel export re-imports with the same holdings', () => {
@@ -79,7 +79,7 @@ test('csv export re-imports with the same holdings', () => {
 
 test('json backup re-imports exactly', () => {
   const f = fixture();
-  const restored = parsePortfolioExport(JSON.stringify(buildExport('p', 'INR', f))).holdings;
+  const restored = parsePortfolioExport(JSON.stringify(buildExport('p', f))).holdings;
   assert.deepEqual(restored.map((h) => h.id), f.map((h) => h.id));
   assert.deepEqual(restored.map(core), f.map(core));
 });
@@ -97,7 +97,7 @@ test('awkward text survives', () => {
 test('a header-only export imports as nothing', () => {
   let holdings: Holding[] = [];
   assert.doesNotThrow(() => {
-    holdings = importStatement(buildHoldingsCsv([]), 'INR').holdings;
+    holdings = importStatement(buildHoldingsCsv([])).holdings;
   });
   assert.equal(holdings.length, 0);
 });
@@ -115,7 +115,7 @@ test('a quote in the middle of an unquoted cell is literal and keeps every row',
     'Fund C,Mutual Fund,AMC,300,360,INR',
     'Fund D,Mutual Fund,AMC,400,480,INR'
   );
-  const parsed = importStatement(text, 'INR');
+  const parsed = importStatement(text);
   assert.deepEqual(
     parsed.holdings.map((h) => h.name),
     ['Fund A', 'B 5" pipe', 'Fund C', 'Fund D']
@@ -128,7 +128,7 @@ test('a properly closed quoted cell that starts a row still works', () => {
     '"Axis, Direct",Mutual Fund,AMC,100,120,INR',
     'Fund B,Mutual Fund,AMC,200,240,INR'
   );
-  const parsed = importStatement(text, 'INR');
+  const parsed = importStatement(text);
   assert.deepEqual(
     parsed.holdings.map((h) => h.name),
     ['Axis, Direct', 'Fund B']
@@ -169,5 +169,5 @@ test('an unterminated quoted cell throws instead of silently truncating', () => 
     '"Fund B,Mutual Fund,AMC,200,240,INR',
     'Fund C,Mutual Fund,AMC,300,360,INR'
   );
-  assert.throws(() => importStatement(text, 'INR'), /Unterminated quote/);
+  assert.throws(() => importStatement(text), /Unterminated quote/);
 });

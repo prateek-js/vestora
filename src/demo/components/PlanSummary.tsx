@@ -20,9 +20,9 @@ interface PlanSummaryProps {
 const quietButton = 'rounded-full border border-ink/30 px-6 py-3 font-semibold hover:border-ink';
 
 export function PlanSummary({ portfolio, journey, split, onBack, onEditConditions }: PlanSummaryProps) {
-  const { baseCurrency, holdings } = portfolio;
+  const { holdings } = portfolio;
   const { input, result, outcome } = split;
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
   const source = holdings.find((h) => h.id === journey.sourceId) ?? null;
   const total = placedTotal(input);
 

@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
-import type { CurrencyCode, Holding } from '../../types/wealth';
-import { convertCurrency, formatCurrency } from '../../utils/currency';
+import type { Holding } from '../../types/wealth';
+import { formatCurrency } from '../../utils/currency';
 import { portfolioTotal } from '../demoData';
 import { draftFromHolding, emptyDraft, STARTER_CATEGORIES, type HoldingDraft } from '../holdingDraft';
 import { parseImportedFile, readImportFile, type ImportedPortfolio } from '../personalPortfolio';
@@ -11,10 +11,8 @@ type OpenRequest = { mode: 'add'; draft?: Holding } | { mode: 'edit'; holding: H
 
 interface EditorProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   onChange: (next: Holding[]) => void;
   onImported: (p: ImportedPortfolio) => void;
-  onBaseCurrency: (c: CurrencyCode) => void;
   onContinue: () => void;
   openRequest?: OpenRequest | null;
   onOpenRequestHandled?: () => void;
@@ -25,7 +23,6 @@ interface FormState {
   existing?: Holding;
 }
 
-const CURRENCIES: CurrencyCode[] = ['INR', 'USD', 'EUR'];
 const primaryButton =
   'rounded-full bg-ink px-6 py-3 font-semibold text-paper transition-colors hover:bg-ink/90 disabled:opacity-40';
 const outlineButton =
@@ -34,10 +31,8 @@ const quietButton = 'rounded-full px-3 py-1.5 text-sm font-semibold text-ink und
 
 export function Editor({
   holdings,
-  baseCurrency,
   onChange,
   onImported,
-  onBaseCurrency,
   onContinue,
   openRequest,
   onOpenRequestHandled,
@@ -51,9 +46,9 @@ export function Editor({
   const undoRef = useRef<HTMLButtonElement>(null);
   const listHeadingRef = useRef<HTMLHeadingElement>(null);
 
-  const total = portfolioTotal({ holdings, baseCurrency });
+  const total = portfolioTotal({ holdings });
   const canContinue = total > 0;
-  const money = (n: number) => formatCurrency(n, baseCurrency, { compact: true });
+  const money = (n: number) => formatCurrency(n);
 
   // Lets another chapter open the form here (for example "edit this one" from the plan).
   useEffect(() => {
@@ -61,10 +56,10 @@ export function Editor({
     if (openRequest.mode === 'edit') {
       setForm({ initial: draftFromHolding(openRequest.holding), existing: openRequest.holding });
     } else {
-      setForm({ initial: openRequest.draft ? draftFromHolding(openRequest.draft) : emptyDraft('MUTUAL_FUND', baseCurrency) });
+      setForm({ initial: openRequest.draft ? draftFromHolding(openRequest.draft) : emptyDraft('MUTUAL_FUND') });
     }
     onOpenRequestHandled?.();
-  }, [openRequest, baseCurrency, onOpenRequestHandled]);
+  }, [openRequest, onOpenRequestHandled]);
 
   // Moves focus to the Undo button after a removal, since the row that held focus is gone.
   useEffect(() => {
@@ -72,7 +67,7 @@ export function Editor({
   }, [removed]);
 
   const openAdd = (category: Holding['category'] = 'MUTUAL_FUND') => {
-    setForm({ initial: emptyDraft(category, baseCurrency) });
+    setForm({ initial: emptyDraft(category) });
   };
 
   const closeForm = () => {
@@ -111,7 +106,7 @@ export function Editor({
     setImportNote(null);
     try {
       const { fileName, content } = await readImportFile(file);
-      const imported = parseImportedFile(fileName, content, baseCurrency);
+      const imported = parseImportedFile(fileName, content);
       setRemoved(null);
       setForm(null);
       onImported(imported);
@@ -155,26 +150,7 @@ export function Editor({
           aria-label="Choose a file to import"
           onChange={(e) => void pickFile(e)}
         />
-        <div className="flex items-center gap-2">
-          <label htmlFor={`${uid}-currency`} className="text-sm font-semibold">
-            Show amounts in
-          </label>
-          <select
-            id={`${uid}-currency`}
-            value={baseCurrency}
-            onChange={(e) => {
-              setRemoved(null);
-              onBaseCurrency(e.target.value as CurrencyCode);
-            }}
-            className="rounded-lg border border-ink/30 bg-paper px-3 py-2"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        <span className="rounded-lg border border-ink/30 bg-paper px-3 py-2 text-sm font-mono">INR</span>
       </div>
       <p className="mb-0 mt-2 text-sm text-ink/70">
         Importing a file replaces everything listed here. Excel, CSV and Vestora files work.
@@ -250,7 +226,7 @@ export function Editor({
                   </p>
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:justify-end">
-                  <span className="num font-bold">{money(convertCurrency(h.currentValue, h.currency, baseCurrency))}</span>
+                  <span className="num font-bold">{money(h.currentValue)}</span>
                   <button
                     type="button"
                     className={quietButton}
@@ -270,7 +246,7 @@ export function Editor({
       </section>
 
       <div className="mt-8 flex flex-col gap-4 border-t border-ink/15 pt-6 sm:flex-row sm:items-start sm:justify-between">
-        <ExportBar holdings={holdings} baseCurrency={baseCurrency} formats={['xlsx', 'pdf', 'csv', 'json']} />
+        <ExportBar holdings={holdings} formats={['xlsx', 'pdf', 'csv', 'json']} />
         <div className="sm:text-right">
           <button
             type="button"

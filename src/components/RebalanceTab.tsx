@@ -6,7 +6,7 @@ import {
   Holding,
   TaxTag,
 } from '../types/wealth';
-import { convertCurrency, formatCurrency, formatPercent } from '../utils/currency';
+import { formatCurrency, formatPercent } from '../utils/currency';
 import { CATEGORY_META } from '../utils/portfolioMetrics';
 import { computePortfolioRiskScore } from '../utils/taxAndDiversification';
 import {
@@ -69,7 +69,6 @@ export interface RebalanceDestination {
 
 interface RebalanceTabProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   initialSourceHoldingId?: string | null;
   prepayments: DebtPrepaymentRecord[];
   onExecuteRebalance: (payload: {
@@ -99,7 +98,6 @@ const POPULAR_MF_CHIPS = [
 
 export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   holdings,
-  baseCurrency,
   initialSourceHoldingId,
   prepayments,
   onExecuteRebalance,
@@ -138,9 +136,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   const sourceValueInBase = useMemo(
     () =>
       sourceHolding
-        ? Math.max(0, Math.round(convertCurrency(sourceHolding.currentValue, sourceHolding.currency, baseCurrency)))
+        ? Math.max(0, Math.round(sourceHolding.currentValue))
         : 0,
-    [sourceHolding, baseCurrency]
+    [sourceHolding]
   );
 
   const [moveAmountInBase, setMoveAmountInBase] = useState<number>(0);
@@ -198,15 +196,14 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   // Custom Stock / ETF inline builder
   const [customStockName, setCustomStockName] = useState('');
   const [customStockBroker, setCustomStockBroker] = useState('NSE / Zerodha');
-  const [customStockCcy, setCustomStockCcy] = useState<CurrencyCode>(baseCurrency);
 
   // Home Loan Prepayment state
   const [loanLabel, setLoanLabel] = useState('Home Loan Principal Prepayment');
   const [loanPrincipal, setLoanPrincipal] = useState<number>(() =>
-    baseCurrency === 'INR' ? 4500000 : baseCurrency === 'USD' ? 320000 : 280000
+    4500000
   );
   const [loanRatePct, setLoanRatePct] = useState<number>(() =>
-    baseCurrency === 'INR' ? 8.55 : baseCurrency === 'USD' ? 6.5 : 4.1
+    8.55
   );
   const [loanYearsLeft, setLoanYearsLeft] = useState<number>(15);
 
@@ -259,7 +256,6 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     () =>
       generateSmartDiversificationPlans(
         holdings,
-        baseCurrency,
         {
           goal: smartGoal,
           taxSlabPct,
@@ -270,11 +266,11 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         },
         benchmarks
       ),
-    [holdings, baseCurrency, smartGoal, taxSlabPct, hasHomeLoan, loanRatePct, loanPrincipal, loanYearsLeft, benchmarks]
+    [holdings, smartGoal, taxSlabPct, hasHomeLoan, loanRatePct, loanPrincipal, loanYearsLeft, benchmarks]
   );
 
   const handleApplySuggestedPlan = (plan: SmartDiversificationPlan) => {
-    const sourceVal = convertCurrency(plan.sourceHolding.currentValue, plan.sourceHolding.currency, baseCurrency);
+    const sourceVal = plan.sourceHolding.currentValue;
     const boundedMove = Math.min(Math.round(sourceVal), Math.max(0, Math.round(plan.moveAmountInBase)));
 
     if (plan.sourceHolding.id !== sourceHoldingId) {
@@ -442,7 +438,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
   // Before -> After Portfolio Risk Score simulation
   const riskSimulation = useMemo(() => {
-    const before = computePortfolioRiskScore(holdings, baseCurrency);
+    const before = computePortfolioRiskScore(holdings);
     if (!sourceHolding || destinations.length === 0 || moveAmountInBase <= 0) {
       return { before, after: before };
     }
@@ -467,7 +463,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
     destinations.forEach((dest, idx) => {
       if (dest.kind === 'HOME_LOAN' || dest.allocatedInBase <= 0) return;
-      const valInDestCcy = convertCurrency(dest.allocatedInBase, baseCurrency, dest.currency);
+      const valInDestCcy = dest.allocatedInBase;
       simulatedHoldings.push({
         id: `sim-dest-${idx}`,
         name: dest.title,
@@ -484,17 +480,17 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
       });
     });
 
-    const after = computePortfolioRiskScore(simulatedHoldings, baseCurrency);
+    const after = computePortfolioRiskScore(simulatedHoldings);
     return { before, after };
-  }, [holdings, baseCurrency, sourceHolding, sourceValueInBase, moveAmountInBase, destinations]);
+  }, [holdings, sourceHolding, sourceValueInBase, moveAmountInBase, destinations]);
 
   const totalDebtRetired = useMemo(
-    () => prepayments.reduce((s, p) => s + convertCurrency(p.amountInBase, p.currency, baseCurrency), 0),
-    [prepayments, baseCurrency]
+    () => prepayments.reduce((s, p) => s + p.amountInBase, 0),
+    [prepayments]
   );
   const totalInterestSaved = useMemo(
-    () => prepayments.reduce((s, p) => s + convertCurrency(p.interestSaved, p.currency, baseCurrency), 0),
-    [prepayments, baseCurrency]
+    () => prepayments.reduce((s, p) => s + p.interestSaved, 0),
+    [prepayments]
   );
 
   const canExecute =
@@ -529,7 +525,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     });
 
     setExecutedSummary(
-      `Rebalanced ${formatCurrency(allocatedTotal, baseCurrency, { compact: false })} from ${sourceHolding.name} across ${finalizedDestinations.length} destination${finalizedDestinations.length > 1 ? 's' : ''}.`
+      `Rebalanced ${formatCurrency(allocatedTotal)} from ${sourceHolding.name} across ${finalizedDestinations.length} destination${finalizedDestinations.length > 1 ? 's' : ''}.`
     );
     setDestinations([]);
   };
@@ -575,8 +571,8 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           <div className="bg-mist border border-emerald-500/30 rounded-xl px-4 py-2.5 text-xs font-mono shrink-0">
             <div className="text-2xs text-ink/70">Cumulative Debt Prepayment</div>
             <div className="text-emerald-700 font-bold tabular-nums mt-0.5">
-              {formatCurrency(totalDebtRetired, baseCurrency, { compact: true })} paid ·{' '}
-              {formatCurrency(totalInterestSaved, baseCurrency, { compact: true })} interest saved
+              {formatCurrency(totalDebtRetired)} paid ·{' '}
+              {formatCurrency(totalInterestSaved)} interest saved
             </div>
           </div>
         )}
@@ -727,7 +723,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-ink/70 font-medium">Current Mix vs. {TARGET_MIX_BY_GOAL[smartGoal].label} Target</span>
               <span className="font-mono text-ink/70 tabular-nums">
-                Total {formatCurrency(smartReport.analysis.totalValuation, baseCurrency, { compact: true })}
+                Total {formatCurrency(smartReport.analysis.totalValuation)}
               </span>
             </div>
             <div className="space-y-1.5">
@@ -889,7 +885,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       <div className="flex items-center justify-between text-ink/70 font-mono">
                         <span>Source: {plan.sourceHolding.name}</span>
                         <span className="text-ink font-semibold tabular-nums">
-                          -{formatCurrency(plan.moveAmountInBase, baseCurrency, { compact: true })}
+                          -{formatCurrency(plan.moveAmountInBase)}
                         </span>
                       </div>
                       {plan.destinations.map((dest) => (
@@ -899,7 +895,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         >
                           <span className="truncate">→ {dest.title}</span>
                           <span className="text-emerald-700 font-semibold shrink-0 tabular-nums">
-                            +{formatCurrency(dest.allocatedInBase, baseCurrency, { compact: true })}
+                            +{formatCurrency(dest.allocatedInBase)}
                             {dest.expectedRatePct ? ` (${dest.expectedRatePct.toFixed(1)}%)` : ''}
                           </span>
                         </div>
@@ -966,7 +962,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           {/* Holding Selector List */}
           <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
             {holdings.map((h) => {
-              const val = convertCurrency(h.currentValue, h.currency, baseCurrency);
+              const val = h.currentValue;
               const isSelected = sourceHolding?.id === h.id;
               const catLabel = CATEGORY_META[h.category]?.shortLabel ?? h.category;
               return (
@@ -997,7 +993,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   </div>
                   <div className="text-right font-mono shrink-0 tabular-nums">
                     <div className="text-xs font-bold text-ink">
-                      {formatCurrency(val, baseCurrency, { compact: true })}
+                      {formatCurrency(val)}
                     </div>
                     <div className={`text-2xs ${h.unrealizedGainPct >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                       {formatPercent(h.unrealizedGainPct, 1)}
@@ -1013,7 +1009,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             <div className="pt-3 border-t border-ink/10 space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-ink/70 font-medium">
-                  Amount to Break / Move ({baseCurrency})
+                  Amount to Break / Move (INR)
                 </span>
                 <div className="flex items-center gap-1">
                   {[0.25, 0.5, 0.75, 1].map((pct) => {
@@ -1064,7 +1060,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <div>
                   <span className="text-ink/70 block">Staged to Diversify</span>
                   <span className="text-emerald-700 font-bold text-xs tabular-nums">
-                    {formatCurrency(moveAmountInBase, baseCurrency, { compact: false })}
+                    {formatCurrency(moveAmountInBase)}
                   </span>
                 </div>
                 <div className="text-right">
@@ -1072,7 +1068,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   <span className="text-ink font-semibold text-xs tabular-nums">
                     {sourceValueInBase - moveAmountInBase <= 1
                       ? 'Full Exit (0)'
-                      : formatCurrency(sourceValueInBase - moveAmountInBase, baseCurrency, { compact: false })}
+                      : formatCurrency(sourceValueInBase - moveAmountInBase)}
                   </span>
                 </div>
               </div>
@@ -1631,7 +1627,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           subtitle: `${customBondInstitution.trim() || 'Custom Issuer'} · ${rate}% p.a.`,
                           category: customBondCat,
                           institution: customBondInstitution.trim() || 'Custom Bank / Issuer',
-                          currency: baseCurrency,
+                          currency: 'INR',
                           expectedRatePct: rate,
                           tenureDays: days,
                           taxTag: 'SLAB_INCOME',
@@ -1797,13 +1793,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     className="bg-paper border border-slate-700 rounded-lg px-2.5 py-1.5 text-ink placeholder-ink/60 focus:outline-none focus:border-emerald-500"
                   />
                   <div className="flex gap-2">
-                    <select
-                      value={customStockCcy}
-                      onChange={(e) => setCustomStockCcy(e.target.value as CurrencyCode)}
-                      className="bg-paper border border-slate-700 rounded-lg px-2 py-1.5 text-ink font-mono focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="INR">INR</option>
-                    </select>
+                    <span className="inline-flex items-center bg-paper border border-slate-700 rounded-lg px-2 py-1.5 text-ink font-mono">
+                      INR
+                    </span>
                     <button
                       type="button"
                       disabled={!customStockName.trim() || moveAmountInBase <= 0}
@@ -1812,10 +1804,10 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           id: `custom-eq-${Date.now()}`,
                           kind: 'CUSTOM_ASSET',
                           title: customStockName.trim(),
-                          subtitle: `${customStockBroker.trim() || 'Broker Demat'} · ${customStockCcy}`,
+                          subtitle: `${customStockBroker.trim() || 'Broker Demat'} · INR`,
                           category: 'EQUITY_STOCK',
                           institution: customStockBroker.trim() || 'Brokerage Demat',
-                          currency: customStockCcy,
+                          currency: 'INR',
                           taxTag: 'LTCG_EQUITY',
                         });
                         setCustomStockName('');
@@ -1970,7 +1962,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   </div>
                   <div>
                     <label className="block text-2xs text-ink/70 mb-1">
-                      Outstanding Principal ({baseCurrency})
+                      Outstanding Principal (INR)
                     </label>
                     <input
                       type="number"
@@ -2023,10 +2015,10 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   <div className="p-2.5 rounded-lg bg-paper border border-slate-700">
                     <span className="text-2xs text-ink/70 block">Total Interest Saved</span>
                     <span className="text-sm font-bold text-emerald-700">
-                      +{formatCurrency(homeLoanImpact.interestSaved, baseCurrency, { compact: true })}
+                      +{formatCurrency(homeLoanImpact.interestSaved)}
                     </span>
                     <span className="text-2xs text-ink/70 block mt-0.5">
-                      On {formatCurrency(homeLoanImpact.prepayApplied, baseCurrency, { compact: true })} prepay
+                      On {formatCurrency(homeLoanImpact.prepayApplied)} prepay
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-paper border border-slate-700">
@@ -2035,7 +2027,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       {Math.floor(homeLoanImpact.monthsSaved / 12)}y {homeLoanImpact.monthsSaved % 12}m
                     </span>
                     <span className="text-2xs text-ink/70 block mt-0.5">
-                      EMI {formatCurrency(homeLoanImpact.monthlyEmi, baseCurrency, { compact: true })}/mo
+                      EMI {formatCurrency(homeLoanImpact.monthlyEmi)}/mo
                     </span>
                   </div>
                 </div>
@@ -2051,8 +2043,8 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         id: 'home-loan-prepay',
                         kind: 'HOME_LOAN',
                         title: loanLabel.trim() || 'Home Loan Prepayment',
-                        subtitle: `${loanRatePct.toFixed(2)}% p.a. · Saves ~${formatCurrency(homeLoanImpact.interestSaved, baseCurrency, { compact: true })} interest (${homeLoanImpact.monthsSaved} mos off)`,
-                        currency: baseCurrency,
+                        subtitle: `${loanRatePct.toFixed(2)}% p.a. · Saves ~${formatCurrency(homeLoanImpact.interestSaved)} interest (${homeLoanImpact.monthsSaved} mos off)`,
+                        currency: 'INR',
                         loanRatePct,
                         loanInterestSaved: homeLoanImpact.interestSaved,
                         loanMonthsSaved: homeLoanImpact.monthsSaved,
@@ -2103,11 +2095,11 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     : 'text-amber-700'
                 }`}
               >
-                {formatCurrency(allocatedTotal, baseCurrency, { compact: false })}
+                {formatCurrency(allocatedTotal)}
               </span>
               <span className="text-ink/70">
                 {' '}
-                / {formatCurrency(moveAmountInBase, baseCurrency, { compact: false })}
+                / {formatCurrency(moveAmountInBase)}
               </span>
             </div>
 
@@ -2158,7 +2150,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
 
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-2xs font-mono text-ink/70">{baseCurrency}</span>
+                    <span className="text-2xs font-mono text-ink/70">INR</span>
                     <input
                       type="number"
                       min={0}
@@ -2219,7 +2211,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 {isOverAllocated && (
                   <span className="text-2xs text-rose-700 font-medium">
                     Allocated exceeds staged source amount by{' '}
-                    {formatCurrency(allocatedTotal - moveAmountInBase, baseCurrency, { compact: true })}
+                    {formatCurrency(allocatedTotal - moveAmountInBase)}
                   </span>
                 )}
                 <button
@@ -2272,10 +2264,10 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 </div>
                 <div className="text-left sm:text-right font-mono tabular-nums">
                   <div className="font-bold text-ink">
-                    {formatCurrency(convertCurrency(p.amountInBase, p.currency, baseCurrency), baseCurrency)} prepaid
+                    {formatCurrency(p.amountInBase)} prepaid
                   </div>
                   <div className="text-2xs text-emerald-700">
-                    +{formatCurrency(convertCurrency(p.interestSaved, p.currency, baseCurrency), baseCurrency)} interest saved
+                    +{formatCurrency(p.interestSaved)} interest saved
                   </div>
                 </div>
               </div>

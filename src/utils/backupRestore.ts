@@ -15,21 +15,17 @@ export interface PortfolioExport {
   version: typeof EXPORT_VERSION;
   exportedAt: string;
   profileId: string;
-  baseCurrency: CurrencyCode;
+  /** Present in older exports; every holding is INR now, so new exports omit it. */
+  baseCurrency?: CurrencyCode;
   holdings: Holding[];
 }
 
-export function buildExport(
-  profileId: string,
-  baseCurrency: CurrencyCode,
-  holdings: Holding[]
-): PortfolioExport {
+export function buildExport(profileId: string, holdings: Holding[]): PortfolioExport {
   return {
     app: 'vestora',
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
     profileId,
-    baseCurrency,
     holdings,
   };
 }

@@ -1,6 +1,5 @@
-import type { CurrencyCode, Holding } from '../types/wealth';
+import type { Holding } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData';
-import { convertCurrency } from '../utils/currency';
 import { sampleHoldingsFor, type PersistedPortfolio } from '../utils/portfolioStorage';
 import { fetchLiveMarketBenchmarks, type LiveMarketBenchmarks } from '../utils/smartDiversification';
 import type { LoanInputs } from './splitEngine';
@@ -12,24 +11,25 @@ export type BenchmarkStatus = 'loading' | 'live' | 'sample';
 
 export interface DemoPortfolio {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
+  /** Kept in the journey's shape; every portfolio is INR now. */
+  baseCurrency: 'INR';
   source: 'sample' | 'saved' | 'personal';
   /** Only known for the sample; saved and personal portfolios have no loan data and never get an invented one. */
   loan: LoanInputs | null;
 }
 
-function totalValue(holdings: Holding[], base: CurrencyCode): number {
-  return holdings.reduce((sum, h) => sum + convertCurrency(h.currentValue, h.currency, base), 0);
+function totalValue(holdings: Holding[]): number {
+  return holdings.reduce((sum, h) => sum + h.currentValue, 0);
 }
 
-/** Total value of a portfolio in its base currency; 0 when it has no holdings. */
-export function portfolioTotal(p: { holdings: Holding[]; baseCurrency: CurrencyCode }): number {
-  return totalValue(p.holdings, p.baseCurrency);
+/** Total value of a portfolio; 0 when it has no holdings. */
+export function portfolioTotal(p: { holdings: Holding[] }): number {
+  return totalValue(p.holdings);
 }
 
 /** A portfolio the visitor built or imported in the demo itself. Never persisted, never given a loan. */
-export function personalPortfolio(holdings: Holding[], baseCurrency: CurrencyCode): DemoPortfolio {
-  return { holdings, baseCurrency, source: 'personal', loan: null };
+export function personalPortfolio(holdings: Holding[]): DemoPortfolio {
+  return { holdings, baseCurrency: 'INR', source: 'personal', loan: null };
 }
 
 /** The visitor's own saved portfolio when it has real value in it, otherwise the sample. */
@@ -38,11 +38,11 @@ export function pickPortfolio(persisted: PersistedPortfolio | null): DemoPortfol
     persisted &&
     persisted.mode === 'personal' &&
     Array.isArray(persisted.holdings) &&
-    totalValue(persisted.holdings, persisted.baseCurrency) > 0
+    totalValue(persisted.holdings) > 0
   ) {
     return {
       holdings: persisted.holdings,
-      baseCurrency: persisted.baseCurrency,
+      baseCurrency: 'INR',
       source: 'saved',
       loan: null,
     };
@@ -50,7 +50,7 @@ export function pickPortfolio(persisted: PersistedPortfolio | null): DemoPortfol
   const profile = DEMO_PROFILES[0];
   return {
     holdings: sampleHoldingsFor(profile),
-    baseCurrency: profile.baseCurrency,
+    baseCurrency: 'INR',
     source: 'sample',
     loan: DEFAULT_LOAN,
   };

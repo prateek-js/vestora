@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CurrencyCode, Holding } from '../types/wealth';
+import { Holding } from '../types/wealth';
 import { formatCurrency } from '../utils/currency';
 import { VestoraLogo } from './VestoraLogo';
 import {
@@ -20,7 +20,6 @@ import {
 
 interface StreetStoryGameProps {
   holdings: Holding[];
-  baseCurrency: CurrencyCode;
   onEnterLiveRebalance: () => void;
   onOpenOverview: () => void;
   onOpenValidateModal: () => void;
@@ -157,7 +156,6 @@ function playTone(
 
 export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
   holdings,
-  baseCurrency,
   onEnterLiveRebalance,
   onOpenOverview,
   onOpenValidateModal,
@@ -224,7 +222,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
     return {
       count: holdings.length,
       maturedName: source?.name ?? 'HDFC Bank Matured Fixed Deposit',
-      maturedAmount: source ? formatCurrency(source.currentValue, source.currency, { compact: true }) : '₹6.92L',
+      maturedAmount: source ? formatCurrency(source.currentValue) : '₹6.92L',
     };
   }, [holdings]);
 
