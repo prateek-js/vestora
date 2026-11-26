@@ -55,7 +55,9 @@ test('holdings without an honest benchmark map to null', () => {
   assert.equal(cat('EPF'), null);
   assert.equal(cat('PPF'), null);
   assert.equal(cat('NPS'), null);
-  assert.equal(cat('EQUITY_STOCK', { currency: 'USD' }), null);
+  assert.equal(cat('EQUITY_STOCK', { listedVenue: 'FOREIGN' }), null);
+  assert.equal(cat('EQUITY_STOCK', { listedVenue: 'INDIA' }), 'NIFTY50');
+  assert.equal(cat('EQUITY_STOCK'), 'NIFTY50');
 });
 
 test('annualised return compounds over the holding period', () => {
@@ -109,14 +111,14 @@ function liveWith(nifty3y: number | null): LiveMarketBenchmarks {
 }
 
 function portfolio(): Holding[] {
-  // 8 benchmarkable holdings with distinct values, plus EPF and a USD basket.
+  // 8 benchmarkable holdings with distinct values, plus EPF and a US-listed basket.
   const funds = [1, 2, 3, 4, 5, 6, 7, 8].map((n) =>
     holding({ id: `mf${n}`, name: `Nifty 50 Index Fund ${n}`, currentValue: n * 1000, investedAmount: n * 800 })
   );
   return [
     ...funds,
     holding({ id: 'epf', name: 'EPF', category: 'EPF', currentValue: 999999 }),
-    holding({ id: 'us', name: 'US Equity', category: 'EQUITY_STOCK', currency: 'USD', currentValue: 5000 }),
+    holding({ id: 'us', name: 'US Equity', category: 'EQUITY_STOCK', currency: 'USD', currentValue: 5000, listedVenue: 'FOREIGN' }),
   ];
 }
 

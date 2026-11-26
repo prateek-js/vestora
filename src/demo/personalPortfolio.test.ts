@@ -33,23 +33,52 @@ test('reads a CSV export', () => {
   assert.equal(result.skippedRows, 0);
 });
 
-test('reads a JSON backup and takes the base currency from the file', () => {
+test('reads a JSON backup and reports the restored base as INR', () => {
   const f = fixture();
   const text = JSON.stringify(buildExport('p', 'USD', f));
   const result = parseImportedFile('backup.json', text, 'INR');
   assert.equal(result.holdings.length, f.length);
-  assert.equal(result.baseCurrency, 'USD');
+  assert.equal(result.baseCurrency, 'INR');
   assert.equal(result.skippedRows, 0);
 });
 
-test('uses the shared currency as base when every holding has one', () => {
-  const csv = buildHoldingsCsv(withCurrency('USD', 0, 1, 2));
-  assert.equal(parseImportedFile('usd.csv', csv, 'INR').baseCurrency, 'USD');
+test('a pre-change backup with a USD base and USD holdings restores re-denominated to INR', () => {
+  const usd: Holding = {
+    id: 'h-106-old',
+    name: 'US Equity Portfolio (Alphabet, Nvidia, Microsoft)',
+    category: 'EQUITY_STOCK',
+    institution: 'Interactive Brokers US',
+    investedAmount: 22000,
+    currentValue: 38500,
+    currency: 'USD',
+    purchaseDate: '2022-06-18',
+    unrealizedGain: 16500,
+    unrealizedGainPct: 75,
+    taxTag: 'LTCG_EQUITY',
+  };
+  const text = JSON.stringify(buildExport('p', 'USD', [usd]));
+  const result = parseImportedFile('backup.json', text, 'INR');
+  const h = result.holdings[0];
+  assert.equal(h.currency, 'INR');
+  assert.equal(h.investedAmount, 1903000);
+  assert.equal(h.currentValue, 3330250);
+  assert.equal(h.unrealizedGain, 1427250);
+  assert.equal(h.listedVenue, 'FOREIGN');
+  assert.equal(result.baseCurrency, 'INR');
 });
 
-test('falls back to the given currency when holdings mix currencies', () => {
+test('a statement whose figures are all USD imports as INR holdings', () => {
+  const csv = buildHoldingsCsv(withCurrency('USD', 0, 1, 2));
+  const result = parseImportedFile('usd.csv', csv, 'INR');
+  assert.equal(result.baseCurrency, 'INR');
+  assert.ok(result.holdings.every((h) => h.currency === 'INR'));
+});
+
+test('a statement mixing currencies imports as INR too', () => {
   const csv = buildHoldingsCsv(withCurrency('USD', 0));
-  assert.equal(parseImportedFile('mixed.csv', csv, 'EUR').baseCurrency, 'EUR');
+  const result = parseImportedFile('mixed.csv', csv, 'EUR');
+  assert.equal(result.baseCurrency, 'INR');
+  assert.ok(result.holdings.every((h) => h.currency === 'INR'));
 });
 
 test('rejects an unsupported file', () => {

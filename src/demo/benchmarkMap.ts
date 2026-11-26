@@ -52,7 +52,7 @@ export function benchmarkIdFor(h: Holding): BenchmarkId | null {
     case 'NPS':
       return null;
     case 'EQUITY_STOCK':
-      return h.currency === 'INR' ? 'NIFTY50' : null;
+      return h.listedVenue === 'FOREIGN' ? null : 'NIFTY50';
     case 'SOVEREIGN_GOLD_BOND':
       return 'GOLD_FOF';
     case 'CORP_BOND':

@@ -64,3 +64,41 @@ test('corrupt JSON in storage returns null instead of throwing', () => {
   store.set('vestora.portfolio.v1', '{not json');
   assert.equal(loadPersistedPortfolio(), null);
 });
+
+test('a saved USD holding loads re-denominated to INR at the pinned 86.50 rate', () => {
+  store.clear();
+  savePersistedPortfolio({
+    profileId: 'custom',
+    baseCurrency: 'INR',
+    mode: 'personal',
+    holdings: [{
+      id: 'h-us', name: 'US basket', category: 'EQUITY_STOCK', institution: 'IB',
+      investedAmount: 22000, currentValue: 38500, currency: 'USD',
+      purchaseDate: '2022-06-18', unrealizedGain: 16500, unrealizedGainPct: 75,
+      taxTag: 'LTCG_EQUITY',
+    }],
+  });
+  const loaded = loadPersistedPortfolio()!;
+  const h = loaded.holdings[0];
+  assert.equal(h.currency, 'INR');
+  assert.equal(h.currentValue, 3330250);
+  assert.equal(h.investedAmount, 1903000);
+  assert.equal(h.unrealizedGain, 1427250);
+  assert.equal(h.listedVenue, 'FOREIGN');
+});
+
+test('an already-INR saved holding loads through untouched', () => {
+  store.clear();
+  savePersistedPortfolio({
+    profileId: 'custom', baseCurrency: 'INR', mode: 'personal',
+    holdings: [{
+      id: 'h-in', name: 'FD', category: 'FIXED_DEPOSIT', institution: 'SBI',
+      investedAmount: 100000, currentValue: 107000, currency: 'INR',
+      purchaseDate: '2024-01-01', unrealizedGain: 7000, unrealizedGainPct: 7,
+      taxTag: 'SLAB_INCOME',
+    }],
+  });
+  const loaded = loadPersistedPortfolio()!;
+  assert.equal(loaded.holdings[0].currentValue, 107000);
+  assert.equal(loaded.holdings[0].listedVenue, undefined);
+});

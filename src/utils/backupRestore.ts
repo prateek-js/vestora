@@ -1,5 +1,6 @@
 import { CurrencyCode, Holding } from '../types/wealth';
 import { withDerivedMaturity } from './maturity';
+import { renormaliseHolding } from './portfolioStorage';
 
 /**
  * Portable JSON snapshot of the ledger. Vestora's only database is this
@@ -52,7 +53,10 @@ export interface RestoreResult {
 /**
  * Parses and validates a previously exported file. Maturity fields are
  * recomputed on import so a snapshot restored months later reflects the
- * calendar. Throws with a user-readable message on invalid files.
+ * calendar. Holdings saved before Vestora was INR-only re-denominate to INR
+ * at the pinned rate; the restored state is always INR (the exported
+ * `baseCurrency` field stays for backward compatibility but is reported as
+ * 'INR'). Throws with a user-readable message on invalid files.
  */
 export function parsePortfolioExport(jsonText: string): RestoreResult {
   let data: PortfolioExport;
@@ -68,14 +72,14 @@ export function parsePortfolioExport(jsonText: string): RestoreResult {
 
   const holdings = data.holdings
     .filter((h) => h && typeof h.id === 'string' && typeof h.name === 'string' && typeof h.currentValue === 'number')
-    .map((h) => withDerivedMaturity(h));
+    .map((h) => withDerivedMaturity(renormaliseHolding(h)));
 
   if (holdings.length === 0) {
     throw new Error('The export contains no recognizable holdings.');
   }
 
   return {
-    baseCurrency: data.baseCurrency ?? null,
+    baseCurrency: 'INR',
     profileId: data.profileId ?? null,
     holdings,
   };

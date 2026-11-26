@@ -230,15 +230,16 @@ const PROFILE_GLOBAL_NRI: UserProfile = {
       category: 'EQUITY_STOCK',
       institution: 'Interactive Brokers US',
       accountNumberMask: 'U9418204',
-      investedAmount: 22000, // in USD
-      currentValue: 38500, // in USD ($38,500 = ~₹33,30,250)
-      currency: 'USD',
+      investedAmount: 1903000,
+      currentValue: 3330250,
+      currency: 'INR',
+      listedVenue: 'FOREIGN',
       purchaseDate: '2022-06-18',
-      unrealizedGain: 16500,
+      unrealizedGain: 1427250,
       unrealizedGainPct: 75.0,
       gain30dPct: 18.4,
       taxTag: 'LTCG_EQUITY',
-      notes: 'Tech US equities. Subject to 20% US withholding and Indian foreign asset disclosures.',
+      notes: 'Tech US equities held via INR-funded account. Subject to 20% US withholding and Indian foreign asset disclosures.',
     },
     {
       id: 'h-107',

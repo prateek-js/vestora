@@ -24,7 +24,10 @@ function extraHolding(): Holding {
     institution: 'Axis AMC',
     investedAmount: 1234.56,
     currentValue: 1500.25,
-    currency: 'USD',
+    // Vestora is INR-only: exports re-import as INR (a foreign-denominated
+    // export row would re-denominate at the pinned 86.50 on import), so the
+    // lossless-round-trip fixture is stated in INR.
+    currency: 'INR',
     purchaseDate: '2023-06-15',
     maturityDate: '2031-03-31',
     units: 42.5,

@@ -26,6 +26,8 @@ export interface Holding {
   investedAmount: number;
   currentValue: number;
   currency: CurrencyCode;
+  /** Where the instrument is listed — FOREIGN holdings are excluded from Indian benchmark comparisons. */
+  listedVenue?: 'INDIA' | 'FOREIGN';
   interestRatePct?: number; // e.g. 7.4% for FD, 8.25% for EPF
   units?: number;
   /** AMFI scheme code — enables live NAV refresh via mfapi.in. */

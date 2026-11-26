@@ -22,10 +22,41 @@ export function sampleHoldingsFor(profile: UserProfile): Holding[] {
 }
 
 /**
+ * The pinned re-denomination rate: 86.50 INR per USD — the benchmark rate the
+ * app displayed before multi-currency support was removed. Every saved
+ * foreign-denominated figure is re-denominated at this single rate on
+ * load/restore, so a returning visitor's numbers match what they saw
+ * (38,500 USD × 86.50 = the ₹33,30,250 the app already showed for h-106).
+ * The sample's only foreign holding was USD; one pinned rate keeps the
+ * migration rule a single honest number.
+ */
+export const RENORM_RATE = 86.5;
+
+/**
+ * Maps any non-INR holding to INR: amounts × RENORM_RATE, currency INR,
+ * listedVenue FOREIGN (its benchmark rows were already foreign-denied by
+ * currency before, so the venue marker preserves that behaviour). INR
+ * holdings pass through untouched — no listedVenue is invented for them.
+ */
+export function renormaliseHolding(h: Holding): Holding {
+  if (h.currency === 'INR') return h;
+  return {
+    ...h,
+    investedAmount: h.investedAmount * RENORM_RATE,
+    currentValue: h.currentValue * RENORM_RATE,
+    unrealizedGain: h.unrealizedGain * RENORM_RATE,
+    currency: 'INR',
+    listedVenue: 'FOREIGN',
+  };
+}
+
+/**
  * Loads the persisted portfolio for this browser. Returns null when nothing
  * was saved (first visit) or the stored shape is unrecognized — callers then
  * fall back to sample data. Derived maturity fields are recomputed on load so
  * a portfolio reopened weeks later reflects the calendar, not the save date.
+ * Holdings saved before Vestora was INR-only re-denominate to INR at the
+ * pinned rate on load; the loaded state is always INR.
  */
 export function loadPersistedPortfolio(): PersistedPortfolio | null {
   try {
@@ -39,8 +70,9 @@ export function loadPersistedPortfolio(): PersistedPortfolio | null {
     if (!knownProfile || !Array.isArray(parsed.holdings)) return null;
     return {
       ...parsed,
+      baseCurrency: 'INR',
       mode: parsed.mode ?? (parsed.profileId === 'custom' ? 'personal' : 'demo'),
-      holdings: parsed.holdings.map(withDerivedMaturity),
+      holdings: parsed.holdings.map(renormaliseHolding).map(withDerivedMaturity),
       prepayments: Array.isArray(parsed.prepayments) ? parsed.prepayments : [],
     };
   } catch {

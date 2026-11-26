@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
 import { todayIso, isoFromToday, withDerivedMaturity } from './maturity';
+import { renormaliseHolding } from './portfolioStorage';
 
 /**
  * Real client-side Excel (.xlsx/.xls) and CSV/TSV statement ingestion.
@@ -131,6 +132,12 @@ function parseAmount(raw: string | number | undefined | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * Reads the statement's currency column so figures stated in a foreign
+ * denomination can be re-denominated to INR at the pinned rate (see
+ * renormaliseHolding). Vestora stores everything in INR — the detected code
+ * never lands on a holding as-is.
+ */
 function parseCurrencyCode(raw: string | undefined, fallback: CurrencyCode): CurrencyCode {
   if (!raw) return fallback;
   const up = raw.trim().toUpperCase();
@@ -618,7 +625,12 @@ function parseRowsToStatement(
           ? parseFdRegistry(rows, skipped)
           : parseMfCentral(rows, skipped);
 
-  return { format, holdings: holdings.map(withDerivedMaturity), skipped, sheetName };
+  return {
+    format,
+    holdings: holdings.map(renormaliseHolding).map(withDerivedMaturity),
+    skipped,
+    sheetName,
+  };
 }
 
 /**
@@ -679,24 +691,15 @@ export function importExcelBuffer(
 }
 
 /** Generates and downloads a clean, ready-to-edit .xlsx Excel template right in the browser. */
-export function downloadPortfolioExcelTemplate(currency: CurrencyCode = 'INR'): void {
-  const sampleRows =
-    currency === 'USD'
-      ? [
-          ['Instrument Name', 'Category', 'Institution', 'Invested Amount', 'Current Value', 'Currency', 'Interest Rate %', 'Purchase Date', 'Maturity Date'],
-          ['Vanguard S&P 500 ETF (VOO)', 'Mutual Fund', 'Vanguard', 45000, 56200, 'USD', '', '2023-03-15', ''],
-          ['Apple Inc. (AAPL)', 'Stock', 'Fidelity', 18000, 24400, 'USD', '', '2024-01-10', ''],
-          ['High-Yield 12M Treasury CD', 'Fixed Deposit', 'Marcus / Goldman', 25000, 26150, 'USD', 4.6, '2025-11-20', isoFromToday(22)],
-          ['SPDR Gold Shares (GLD)', 'Gold', 'Fidelity', 10000, 12800, 'USD', '', '2023-09-01', ''],
-        ]
-      : [
-          ['Instrument Name', 'Category', 'Institution', 'Invested Amount', 'Current Value', 'Currency', 'Interest Rate %', 'Purchase Date', 'Maturity Date'],
-          ['Parag Parikh Flexi Cap Fund', 'Mutual Fund', 'PPFAS AMC', 450000, 612000, 'INR', '', '2022-04-12', ''],
-          ['HDFC Bank Equity Shares', 'Stock', 'Zerodha Demat', 220000, 268000, 'INR', '', '2023-08-19', ''],
-          ['SBI Special Term Deposit', 'Fixed Deposit', 'State Bank of India', 500000, 537500, 'INR', 7.5, '2025-11-20', isoFromToday(18)],
-          ['Sovereign Gold Bond 2028', 'SGB', 'RBI / HDFC', 150000, 214000, 'INR', 2.5, '2021-05-10', '2029-05-10'],
-          ['Employees Provident Fund', 'EPF', 'EPFO', 640000, 745000, 'INR', 8.25, '2020-01-01', ''],
-        ];
+export function downloadPortfolioExcelTemplate(_currency: CurrencyCode = 'INR'): void {
+  const sampleRows = [
+    ['Instrument Name', 'Category', 'Institution', 'Invested Amount', 'Current Value', 'Currency', 'Interest Rate %', 'Purchase Date', 'Maturity Date'],
+    ['Parag Parikh Flexi Cap Fund', 'Mutual Fund', 'PPFAS AMC', 450000, 612000, 'INR', '', '2022-04-12', ''],
+    ['HDFC Bank Equity Shares', 'Stock', 'Zerodha Demat', 220000, 268000, 'INR', '', '2023-08-19', ''],
+    ['SBI Special Term Deposit', 'Fixed Deposit', 'State Bank of India', 500000, 537500, 'INR', 7.5, '2025-11-20', isoFromToday(18)],
+    ['Sovereign Gold Bond 2028', 'SGB', 'RBI / HDFC', 150000, 214000, 'INR', 2.5, '2021-05-10', '2029-05-10'],
+    ['Employees Provident Fund', 'EPF', 'EPFO', 640000, 745000, 'INR', 8.25, '2020-01-01', ''],
+  ];
 
   const guideRows = [
     ['Vestora Portfolio Excel Import Guide'],
