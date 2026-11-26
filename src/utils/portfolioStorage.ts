@@ -4,6 +4,10 @@ import { withDerivedMaturity } from './maturity';
 
 const STORAGE_KEY = 'vestora.portfolio.v1';
 
+// Personas removed from DEMO_PROFILES; kept here so a returning visitor whose
+// saved portfolio was stored under one of these ids still loads their data.
+const LEGACY_PROFILE_IDS = ['profile-growth-builder', 'profile-conservative'];
+
 export interface PersistedPortfolio {
   profileId: string;
   baseCurrency: CurrencyCode;
@@ -28,7 +32,10 @@ export function loadPersistedPortfolio(): PersistedPortfolio | null {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedPortfolio;
-    const knownProfile = DEMO_PROFILES.some((p) => p.id === parsed.profileId) || parsed.profileId === 'custom';
+    const knownProfile =
+      DEMO_PROFILES.some((p) => p.id === parsed.profileId) ||
+      parsed.profileId === 'custom' ||
+      LEGACY_PROFILE_IDS.includes(parsed.profileId);
     if (!knownProfile || !Array.isArray(parsed.holdings)) return null;
     return {
       ...parsed,

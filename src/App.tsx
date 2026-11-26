@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CurrencyCode, DebtPrepaymentRecord, Holding, ReinvestmentSolution, UserProfile } from './types/wealth';
+import { CurrencyCode, DebtPrepaymentRecord, Holding, ReinvestmentSolution } from './types/wealth';
 import { DEMO_PROFILES, CURATED_REINVESTMENT_SOLUTIONS } from './data/mockData';
 import { Navbar } from './components/Navbar';
 import { OverviewTab } from './components/OverviewTab';
@@ -167,15 +167,6 @@ export default function App() {
   const maturedCount = holdings.filter(
     (h) => h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0)
   ).length;
-
-  // Handle Profile Switch (switches back to sample demo persona)
-  const handleProfileSwitch = (newProfile: UserProfile) => {
-    setCurrentProfileId(newProfile.id);
-    setHoldings(sampleHoldingsFor(newProfile));
-    setBaseCurrency(newProfile.baseCurrency);
-    setPortfolioMode('demo');
-    trackEvent('profile_switched', { profile_id: newProfile.id });
-  };
 
   // Add Single Holding
   const handleAddHolding = (newHolding: Holding) => {
@@ -506,8 +497,6 @@ export default function App() {
         setActiveTab={setActiveTab}
         baseCurrency={baseCurrency}
         setBaseCurrency={setBaseCurrency}
-        currentProfile={currentProfile}
-        setProfile={handleProfileSwitch}
         holdingsCount={holdings.length}
         onOpenAddModal={() => openAddModal()}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CurrencyCode, UserProfile } from '../types/wealth';
-import { DEMO_PROFILES } from '../data/mockData';
+import { CurrencyCode } from '../types/wealth';
 import { trackEvent } from '../utils/analytics';
 import type { AppTab } from '../utils/tabRouting';
 import { VestoraLogo } from './VestoraLogo';
@@ -31,8 +30,6 @@ interface NavbarProps {
   setActiveTab: (tab: AppTab) => void;
   baseCurrency: CurrencyCode;
   setBaseCurrency: (c: CurrencyCode) => void;
-  currentProfile: UserProfile;
-  setProfile: (p: UserProfile) => void;
   onOpenAddModal: () => void;
   onOpenUploadModal: () => void;
   onOpenValidateModal: () => void;
@@ -55,8 +52,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   baseCurrency,
   setBaseCurrency,
-  currentProfile,
-  setProfile,
   holdingsCount,
   onOpenAddModal,
   onOpenUploadModal,
@@ -189,7 +184,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">Take the tour</span>
             </a>
 
-            {/* Consolidated Currency, Persona, Save/Export & Data Tools Menu */}
+            {/* Consolidated Currency, Save/Export & Data Tools Menu */}
             <div className="relative" data-tour="export-menu">
               <button
                 type="button"
@@ -214,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => setIsMenuOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-80 bg-paper border border-slate-700 rounded-xl shadow-ink/10 shadow-lg p-3 z-50 text-ink space-y-3 max-h-[82vh] overflow-y-auto">
-                    {/* Currency & Demo Persona */}
+                    {/* Currency */}
                     <div className="space-y-2 pb-2.5 border-b border-slate-700">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-2xs font-medium text-ink/70">Display Currency</span>
@@ -234,28 +229,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                             </button>
                           ))}
                         </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-2xs font-medium text-ink/70 shrink-0">Demo Persona</span>
-                        <select
-                          aria-label="Active Investor Profile"
-                          value={currentProfile.id}
-                          onChange={(e) => {
-                            const found = DEMO_PROFILES.find((p) => p.id === e.target.value);
-                            if (found) {
-                              setProfile(found);
-                              setIsMenuOpen(false);
-                            }
-                          }}
-                          className="bg-mist border border-slate-700 text-ink text-2xs rounded-md px-2 py-1 focus:outline-none focus:border-emerald-500 max-w-[180px] truncate"
-                        >
-                          {DEMO_PROFILES.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} ({p.personaTitle.split('&')[0].trim()})
-                            </option>
-                          ))}
-                        </select>
                       </div>
                     </div>
 
