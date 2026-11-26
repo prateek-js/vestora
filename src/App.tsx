@@ -25,7 +25,6 @@ import {
 import { isoFromToday, todayIso, withDerivedMaturity } from './utils/maturity';
 import { convertCurrency } from './utils/currency';
 import { trackEvent } from './utils/analytics';
-import { refreshFxRates } from './utils/liveRates';
 import { NavRefreshModal } from './components/NavRefreshModal';
 import { buildExport, downloadPortfolioExport, parsePortfolioExport } from './utils/backupRestore';
 import {
@@ -140,26 +139,6 @@ export default function App() {
     setValidateInitialTab(tab);
     setIsValidateModalOpen(true);
   };
-
-  // Live FX rates: seeded from static benchmarks, then overwritten once ECB loads.
-  const [fxAsOf, setFxAsOf] = useState<string | null>(null);
-  const [fxSource, setFxSource] = useState<'live' | 'cached' | 'benchmark'>('benchmark');
-  // Bumped once per refreshFxRates() resolution: FX_RATES is mutated in place, so
-  // FX-reading memos downstream key on this to recompute after live rates land.
-  const [fxVersion, setFxVersion] = useState(0);
-  useEffect(() => {
-    let cancelled = false;
-    refreshFxRates().then((state) => {
-      if (!cancelled) {
-        setFxAsOf(state.asOf);
-        setFxSource(state.source);
-        setFxVersion((v) => v + 1);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Persist solely to browser localStorage; never sent to any backend server.
   // Paused while the first-run welcome is up, so the empty boot state is not
@@ -534,8 +513,6 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        baseCurrency={baseCurrency}
-        setBaseCurrency={setBaseCurrency}
         holdingsCount={holdings.length}
         onOpenAddModal={() => openAddModal()}
         onOpenUploadModal={() => setIsUploadModalOpen(true)}
@@ -552,8 +529,6 @@ export default function App() {
         }}
         maturedCount={maturedCount}
         onResetToSample={() => setIsResetConfirmOpen(true)}
-        fxAsOf={fxAsOf}
-        fxSource={fxSource}
       />
 
       {/* Global hidden file input for restoring saved .xlsx / .csv / .json exports */}
@@ -605,7 +580,6 @@ export default function App() {
             onDeleteHolding={handleDeleteHolding}
             onOpenValidateModal={openValidateModal}
             onOpenAddModal={() => openAddModal()}
-            fxVersion={fxVersion}
           />
         )}
 

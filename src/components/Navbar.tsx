@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { CurrencyCode } from '../types/wealth';
 import { trackEvent } from '../utils/analytics';
 import type { AppTab } from '../utils/tabRouting';
 import { VestoraLogo } from './VestoraLogo';
@@ -28,8 +27,6 @@ const TAB_NAMES: Record<AppTab, string> = {
 interface NavbarProps {
   activeTab: AppTab;
   setActiveTab: (tab: AppTab) => void;
-  baseCurrency: CurrencyCode;
-  setBaseCurrency: (c: CurrencyCode) => void;
   onOpenAddModal: () => void;
   onOpenUploadModal: () => void;
   onOpenValidateModal: () => void;
@@ -43,15 +40,11 @@ interface NavbarProps {
   onStartTour: () => void;
   maturedCount: number;
   onResetToSample: () => void;
-  fxAsOf: string | null;
-  fxSource: 'live' | 'cached' | 'benchmark';
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
-  baseCurrency,
-  setBaseCurrency,
   holdingsCount,
   onOpenAddModal,
   onOpenUploadModal,
@@ -65,8 +58,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onStartTour,
   maturedCount,
   onResetToSample,
-  fxAsOf,
-  fxSource,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -197,7 +188,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Currency, Save/Export, Import & Tools"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                <span className="font-mono text-2xs opacity-90">{baseCurrency}</span>
                 <span className="hidden sm:inline">Menu</span>
                 <ChevronDown className="w-3 h-3 opacity-75 shrink-0" />
               </button>
@@ -209,29 +199,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => setIsMenuOpen(false)}
                   />
                   <div className="absolute right-0 mt-2 w-80 bg-paper border border-slate-700 rounded-xl shadow-ink/10 shadow-lg p-3 z-50 text-ink space-y-3 max-h-[82vh] overflow-y-auto">
-                    {/* Currency */}
-                    <div className="space-y-2 pb-2.5 border-b border-slate-700">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-2xs font-medium text-ink/70">Display Currency</span>
-                        <div className="flex items-center bg-mist border border-slate-700 rounded-lg p-0.5">
-                          {(['INR', 'USD', 'EUR'] as CurrencyCode[]).map((curr) => (
-                            <button
-                              key={curr}
-                              type="button"
-                              onClick={() => setBaseCurrency(curr)}
-                              className={`px-2 py-1 text-2xs font-mono font-semibold rounded transition-colors ${
-                                baseCurrency === curr
-                                  ? 'bg-emerald-500 text-white'
-                                  : 'text-ink/70 hover:text-ink'
-                              }`}
-                            >
-                              {curr}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Save & Restore */}
                     <div className="space-y-1 pb-2.5 border-b border-slate-700">
                       <div className="px-1 pb-1 text-2xs font-medium text-ink/70 flex items-center justify-between">
@@ -364,10 +331,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <RotateCcw className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                         <span>Manage Data / Reset Portfolio</span>
                       </button>
-                    </div>
-
-                    <div className="px-2.5 py-1.5 bg-mist rounded-md border border-slate-700 text-2xs font-mono text-ink/70">
-                      FX: {fxSource === 'benchmark' ? 'Benchmarks' : `ECB (${fxAsOf})`} · On your device
                     </div>
                   </div>
                 </>
