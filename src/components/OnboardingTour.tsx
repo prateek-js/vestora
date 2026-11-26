@@ -62,6 +62,8 @@ interface OnboardingTourProps {
   isOpen: boolean;
   onClose: () => void;
   onEnsureOverviewTab: () => void;
+  /** True when the visitor chose "Start from scratch" on the welcome screen: the privacy step then describes an empty ledger. */
+  startedFromScratch?: boolean;
 }
 
 interface RectBox {
@@ -75,12 +77,27 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
   isOpen,
   onClose,
   onEnsureOverviewTab,
+  startedFromScratch = false,
 }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<RectBox | null>(null);
   const [viewport, setViewport] = useState({ w: 1280, h: 720 });
 
-  const currentStep = TOUR_STEPS[stepIndex] ?? TOUR_STEPS[0];
+  // Same steps in both modes; only the privacy step's description adapts to
+  // what the visitor chose on the welcome screen.
+  const tourSteps: TourStep[] = startedFromScratch
+    ? TOUR_STEPS.map((step) =>
+        step.id === 'privacy'
+          ? {
+              ...step,
+              description:
+                "We don't store your portfolio on any server. Your ledger starts empty — add holdings or import a file whenever you're ready.",
+            }
+          : step
+      )
+    : TOUR_STEPS;
+
+  const currentStep = tourSteps[stepIndex] ?? tourSteps[0];
 
   const measureTarget = useCallback(() => {
     if (!isOpen) return;
@@ -141,7 +158,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       if (e.key === 'Escape') {
         onClose();
       } else if (e.key === 'ArrowRight') {
-        if (stepIndex < TOUR_STEPS.length - 1) setStepIndex((s) => s + 1);
+        if (stepIndex < tourSteps.length - 1) setStepIndex((s) => s + 1);
         else onClose();
       } else if (e.key === 'ArrowLeft') {
         setStepIndex((s) => Math.max(0, s - 1));
@@ -153,7 +170,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
 
   if (!isOpen) return null;
 
-  const isLast = stepIndex === TOUR_STEPS.length - 1;
+  const isLast = stepIndex === tourSteps.length - 1;
 
   // Compute popover position near the spotlighted element, clamped inside the viewport
   const cardWidth = Math.min(380, viewport.w - 24);
@@ -250,7 +267,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
               {renderStepIcon()}
             </span>
             <span className="text-2xs font-mono uppercase tracking-wider text-emerald-700 font-semibold">
-              Step {stepIndex + 1} of {TOUR_STEPS.length}
+              Step {stepIndex + 1} of {tourSteps.length}
             </span>
           </div>
 
@@ -280,7 +297,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
         {/* Step progress dots + Controls */}
         <div className="pt-1 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
-            {TOUR_STEPS.map((step, idx) => (
+            {tourSteps.map((step, idx) => (
               <button
                 key={step.id}
                 type="button"

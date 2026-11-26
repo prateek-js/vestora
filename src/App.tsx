@@ -36,6 +36,7 @@ import {
 } from './utils/statementImport';
 import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
 import { syncDocumentSeo } from './utils/seo';
 import { AppTab, planUrlSync, tabFromHash } from './utils/tabRouting';
@@ -51,15 +52,19 @@ export default function App() {
         ...persisted,
         mode: persisted.mode ?? ('demo' as const),
         prepayments: persisted.prepayments ?? ([] as DebtPrepaymentRecord[]),
+        needsWelcome: false,
       };
     }
-    const profile = DEMO_PROFILES[0];
+    // First visit (nothing saved): boot empty and ask. The welcome choice —
+    // sample via handleResetToSample / scratch via handleStartBlank — is what
+    // writes the first portfolio through the normal save effect.
     return {
-      profileId: profile.id,
-      baseCurrency: profile.baseCurrency,
-      holdings: sampleHoldingsFor(profile),
-      mode: 'demo' as const,
+      profileId: 'custom',
+      baseCurrency: DEMO_PROFILES[0].baseCurrency,
+      holdings: [] as Holding[],
+      mode: 'personal' as const,
       prepayments: [] as DebtPrepaymentRecord[],
+      needsWelcome: true,
     };
   }, []);
 
@@ -90,6 +95,8 @@ export default function App() {
   const [restoreNotice, setRestoreNotice] = useState('');
   const restoreInputRef = useRef<HTMLInputElement>(null);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(initial.needsWelcome);
+  const [welcomeChoice, setWelcomeChoice] = useState<'sample' | 'scratch' | null>(null);
 
   const handleCloseTour = () => {
     setIsTourOpen(false);
@@ -155,7 +162,10 @@ export default function App() {
   }, []);
 
   // Persist solely to browser localStorage; never sent to any backend server.
+  // Paused while the first-run welcome is up, so the empty boot state is not
+  // written before the visitor picks sample or scratch.
   useEffect(() => {
+    if (welcomeOpen) return;
     savePersistedPortfolio({
       profileId: currentProfileId,
       baseCurrency,
@@ -163,7 +173,7 @@ export default function App() {
       mode: portfolioMode,
       prepayments,
     });
-  }, [currentProfileId, baseCurrency, holdings, portfolioMode, prepayments]);
+  }, [welcomeOpen, currentProfileId, baseCurrency, holdings, portfolioMode, prepayments]);
 
   const currentProfile =
     DEMO_PROFILES.find((p) => p.id === currentProfileId) ?? DEMO_PROFILES[0];
@@ -395,6 +405,24 @@ export default function App() {
     trackEvent('portfolio_reset');
   };
 
+  // First-run welcome choices: reuse the existing sample/blank handlers (they
+  // clear storage and set state, so the normal save effect writes the choice),
+  // then close the welcome and start the tour. welcomeChoice is set before the
+  // welcome closes so the tour's startedFromScratch prop is correct on open.
+  const handleChooseSample = () => {
+    handleResetToSample();
+    setWelcomeChoice('sample');
+    setWelcomeOpen(false);
+    setIsTourOpen(true);
+  };
+
+  const handleChooseScratch = () => {
+    handleStartBlank();
+    setWelcomeChoice('scratch');
+    setWelcomeOpen(false);
+    setIsTourOpen(true);
+  };
+
   // Export a portable JSON backup of the current ledger
   const handleExportPortfolio = () => {
     downloadPortfolioExport(buildExport(currentProfileId, baseCurrency, holdings));
@@ -492,6 +520,13 @@ export default function App() {
       reader.readAsText(file);
     }
   };
+
+  // First-run gate: no saved portfolio and no choice yet — show the welcome
+  // instead of the app shell. Placed after every hook so the rules of hooks
+  // hold; nothing below (Navbar, tabs, modals) renders while it is up.
+  if (welcomeOpen) {
+    return <WelcomeScreen onChooseSample={handleChooseSample} onChooseScratch={handleChooseScratch} />;
+  }
 
   return (
     <div className="min-h-screen bg-mist text-ink flex flex-col overflow-x-hidden">
@@ -803,6 +838,7 @@ export default function App() {
         isOpen={isTourOpen}
         onClose={handleCloseTour}
         onEnsureOverviewTab={() => setActiveTab('overview')}
+        startedFromScratch={welcomeChoice === 'scratch'}
       />
 
       <PortfolioChatDrawer
