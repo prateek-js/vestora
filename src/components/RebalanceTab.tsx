@@ -12,12 +12,10 @@ import { computePortfolioRiskScore } from '../utils/taxAndDiversification';
 import {
   calculateHomeLoanPrepaymentImpact,
   fetchKuveraCategoryDirectory,
-  fetchLiveUsTreasuryRates,
   fetchMutualFundDetails,
   KUVERA_SUBCATEGORIES,
   KuveraFundEntry,
   LISTED_MARKET_INSTRUMENTS,
-  ListedMarketInstrument,
   MutualFundMarketDetail,
   MutualFundSearchHit,
   searchMarketMutualFunds,
@@ -185,11 +183,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
   // NPS asset class filter
   const [npsClassFilter, setNpsClassFilter] = useState<'ALL' | 'E' | 'C' | 'G'>('ALL');
 
-  // Listed Bonds / FDs + live US Treasury API state
+  // Listed Bonds / FDs state
   const [marketQuery, setMarketQuery] = useState('');
   const [marketFilter, setMarketFilter] = useState<MarketGroupFilter>('ALL');
-  const [liveTreasuries, setLiveTreasuries] = useState<ListedMarketInstrument[]>([]);
-  const [treasuryStatus, setTreasuryStatus] = useState<'loading' | 'live' | 'offline'>('loading');
 
   // Custom Bond / FD inline builder
   const [showCustomBondForm, setShowCustomBondForm] = useState(false);
@@ -234,7 +230,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     });
   };
 
-  // Load initial Mutual Fund search + Live US Treasury rates + Live Benchmark Snapshot
+  // Load initial Mutual Fund search + Live Benchmark Snapshot
   useEffect(() => {
     let cancelled = false;
     setMfSearching(true);
@@ -243,17 +239,6 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         setMfHits(hits);
         setMfHasSearched(true);
         setMfSearching(false);
-      }
-    });
-
-    fetchLiveUsTreasuryRates().then((rates) => {
-      if (!cancelled) {
-        if (rates.length > 0) {
-          setLiveTreasuries(rates);
-          setTreasuryStatus('live');
-        } else {
-          setTreasuryStatus('offline');
-        }
       }
     });
 
@@ -395,14 +380,13 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
     setDestinations((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // Filtered Bonds / FDs + Live India G-Secs + Live US Treasuries
+  // Filtered Bonds / FDs + Live India G-Secs
   const allBondAndFdCatalog = useMemo(
     () => [
       ...(benchmarks?.indiaGsecs ?? []),
-      ...liveTreasuries,
       ...LISTED_MARKET_INSTRUMENTS.filter((item) => item.group !== 'STOCK_ETF'),
     ],
-    [benchmarks?.indiaGsecs, liveTreasuries]
+    [benchmarks?.indiaGsecs]
   );
 
   const filteredNpsSchemes = useMemo(() => {
@@ -579,7 +563,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               Holistic Rebalance, Market Search &amp; Diversification
             </h2>
             <span className="text-2xs font-mono text-emerald-700">
-              Live AMFI · NPS · GoI G-Sec · Kuvera · US Treasury APIs
+              Live AMFI · NPS · GoI G-Sec · Kuvera APIs
             </span>
           </div>
           <p className="text-xs text-ink/70 mt-1 max-w-3xl leading-relaxed">
@@ -616,7 +600,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         </div>
       )}
 
-      {/* Smart Diversification Suggestions (Hybrid Client Rules + Live AMFI & U.S. Treasury APIs) */}
+      {/* Smart Diversification Suggestions (Hybrid Client Rules + Live AMFI & GoI G-Sec APIs) */}
       <section
         aria-label="Smart Diversification Suggestions"
         className="bg-paper border border-slate-700 shadow-ink/10 shadow-sm rounded-xl p-5 space-y-5"
@@ -628,9 +612,9 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
               <span aria-hidden="true">·</span>
               <span>
                 {benchmarksLoading
-                  ? 'Syncing live AMFI, NPS Tier-I, GoI G-Sec, Gold & U.S. Treasury feeds...'
+                  ? 'Syncing live AMFI, NPS Tier-I, GoI G-Sec & Gold feeds...'
                   : benchmarks && (benchmarks.liveFundCount > 0 || benchmarks.npsSchemes.length > 0)
-                  ? `Live AMFI (${benchmarks.liveFundCount}/7) · NPS (${benchmarks.npsSchemes.length}) · GoI G-Sec (${benchmarks.indiaGsecs.length}) · U.S. Treasury synced at ${benchmarks.fetchedAt}`
+                  ? `Live AMFI (${benchmarks.liveFundCount}/7) · NPS (${benchmarks.npsSchemes.length}) · GoI G-Sec (${benchmarks.indiaGsecs.length}) · synced at ${benchmarks.fetchedAt}`
                   : 'Rule-based market estimates (offline fallback)'}
               </span>
             </div>
@@ -866,14 +850,6 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <span className="text-ink/70 truncate">364D T-BILL</span>
                 <span className="text-emerald-700 font-semibold shrink-0">
                   {benchmarks?.indiaGsecs.find((g) => /364/i.test(g.name))?.rateOrYieldPct.toFixed(2) ?? '6.54'}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 border-b border-ink/10 pb-1">
-                <span className="text-ink/70 truncate">US TREASURY</span>
-                <span className="text-sky-700 font-semibold shrink-0">
-                  {benchmarks?.usTreasuries[0]
-                    ? `${benchmarks.usTreasuries[0].rateOrYieldPct.toFixed(2)}%`
-                    : '4.01%'}
                 </span>
               </div>
             </div>
@@ -1538,7 +1514,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
             </div>
           )}
 
-          {/* TAB B: Listed Bonds, Fixed Deposits & Live US Treasuries */}
+          {/* TAB B: Listed Bonds, Fixed Deposits & Live GoI G-Secs */}
           {explorerTab === 'BONDS_FDS' && (
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row gap-2">
@@ -1548,7 +1524,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                     type="text"
                     value={marketQuery}
                     onChange={(e) => setMarketQuery(e.target.value)}
-                    placeholder="Search SBI FD, RBI Bond, T-Bill, NABARD, Treasury, SGB..."
+                    placeholder="Search SBI FD, RBI Bond, T-Bill, NABARD, SGB..."
                     className="w-full bg-paper border border-slate-700 focus:border-emerald-500 rounded-lg pl-9 pr-3 py-2 text-xs text-ink placeholder-ink/60 focus:outline-none"
                   />
                 </div>
@@ -1591,12 +1567,6 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <span className="text-2xs font-mono text-ink/70">
                   {benchmarks?.indiaGsecs.length
                     ? `GoI G-Sec API: Live (${benchmarks.indiaGsecs.length})`
-                    : ''}
-                  {benchmarks?.indiaGsecs.length && treasuryStatus === 'live' ? ' · ' : ''}
-                  {treasuryStatus === 'live'
-                    ? `US Treasury: Live (${liveTreasuries[0]?.asOf})`
-                    : treasuryStatus === 'loading'
-                    ? 'Loading Sovereign yields...'
                     : 'Listed market directory'}
                 </span>
               </div>
@@ -1833,8 +1803,6 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       className="bg-paper border border-slate-700 rounded-lg px-2 py-1.5 text-ink font-mono focus:outline-none focus:border-emerald-500"
                     >
                       <option value="INR">INR</option>
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
                     </select>
                     <button
                       type="button"

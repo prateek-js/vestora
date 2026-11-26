@@ -101,7 +101,6 @@ function liveWith(nifty3y: number | null): LiveMarketBenchmarks {
       GILT: null,
       GOLD_FOF: null,
     },
-    usTreasuries: [],
     indiaGsecs: [],
     npsSchemes: [],
     goldInrPer10g: null,

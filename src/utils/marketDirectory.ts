@@ -2,8 +2,6 @@ import { AssetCategory, CurrencyCode, TaxTag } from '../types/wealth';
 
 const MFAPI_SEARCH_URL = 'https://api.mfapi.in/mf/search';
 const MFAPI_SCHEME_URL = 'https://api.mfapi.in/mf';
-const US_TREASURY_RATES_URL =
-  'https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates?sort=-record_date&page[size]=20';
 const INDIA_GSEC_RATES_URL =
   'https://raw.githubusercontent.com/TechfaneTechnologies/risk_free_interest_rate/main/RiskFreeInterestRate.json';
 const NPS_DETAILED_URL = 'https://npsnav.in/api/detailed';
@@ -230,70 +228,6 @@ export async function fetchMutualFundDetails(
     return detail;
   } catch {
     return null;
-  }
-}
-
-/**
- * Queries the keyless, CORS-open U.S. Treasury Fiscal Data API for latest
- * sovereign Treasury Bills, Notes, Bonds, and TIPS average rates.
- */
-export async function fetchLiveUsTreasuryRates(): Promise<ListedMarketInstrument[]> {
-  try {
-    const res = await fetch(US_TREASURY_RATES_URL);
-    if (!res.ok) return [];
-    const json = (await res.json()) as {
-      data?: Array<{
-        record_date: string;
-        security_desc: string;
-        security_type_desc: string;
-        avg_interest_rate_amt: string;
-      }>;
-    };
-
-    const rows = json.data ?? [];
-    if (rows.length === 0) return [];
-
-    const latestDate = rows[0].record_date;
-    const latestRows = rows.filter(
-      (r) =>
-        r.record_date === latestDate &&
-        r.security_type_desc === 'Marketable' &&
-        /Treasury (Bills|Notes|Bonds|Inflation-Protected|Floating Rate)/i.test(r.security_desc)
-    );
-
-    const seen = new Set<string>();
-    const instruments: ListedMarketInstrument[] = [];
-
-    latestRows.forEach((r) => {
-      if (seen.has(r.security_desc)) return;
-      const rate = parseFloat(r.avg_interest_rate_amt);
-      if (!Number.isFinite(rate) || rate <= 0) return;
-      seen.add(r.security_desc);
-
-      const isBill = /Bills/i.test(r.security_desc);
-      const isNote = /Notes/i.test(r.security_desc);
-      instruments.push({
-        id: `ust-${r.security_desc.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-        name: `US ${r.security_desc}`,
-        category: 'GOVT_BOND',
-        group: 'GOVT_BOND',
-        issuer: 'U.S. Department of the Treasury',
-        currency: 'USD',
-        rateOrYieldPct: Number(rate.toFixed(2)),
-        tenureLabel: isBill ? '3–12 Months' : isNote ? '2–10 Years' : '10–30 Years',
-        tenureDays: isBill ? 180 : isNote ? 1095 : 3650,
-        rating: 'US Sovereign',
-        liquidity: 'High (Secondary Market)',
-        taxTag: 'SLAB_INCOME',
-        taxSummary: 'Federal taxable; US state-tax exempt',
-        sourceLabel: 'Live US Treasury API',
-        asOf: latestDate,
-      });
-    });
-
-    return instruments;
-  } catch {
-    return [];
   }
 }
 
@@ -575,22 +509,6 @@ export const LISTED_MARKET_INSTRUMENTS: ListedMarketInstrument[] = [
     taxSummary: 'Interest taxed at income slab',
     sourceLabel: 'NBFC Deposit Registry',
   },
-  {
-    id: 'fd-us-marcus-12m',
-    name: 'High-Yield 12-Month USD Certificate of Deposit',
-    category: 'FIXED_DEPOSIT',
-    group: 'FD',
-    issuer: 'FDIC Insured Bank CD',
-    currency: 'USD',
-    rateOrYieldPct: 4.55,
-    tenureLabel: '12 Months',
-    tenureDays: 365,
-    rating: 'FDIC $250k Insured',
-    liquidity: 'Fixed term (penalty on early exit)',
-    taxTag: 'SLAB_INCOME',
-    taxSummary: 'Taxed as ordinary interest income',
-    sourceLabel: 'US Deposit Market',
-  },
 
   // Government Bonds & T-Bills
   {
@@ -772,36 +690,6 @@ export const LISTED_MARKET_INSTRUMENTS: ListedMarketInstrument[] = [
     taxTag: 'LTCG_EQUITY',
     taxSummary: 'LTCG 12.5% above ₹1.25L/yr (>12m)',
     sourceLabel: 'NSE Listed ETF',
-  },
-  {
-    id: 'eq-voo-us',
-    name: 'Vanguard S&P 500 ETF (VOO)',
-    category: 'EQUITY_STOCK',
-    group: 'STOCK_ETF',
-    issuer: 'NYSE Arca',
-    currency: 'USD',
-    rateOrYieldPct: 11.4,
-    tenureLabel: 'Open-Ended ETF',
-    rating: 'US Large-Cap S&P 500',
-    liquidity: 'US Market T+1',
-    taxTag: 'LTCG_EQUITY',
-    taxSummary: 'Foreign equity LTCG after 24m (India)',
-    sourceLabel: 'US Listed ETF',
-  },
-  {
-    id: 'eq-qqq-us',
-    name: 'Invesco QQQ Trust (Nasdaq-100 ETF)',
-    category: 'EQUITY_STOCK',
-    group: 'STOCK_ETF',
-    issuer: 'NASDAQ',
-    currency: 'USD',
-    rateOrYieldPct: 14.5,
-    tenureLabel: 'Open-Ended ETF',
-    rating: 'US Growth Tech',
-    liquidity: 'US Market T+1',
-    taxTag: 'LTCG_EQUITY',
-    taxSummary: 'Foreign equity LTCG after 24m (India)',
-    sourceLabel: 'US Listed ETF',
   },
 ];
 

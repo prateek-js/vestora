@@ -5,7 +5,6 @@ import {
   fetchLiveGoldInrSpot,
   fetchLiveIndiaGsecRates,
   fetchLiveNpsSchemes,
-  fetchLiveUsTreasuryRates,
   fetchMutualFundDetails,
   LISTED_MARKET_INSTRUMENTS,
   ListedMarketInstrument,
@@ -145,7 +144,6 @@ export const AMFI_BENCHMARK_CONFIG: BenchmarkKey[] = [
 
 export interface LiveMarketBenchmarks {
   funds: Record<BenchmarkKey['id'], MutualFundMarketDetail | null>;
-  usTreasuries: ListedMarketInstrument[];
   indiaGsecs: ListedMarketInstrument[];
   npsSchemes: NpsMarketScheme[];
   goldInrPer10g: number | null;
@@ -162,8 +160,6 @@ export interface AllocationProfileAnalysis {
   topHolding: { holding: Holding; sharePct: number; valInBase: number } | null;
   cashHoldings: Holding[];
   maturedHoldings: Holding[];
-  dominantCurrency: CurrencyCode;
-  singleCurrencySharePct: number;
 }
 
 export interface SmartDiversificationPlan {
@@ -206,7 +202,6 @@ export function analyzeAllocationProfile(
 ): AllocationProfileAnalysis {
   const targetPct = TARGET_MIX_BY_GOAL[goal].weights;
   const currentVal: BucketMix = { equity: 0, debt: 0, gold: 0, cash: 0 };
-  const currencyTotals: Record<CurrencyCode, number> = { INR: 0, USD: 0, EUR: 0 };
 
   let topHolding: AllocationProfileAnalysis['topHolding'] = null;
   const cashHoldings: Holding[] = [];
@@ -214,7 +209,6 @@ export function analyzeAllocationProfile(
 
   holdings.forEach((h) => {
     const val = Math.max(0, convertCurrency(h.currentValue, h.currency, baseCurrency));
-    currencyTotals[h.currency] = (currencyTotals[h.currency] || 0) + val;
 
     if (h.category === 'SAVINGS_CASH') cashHoldings.push(h);
     if (h.isMatured || (h.daysToMaturity !== undefined && h.daysToMaturity <= 0)) {
@@ -251,18 +245,6 @@ export function analyzeAllocationProfile(
     );
   }
 
-  let dominantCurrency: CurrencyCode = baseCurrency;
-  let maxCurrVal = -1;
-  (Object.keys(currencyTotals) as CurrencyCode[]).forEach((ccy) => {
-    if (currencyTotals[ccy] > maxCurrVal) {
-      maxCurrVal = currencyTotals[ccy];
-      dominantCurrency = ccy;
-    }
-  });
-
-  const singleCurrencySharePct =
-    totalValuation > 0 ? Math.round((maxCurrVal / totalValuation) * 100) : 0;
-
   return {
     totalValuation,
     currentPct,
@@ -285,19 +267,16 @@ export function analyzeAllocationProfile(
         convertCurrency(b.currentValue, b.currency, baseCurrency) -
         convertCurrency(a.currentValue, a.currency, baseCurrency)
     ),
-    dominantCurrency,
-    singleCurrencySharePct,
   };
 }
 
 /**
  * Fetches live scheme NAVs, trailing 1Y/3Y CAGRs, and daily volatilities across
- * core AMFI benchmark funds + live India G-Sec yields + NPS Tier-I schemes + Gold INR spot + U.S. Treasuries.
+ * core AMFI benchmark funds + live India G-Sec yields + NPS Tier-I schemes + Gold INR spot.
  */
 export async function fetchLiveMarketBenchmarks(): Promise<LiveMarketBenchmarks> {
-  const [fundDetails, usTreasuries, indiaGsecs, npsSchemes, goldSpot] = await Promise.all([
+  const [fundDetails, indiaGsecs, npsSchemes, goldSpot] = await Promise.all([
     Promise.all(AMFI_BENCHMARK_CONFIG.map((cfg) => fetchMutualFundDetails(cfg.schemeCode))),
-    fetchLiveUsTreasuryRates(),
     fetchLiveIndiaGsecRates(),
     fetchLiveNpsSchemes(),
     fetchLiveGoldInrSpot(),
@@ -314,7 +293,6 @@ export async function fetchLiveMarketBenchmarks(): Promise<LiveMarketBenchmarks>
 
   return {
     funds,
-    usTreasuries,
     indiaGsecs,
     npsSchemes,
     goldInrPer10g: goldSpot?.inrPer10g ?? null,
@@ -420,7 +398,7 @@ function simulatePlanRisk(
 
 /**
  * Generates concrete, actionable diversification & rebalance plans tailored to the
- * user's actual holdings, tax bracket, optional home loan, and live AMFI / US Treasury rates.
+ * user's actual holdings, tax bracket, optional home loan, and live AMFI / GoI G-Sec rates.
  */
 export function generateSmartDiversificationPlans(
   holdings: Holding[],
@@ -664,76 +642,6 @@ export function generateSmartDiversificationPlans(
         benefitSummary: `Single-holding share ${analysis.topHolding.sharePct}% → ${newTopShare}%`,
         ...risk,
         isLiveApiBacked: isLive,
-      });
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // PLAN 4: Cross-Currency & Sovereign Hedge (if > 90% in one currency)
-  // ---------------------------------------------------------------------------
-  const liquidForFx =
-    analysis.cashHoldings[0] ??
-    movableHoldings.find((h) => h.category !== 'EPF' && h.category !== 'PPF');
-
-  if (
-    analysis.singleCurrencySharePct >= 90 &&
-    analysis.dominantCurrency !== 'USD' &&
-    liquidForFx &&
-    benchmarks &&
-    benchmarks.usTreasuries.length > 0
-  ) {
-    const srcVal = convertCurrency(liquidForFx.currentValue, liquidForFx.currency, baseCurrency);
-    const fxMoveAmt = Math.round(Math.min(srcVal * 0.4, analysis.totalValuation * 0.12));
-
-    if (fxMoveAmt >= 1000) {
-      const treasury =
-        benchmarks.usTreasuries.find((t) => /Notes|Bills/i.test(t.name)) ?? benchmarks.usTreasuries[0];
-      const sp500 = LISTED_MARKET_INSTRUMENTS.find((m) => m.id === 'eq-voo-us')!;
-
-      const tAmt = Math.round(fxMoveAmt * 0.5);
-      const eqAmt = fxMoveAmt - tAmt;
-
-      const destinations: SuggestedDestination[] = [
-        {
-          id: treasury.id,
-          kind: 'MARKET_INSTRUMENT',
-          title: treasury.name,
-          subtitle: `${treasury.issuer} · ${treasury.rateOrYieldPct.toFixed(2)}% USD yield (${treasury.asOf})`,
-          category: treasury.category,
-          institution: treasury.issuer,
-          currency: 'USD',
-          allocatedInBase: tAmt,
-          expectedRatePct: treasury.rateOrYieldPct,
-          tenureDays: treasury.tenureDays,
-          taxTag: treasury.taxTag,
-        },
-        {
-          id: sp500.id,
-          kind: 'MARKET_INSTRUMENT',
-          title: sp500.name,
-          subtitle: `${sp500.issuer} · USD S&P 500 diversification`,
-          category: sp500.category,
-          institution: sp500.issuer,
-          currency: 'USD',
-          allocatedInBase: eqAmt,
-          expectedRatePct: sp500.rateOrYieldPct,
-          taxTag: sp500.taxTag,
-        },
-      ];
-
-      const risk = simulatePlanRisk(holdings, baseCurrency, liquidForFx, fxMoveAmt, destinations, beforeRisk);
-
-      plans.push({
-        id: 'smart-currency-hedge',
-        categoryLabel: 'Global & Currency Diversification',
-        title: `Add USD Sovereign + S&P 500 Hedge (${analysis.singleCurrencySharePct}% in ${analysis.dominantCurrency})`,
-        rationale: `${analysis.singleCurrencySharePct}% of your portfolio is denominated in ${analysis.dominantCurrency}. Allocating ~${Math.round((fxMoveAmt / analysis.totalValuation) * 100)}% into live U.S. ${treasury.name.replace('US ', '')} (${treasury.rateOrYieldPct.toFixed(2)}% USD) and Vanguard VOO cushions domestic currency depreciation.`,
-        sourceHolding: liquidForFx,
-        moveAmountInBase: fxMoveAmt,
-        destinations,
-        benefitSummary: `Adds ${Math.round((fxMoveAmt / analysis.totalValuation) * 100)}% USD sovereign & global equity exposure`,
-        ...risk,
-        isLiveApiBacked: true,
       });
     }
   }

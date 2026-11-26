@@ -14,7 +14,7 @@ const VIEW_SEO: Record<SeoViewKey, SeoMetaConfig> = {
   overview: {
     title: 'Portfolio Overview – Vestora Wealth',
     description:
-      'Track Mutual Funds, FDs, Demat Stocks, SGBs, EPF, NPS & active loans in one private on-device dashboard with Excel/CSV import and live FX.',
+      'Track Mutual Funds, FDs, Demat Stocks, SGBs, EPF, NPS & active loans in one private on-device dashboard with Excel/CSV import.',
   },
   rebalance: {
     title: 'Smart Rebalance & Market Explorer – Vestora Wealth',

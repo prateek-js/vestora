@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">Take the tour</span>
             </a>
 
-            {/* Consolidated Currency, Save/Export & Data Tools Menu */}
+            {/* Consolidated Save/Export, Import & Data Tools Menu */}
             <div className="relative" data-tour="export-menu">
               <button
                 type="button"
@@ -185,7 +185,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ? 'bg-ink border-ink text-paper'
                     : 'bg-paper border-slate-700 text-ink hover:bg-ink/5 hover:border-ink/40'
                 }`}
-                title="Currency, Save/Export, Import & Tools"
+                title="Save/Export, Import & Tools"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span className="hidden sm:inline">Menu</span>
