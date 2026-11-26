@@ -137,12 +137,16 @@ export default function App() {
   // Live FX rates: seeded from static benchmarks, then overwritten once ECB loads.
   const [fxAsOf, setFxAsOf] = useState<string | null>(null);
   const [fxSource, setFxSource] = useState<'live' | 'cached' | 'benchmark'>('benchmark');
+  // Bumped once per refreshFxRates() resolution: FX_RATES is mutated in place, so
+  // FX-reading memos downstream key on this to recompute after live rates land.
+  const [fxVersion, setFxVersion] = useState(0);
   useEffect(() => {
     let cancelled = false;
     refreshFxRates().then((state) => {
       if (!cancelled) {
         setFxAsOf(state.asOf);
         setFxSource(state.source);
+        setFxVersion((v) => v + 1);
       }
     });
     return () => {
@@ -566,6 +570,7 @@ export default function App() {
             onDeleteHolding={handleDeleteHolding}
             onOpenValidateModal={openValidateModal}
             onOpenAddModal={() => openAddModal()}
+            fxVersion={fxVersion}
           />
         )}
 

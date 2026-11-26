@@ -176,6 +176,8 @@ interface OverviewTabProps {
   onDeleteHolding: (id: string) => void;
   onOpenValidateModal: (tab?: 'excel' | 'manual' | 'reset') => void;
   onOpenAddModal: () => void;
+  /** Incremented once per refreshFxRates() resolution so FX-reading memos recompute. */
+  fxVersion: number;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -190,6 +192,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onDeleteHolding,
   onOpenValidateModal,
   onOpenAddModal,
+  fxVersion,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -204,14 +207,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
       0
     );
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   const totalInvested = useMemo(() => {
     return holdings.reduce(
       (sum, h) => sum + convertCurrency(h.investedAmount, h.currency, baseCurrency),
       0
     );
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   const totalGain = totalValuation - totalInvested;
   const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
@@ -297,7 +300,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       (sum, h) => sum + convertCurrency(h.currentValue, h.currency, baseCurrency),
       0
     );
-  }, [maturedHoldings, baseCurrency]);
+  }, [maturedHoldings, baseCurrency, fxVersion]);
 
   // Asset Class Allocation Breakdown
   const categoryStats = useMemo(() => {
@@ -335,7 +338,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     });
 
     return buckets;
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   // Granular Asset Category Data for Donut Chart
   const categoryDonutData = useMemo(() => {
@@ -370,7 +373,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     return Array.from(map.values())
       .filter((item) => item.value > 0)
       .sort((a, b) => b.value - a.value);
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   // Broad Asset Class Data for Donut Chart
   const broadClassDonutData = useMemo(() => {
@@ -405,12 +408,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   // Automated Insights
   const automatedInsights = useMemo(() => {
     return generateAutomatedInsights(holdings, baseCurrency);
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   // Portfolio Risk Score (1-100) based on allocation & holding volatility
   const riskScore = useMemo(() => {
     return computePortfolioRiskScore(holdings, baseCurrency);
-  }, [holdings, baseCurrency]);
+  }, [holdings, baseCurrency, fxVersion]);
 
   // Holdings gaining >15% over the last 30 days
   const surgeHoldings30d = useMemo(() => {
