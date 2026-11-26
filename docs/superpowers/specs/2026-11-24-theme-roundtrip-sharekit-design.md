@@ -1,7 +1,8 @@
 # Vestora batch 2: light theme everywhere, demo data round-trip, game removal, share kit
 
-Date: 2026-11-25 (batch 2; batch 1 = the /demo/ journey, built and reviewed, uncommitted)
-Status: draft, awaiting approval
+Date: 2026-11-25 (batch 2; batch 1 = the /demo/ journey)
+Status: A and B built, reviewed, and merged to local main (2026-11-25, through
+74a898d). C and D are the remaining projects this spec governs.
 
 ## Intent and why
 
@@ -112,26 +113,81 @@ Verify: unit tests for the export→import round-trip; browser: add a holding by
 hand and by chat, see it in See it/Play/Plan, export Excel and PDF, reload,
 re-import the Excel, same numbers; localStorage untouched throughout.
 
-## Project C: Reskin all screens to the light theme
+## Project C: Reskin all screens to the demo's exact look
 
-- **Tokens first:** `src/index.css` swaps its dark ramp overrides for the demo
-  palette (Ink `#14213D`, Mist `#EEF2F6`, Paper `#FFFFFF`, Level green
-  `#02A26D`, Tilt amber `#E8A33D`, Risk coral `#D8454B`; bucket hues as in the
-  demo). The emerald/indigo overrides go away in favour of the shared ramp.
-  Fonts become Bricolage Grotesque + Figtree (already loaded in index.html).
+Owner confirmations (2026-11-25): the screens take the **demo's exact look** —
+Mist background, Paper cards, Bricolage Grotesque + Figtree, the demo's spacing
+and card style — not merely "light with the old density". One product, one
+theme, one story. The batch-2 review's deferred UI minors fold into this pass,
+since every screen is touched anyway.
+
+- **Tokens first:** `src/index.css` REMAPS (does not delete) the ramp
+  overrides to the demo's values: slate-950→Mist `#EEF2F6`, slate-900→Paper
+  `#FFFFFF`, slate-800→light card `#FFFFFF`, slate-700→light border/edge,
+  emerald-*→the Level green ramp, indigo-*→the Equity blue ramp, plus Ink
+  `#14213D`, Tilt amber `#E8A33D`, Risk coral `#D8454B`, bucket hues and the
+  `--color-level-line` stroke green (Ink/Mist/Paper/Level as named demo
+  tokens). Rationale (builder check): ~350 remaining `emerald-*` call sites
+  and the unrewritten `SeoLandingPage` must land on brand automatically —
+  deleting the ramps would leave the SEO pages dark and the brand green lost.
+  The six app screens are still rewritten to the named demo tokens on top of
+  the remap. Fonts become Bricolage Grotesque + Figtree: add the demo's exact
+  Google Fonts link (including the `wdth` axis the demo's `font-stretch: 88%`
+  depends on) to `index.html` and all four SEO page heads — the builder check
+  found the doc's earlier claim that they were "already loaded" was wrong;
+  only `demo/index.html` has them. JetBrains Mono stays for tabular numerics
+  (its link already exists everywhere) unless the demo's `num` treatment
+  replaces it per screen. `demo.css`'s tokens move into the shared theme so
+  demo and app read from one source; `@theme static` stays for the inline-var
+  consumers (Beam/MixBar).
+- **HTML shells in scope (builder check):** `theme-color` meta
+  (`#060911` → Mist) and `site.webmanifest`'s `background_color`/`theme_color`
+  in index.html and all four SEO heads, so the browser UI bar and installed-app
+  splash follow the light theme. The `<body class="bg-slate-950 text-slate-100">`
+  class in each HTML file is updated to its light equivalent (the utility class
+  would otherwise beat the remapped base layer and render near-black).
 - **Then screens, one task each, styling-only:** Navbar, OverviewTab,
   RebalanceTab, MaturityRadarTab, TaxAndInsightsTab, MacroSimulatorTab, the six
   modals/drawers, OnboardingTour, and the App shell. Dark utilities become
   their light equivalents (`bg-slate-950`→`bg-mist`, `text-white`→`text-ink`,
-  `bg-slate-800`→`bg-paper`, borders and shadows restyled); charts (Recharts
-  stroke/fill/grid colours) are updated per screen.
-- **Behaviour lock:** no logic, data, or copy changes. Any accidental logic
-  edit found during a restyle is reverted. Diff review per task enforces this.
+  `bg-slate-800`→`bg-paper`, borders and shadows restyled to the demo's card
+  language); charts (Recharts stroke/fill/grid colours) are updated per screen.
+  Dense data tables (Overview, Rebalance) adopt the demo's spacing and type
+  scale even where that lengthens the screen; density is not preserved.
+- **Fold-in — the batch-2 deferred UI minors, fixed in this pass** (each still
+  respects the behaviour lock where it applies; the minors are behaviour
+  fixes, explicitly allowed):
+  - 375px chapter bar non-interactive → make it navigable (demo).
+  - Chat launcher can cover the Continue button at max scroll on 375px →
+    bottom padding / layout fix (demo + shared).
+  - AddHoldingModal row-button tap targets (~32px) raised to a comfortable
+    size (app).
+  - ChatPanel and PortfolioChatDrawer get a focus trap + `aria-modal` (shared
+    slide-over behaviour; one implementation used by both).
+  - DemoApp chat-path minors: NAVIGATE overview / OPEN_ADD_MODAL from an
+    un-forked sample seeds from the current portfolio (not empty); chat
+    START_BLANK / delete-to-empty while on see/play/plan routes to 'mine'
+    with a note.
+  - ~10-line error boundary around the lazy Editor/ChatPanel mounts.
+  - Duplicate "Edit my investments" labels on story beat 4 (relabel one).
+- **Behaviour lock:** no logic, data, or copy changes — except the listed
+  minors above, which are behaviour fixes by design. Any other accidental
+  logic edit found during a reskin is reverted. Diff review per task enforces
+  this.
 - **Contrast gate:** computed WCAG ratios for each screen's main pairs must
   pass (4.5:1 text, 3:1 graphics), same method as batch 1.
 - The demo page itself is untouched except for anything C teaches us (e.g. a
-  token that needs to move into the shared theme).
+  token that needs to move into the shared theme) and the fold-in minors that
+  live in demo files.
 - The street game's assets (marketing images it referenced) stay or go with A.
+- **SEO calculator pages** (`SeoLandingPage`, 671 lines) inherit the light
+  tokens automatically via the remapped ramps (above); they get a light
+  spot-check (they are standalone pages, not tabs), not a per-screen task.
+- **Baseline first (builder check):** the reskin's verify step needs
+  before-screenshots; only three exist (overview/rebalance/simulator at 1440,
+  none at 375, none for Radar/Tax/Navbar/modals). C's first task captures the
+  full dark baseline (every screen, 1440 + 375, plus the sample portfolio's
+  key numbers per screen) BEFORE any restyling.
 
 Verify: per screen — 1440 + 375 screenshots (saved under `.playwright-mcp/`),
 console clean, no horizontal scroll at 375, focus visible, and the screen's
@@ -159,7 +215,16 @@ Built last, from the finished product. Reuses the launch-kit idea
   Instagram Reels, YouTube Shorts and WhatsApp status alike (all 9:16). Built
   with HyperFrames, rebuilding the street scene as animated frames driven from
   the (now unrouted) game's visual language rather than screen-recording a
-  browser. After the reel is rendered, `StreetStoryGame.tsx` is deleted.
+  browser. **Audio: a licensed music track** (owner decision 2026-11-25) —
+  sourced from a licence-clear library or commissioned, with the licence noted
+  in the captions file; no voiceover. After the reel is rendered,
+  `StreetStoryGame.tsx` is deleted.
+- **The new LinkedIn card replaces the site's live share image** (owner
+  decision 2026-11-25): `og:image`/`twitter:image` (and their dimensions) in
+  `index.html` + the four SEO heads point at the new light-theme 1200×627
+  card, so a shared Vestora URL shows the current product. This is a
+  deliberate, minimal exception to the "no SEO changes" non-goal — meta image
+  paths only, no copy, no sitemap, no analytics.
 - **Captions file** (`captions.md`): ready-to-paste text per platform with
   hashtags, in the plain voice of the product. No invented claims; the privacy
   line ("everything stays on your device") carries over.
@@ -170,10 +235,13 @@ anti-goals (no jargon, no promises of returns).
 
 ## Non-goals
 
-- No new product features in the six screens (styling only).
+- No new product features in the six screens (styling only; the fold-in minors
+  are the exception, and they are fixes, not features).
 - No backend, no accounts, no cloud sync — the export file *is* the save.
 - No changes to the demo journey's chapter flow beyond the new editor chapter.
-- No SEO/sitemap/analytics changes; `/demo/` stays `noindex`.
+- No SEO/sitemap/analytics changes; `/demo/` stays `noindex`. (Exception:
+  Project D swaps the og/twitter image metas to the new light card — image
+  paths only.)
 - The share kit is not localised; English only.
 
 ## Anti-goals (failure even if it works)
@@ -183,6 +251,8 @@ anti-goals (no jargon, no promises of returns).
 - White-on-white or near-invisible text anywhere.
 - Share images that promise returns or look like investment advice.
 - Two competing "stories" in the product.
+- The full app reading as a different product from the demo (density or
+  styling that breaks the one-look rule).
 
 ## Risks
 
@@ -193,9 +263,9 @@ anti-goals (no jargon, no promises of returns).
   importer cleanly; the round-trip test will force any fix early in B.
 - **Chat engine assumptions:** `localChatEngine` may assume app-only state
   shapes; if so, adapt its inputs, not its logic.
-- Batch 1 is still uncommitted; C's large diff will sit on top. Owner may want
-  a commit checkpoint before C starts (recommended; needs the personal git
-  email set repo-locally first).
+- **Density loss on Rebalance/Overview:** the demo's airier spacing makes dense
+  screens longer; accepted by the owner's "demo's exact look" call, revisit
+  only if a screen becomes unusable at 375px.
 
 ## Calls made without a decision from the owner (please check)
 
@@ -203,17 +273,30 @@ anti-goals (no jargon, no promises of returns).
   levels), per the owner's question; the pure beam story is dropped from the
   reel but stays as the demo journey's interactive story.
 - The demo's editor chapter sits between Story and See it, unlocked from story
-  beat 4 and always reachable afterwards.
+  beat 4 and always reachable afterwards. *(Built in B.)*
 - Excel + CSV + JSON are the import formats; PDF is export-only (it is a
-  report, not data).
+  report, not data). *(Built in B.)*
 - The demo's chat is the same local engine, available in every chapter.
+  *(Built in B.)*
 - The reel is built with HyperFrames; images are HTML frames screenshotted.
-- The app navbar links to `/demo/` with a short label.
+- The app navbar links to `/demo/` with a short label. *(Built in A.)*
+- **C — remap, don't delete, the ramp overrides in `index.css`** (builder
+  check fork): ~350 emerald-* call sites and the unrewritten SEO pages must
+  land on-brand and light automatically; deleting the ramps would keep the
+  SEO pages dark and break the spot-check promise. Cost if wrong: a larger C
+  (SEO pages become a real task) or a subtly off-brand green.
+- **C — HTML shells get the light chrome** (theme-color meta, webmanifest
+  colours, body classes): the browser UI bar and installed splash otherwise
+  stay dark, tripping the "different product" anti-goal. Cost if wrong: dark
+  chrome around a light app.
 
 ## Left to the builder
 
 - Exact light-class mappings per screen (mechanical, guided by the token table).
-- Editor chapter's component split and empty-state copy.
+- Editor chapter's component split and empty-state copy. *(Built in B.)*
 - Which Recharts palette entries move to CSS variables.
+- Whether the now-unused DM Sans/Plus Jakarta links are dropped from the
+  HTML heads when Bricolage/Figtree are added.
 - Storyboard frames and copy for the reel and each share image.
+- Which licensed music track (licence noted in captions.md).
 - Captions text per platform.
