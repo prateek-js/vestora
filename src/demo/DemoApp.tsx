@@ -19,11 +19,24 @@ import {
   type DemoPortfolio,
 } from './demoData';
 import { nextChapter, useJourney, visibleChapters, type Chapter } from './journeyState';
+import { chapterForTab } from './chatActions';
+import { exportPortfolio, type ExportFormat } from './exports';
+import { DEMO_PROFILES } from '../data/mockData';
+import { sampleHoldingsFor } from '../utils/portfolioStorage';
 import { useSplit } from './useSplit';
+
+const EXPORT_LABEL: Record<ExportFormat, string> = {
+  xlsx: 'Excel',
+  csv: 'CSV',
+  pdf: 'PDF',
+  json: 'Vestora file',
+};
 
 // The spreadsheet code and the chat panel stay out of the first load.
 const Editor = lazy(() => import('./components/Editor').then((m) => ({ default: m.Editor })));
-const ChatPanelLazy = lazy(() => import('./components/ChatPanel').then((m) => ({ default: m.ChatPanel })));
+const PortfolioChatDrawerLazy = lazy(() =>
+  import('../components/PortfolioChatDrawer').then((m) => ({ default: m.PortfolioChatDrawer }))
+);
 
 type Choice = 'sample' | 'saved' | 'personal';
 interface PersonalData {
@@ -200,6 +213,16 @@ export default function DemoApp() {
   // Stable so the chat panel's focus-trap hook can depend on it.
   const handleChatClose = useCallback(() => setChatOpen(false), []);
 
+  /** Makes a chat-requested download; the heavy writers load on demand and can fail, so the promise is always caught. */
+  const runDemoExport = (format: ExportFormat, holdings: Holding[]) => {
+    try {
+      const result = exportPortfolio(format, holdings);
+      if (result) result.catch(() => {});
+    } catch {
+      // Download failures are silent in the demo; the chat suggests trying again.
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-ink/10 bg-mist">
@@ -304,15 +327,60 @@ export default function DemoApp() {
       {chatOpened && (
         <DemoErrorBoundary>
           <Suspense fallback={null}>
-            <ChatPanelLazy
+            <PortfolioChatDrawerLazy
               open={chatOpen}
               onClose={handleChatClose}
               notes={chatNotes}
+              subtitle="Edits this page's portfolio. Runs on your device."
               holdings={portfolio.holdings}
-              onEdit={editPersonal}
-              onGoChapter={(c) => (c === 'mine' ? goMineFromChat() : go(c))}
-              onRebalanceHolding={rebalanceHolding}
-              onOpenForm={openChatForm}
+              portfolioMode="personal"
+              profileName="You"
+              onAddHolding={(h) => editPersonal((hs) => [...hs, h])}
+              onUpdateHolding={(h) => editPersonal((hs) => hs.map((x) => (x.id === h.id ? h : x)))}
+              onDeleteHolding={(id) => editPersonal((hs) => hs.filter((x) => x.id !== id))}
+              onReplaceHoldings={(hs) => editPersonal(() => hs)}
+              onAppendHoldings={(hs) => editPersonal((old) => [...old, ...hs])}
+              onNavigateToTab={() => {
+                /* unreachable in the demo: mapTabToTarget handles every NAVIGATE */
+              }}
+              mapTabToTarget={(tab) => {
+                const chapter = chapterForTab(tab);
+                if (chapter === 'mine') {
+                  goMineFromChat();
+                } else if (chapter) {
+                  go(chapter);
+                } else {
+                  setChatNotes((prev) => [
+                    ...prev,
+                    { id: `note-tab-${Date.now()}`, text: `That view is in the full app at /#${tab}.` },
+                  ]);
+                }
+              }}
+              onStartBlank={() => editPersonal(() => [])}
+              onResetToSample={() => editPersonal(() => sampleHoldingsFor(DEMO_PROFILES[0]))}
+              onExportExcel={() => runDemoExport('xlsx', portfolio.holdings)}
+              onExportCsv={() => runDemoExport('csv', portfolio.holdings)}
+              onExportPdf={() => runDemoExport('pdf', portfolio.holdings)}
+              onExportJson={() => runDemoExport('json', portfolio.holdings)}
+              onRebalanceHoldingById={(id) => {
+                if (!portfolio.holdings.some((h) => h.id === id)) {
+                  setChatNotes((prev) => [
+                    ...prev,
+                    {
+                      id: `note-gone-${Date.now()}`,
+                      text: 'That holding is gone — it is no longer in your list, so there is nothing to move.',
+                    },
+                  ]);
+                  return;
+                }
+                setChatOpen(false);
+                rebalanceHolding(id);
+              }}
+              onOpenForm={(req) => {
+                setChatOpen(false);
+                if (req.mode === 'edit') openChatForm({ mode: 'edit', holding: req.holding! });
+                else openChatForm({ mode: 'add', draft: req.draft });
+              }}
             />
           </Suspense>
         </DemoErrorBoundary>

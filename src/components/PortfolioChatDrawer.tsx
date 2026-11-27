@@ -46,8 +46,9 @@ interface PortfolioChatDrawerProps {
   onExportPdf: () => void;
   onExportJson: () => void;
   onRebalanceHoldingById: (holdingId: string) => void;
-  onOpenEditModal: (holding: Holding) => void;
-  onOpenAddModal: (draft?: Holding) => void;
+  /** Legacy modal openers — required only when onOpenForm is absent (the app's mount). */
+  onOpenEditModal?: (holding: Holding) => void;
+  onOpenAddModal?: (draft?: Holding) => void;
   /** Controlled mode: when provided, visibility follows this prop, no launcher renders, and every close path calls onClose. */
   open?: boolean;
   onClose?: () => void;
@@ -293,11 +294,13 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         return;
       case 'OPEN_EDIT_MODAL':
         if (onOpenForm) { onOpenForm({ mode: 'edit', holding: action.holding }); closeDrawer(); return; }
+        if (!onOpenEditModal) return;
         setInternalIsOpen(false);
         onOpenEditModal(action.holding);
         return;
       case 'OPEN_ADD_MODAL':
         if (onOpenForm) { onOpenForm({ mode: 'add', draft: action.draft }); closeDrawer(); return; }
+        if (!onOpenAddModal) return;
         setInternalIsOpen(false);
         onOpenAddModal(action.draft);
         return;
@@ -444,7 +447,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   onClick={() => {
                     if (chip.kind === 'add_form') {
                       if (onOpenForm) { onOpenForm({ mode: 'add' }); closeDrawer(); }
-                      else { setInternalIsOpen(false); onOpenAddModal(); }
+                      else if (onOpenAddModal) { setInternalIsOpen(false); onOpenAddModal(); }
                     } else if (chip.kind === 'import_file') {
                       fileInputRef.current?.click();
                     } else if (chip.prompt) {
