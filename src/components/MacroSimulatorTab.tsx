@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Holding, MacroParameters, PortfolioAllocation } from '../types/wealth';
+import { logAnalytics, trackEvent } from '../utils/analytics';
 import { formatCurrency, formatPercent } from '../utils/currency';
 import {
   computePortfolioAllocation,
@@ -68,6 +69,12 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
 
   const handleApplyInputBasedShuffle = () => {
     setShuffledAlloc(inputCalibratedShuffle.allocation);
+    trackEvent('macro_scenario_calibrated', {
+      projection_horizon_years: params.projectionHorizonYears,
+    });
+    logAnalytics('macro_scenario_calibration_applied', {
+      projection_horizon_years: params.projectionHorizonYears,
+    });
     setShuffledFeedback(true);
     setTimeout(() => setShuffledFeedback(false), 2400);
   };
