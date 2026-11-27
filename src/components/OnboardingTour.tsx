@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { logAnalytics, trackEvent } from '../utils/analytics';
 import {
   ShieldCheck,
   Download,
@@ -337,8 +338,11 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
             <button
               type="button"
               onClick={() => {
-                if (isLast) onClose();
-                else setStepIndex((s) => s + 1);
+                if (isLast) {
+                  trackEvent('onboarding_tour_completed', { started_from_scratch: startedFromScratch });
+                  logAnalytics('onboarding_tour_finished', { started_from_scratch: startedFromScratch });
+                  onClose();
+                } else setStepIndex((s) => s + 1);
               }}
               className="px-3.5 py-1.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap"
             >
