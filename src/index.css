@@ -38,6 +38,10 @@
 
   --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  /* Remap Tailwind's mono token so the .font-mono UTILITY (which beats any
+     base rule) emits JetBrains Mono — otherwise every mono element silently
+     falls back to whatever mono the visitor's OS has. */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Extra-small label size used across dense financial UI (62 call sites). */

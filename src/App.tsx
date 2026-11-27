@@ -38,7 +38,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
 import { syncDocumentSeo } from './utils/seo';
 import { AppTab, planUrlSync, tabFromHash } from './utils/tabRouting';
-import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
+import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X, Mail } from 'lucide-react';
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
@@ -632,6 +632,17 @@ export default function App() {
             <a href="/ltcg-tax-harvesting-india/" className="hover:text-emerald-700 transition-colors">
               LTCG Tax Harvesting &amp; 80CCD(1B)
             </a>
+            <span className="ml-auto flex items-center gap-1.5">
+              <span className="text-2xs font-mono uppercase tracking-wider text-ink/70">Contact us:</span>
+              <a
+                href="mailto:prateekdesai1990@gmail.com"
+                className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors font-medium text-ink/80"
+                title="Email us — we read everything"
+              >
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                prateekdesai1990@gmail.com
+              </a>
+            </span>
           </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-2xs text-ink/70 leading-relaxed max-w-3xl">
