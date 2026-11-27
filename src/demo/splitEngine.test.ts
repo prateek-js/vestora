@@ -52,16 +52,16 @@ function dest(over: Partial<SuggestedDestination>): SuggestedDestination {
 
 const sav = holding({ id: 'sav', name: 'HDFC Savings Account', category: 'SAVINGS_CASH', currentValue: 400000, investedAmount: 400000, taxTag: 'SLAB_INCOME' });
 const mf = holding({ id: 'mf', name: 'Parag Parikh Flexi Cap Fund', currentValue: 600000, investedAmount: 400000 });
-const us = holding({ id: 'us', name: 'US Equity Portfolio', category: 'EQUITY_STOCK', currency: 'USD', currentValue: 10000, investedAmount: 6000 });
+const us = holding({ id: 'us', name: 'US Equity Portfolio', category: 'EQUITY_STOCK', currentValue: 10000, investedAmount: 6000, listedVenue: 'FOREIGN' });
 const epf = holding({ id: 'epf', name: 'EPF', category: 'EPF', currentValue: 500000, investedAmount: 400000, taxTag: 'TAX_EXEMPT_EEE' });
 const holdings = [sav, mf, us, epf];
 
 const dEq = dest({ id: 'd-eq', title: 'UTI Nifty 50 Index Fund' });
 const dDebt = dest({ id: 'd-debt', title: 'ICICI Pru Corporate Bond Fund', expectedRatePct: 7.6, taxTag: 'SLAB_INCOME' });
 const dFd = dest({ id: 'd-fd', kind: 'CUSTOM_ASSET', title: 'Bank FD', category: 'FIXED_DEPOSIT', expectedRatePct: 7.5, taxTag: 'SLAB_INCOME' });
-const dUs = dest({ id: 'd-us', kind: 'MARKET_INSTRUMENT', title: 'US Treasury 10Y', category: 'GOVT_BOND', currency: 'USD', expectedRatePct: 4.2, taxTag: 'SLAB_INCOME' });
+const dGilt = dest({ id: 'd-gilt', kind: 'MARKET_INSTRUMENT', title: 'India 10Y G-Sec', category: 'GOVT_BOND', expectedRatePct: 6.9, taxTag: 'SLAB_INCOME' });
 const dLoan = dest({ id: 'd-loan', kind: 'HOME_LOAN', title: 'Home-loan prepayment', category: undefined });
-const catalog = [dEq, dDebt, dFd, dUs, dLoan];
+const catalog = [dEq, dDebt, dFd, dGilt, dLoan];
 const loan = { principal: 4500000, ratePct: 8.55, yearsLeft: 15 };
 
 function input(over: Partial<SplitInput> = {}): SplitInput {
@@ -137,18 +137,18 @@ test('money not yet allocated stays in the source and is reported', () => {
   assert.equal(r.holdingsAfter.find((h) => h.id === 'sav')!.currentValue, 300000);
 });
 
-test('mixes are in base currency even when a holding is in USD', () => {
+test('mixes are in base currency even with a foreign-listed holding', () => {
   const r = evaluateSplit(input());
   const sum = (m: typeof r.mixBefore) => m.equity + m.debt + m.gold + m.cash;
   assert.ok(Math.abs(sum(r.mixBefore) - 100) <= 2, `before sums to ${sum(r.mixBefore)}`);
   assert.ok(Math.abs(sum(r.mixAfter) - 100) <= 2, `after sums to ${sum(r.mixAfter)}`);
 });
 
-test('a destination amount is stored as given, with no FX conversion', () => {
-  const r = evaluateSplit(input({ allocations: { 'd-us': 86500 }, moveAmountInBase: 86500 }));
-  const added = r.holdingsAfter.find((h) => h.name === 'US Treasury 10Y')!;
-  assert.equal(added.currency, 'USD');
-  assert.equal(added.currentValue, 86500);
+test('a destination amount is stored exactly as given', () => {
+  const r = evaluateSplit(input({ allocations: { 'd-gilt': 69000 }, moveAmountInBase: 69000 }));
+  const added = r.holdingsAfter.find((h) => h.name === 'India 10Y G-Sec')!;
+  assert.equal(added.currency, 'INR');
+  assert.equal(added.currentValue, 69000);
 });
 
 test('allocating more than the amount moved is flagged, not silently trimmed', () => {
@@ -283,7 +283,7 @@ const planFrom = (source: Holding, move: number, ...ds: [SuggestedDestination, n
   }) as unknown as SmartDiversificationPlan;
 
 test('pickStartingPlan chooses the suggested plan that gets the mix closest to target', () => {
-  // The legacy USD fixture now counts as a plain 10,000 INR number, so equity is
+  // The foreign-listed fixture is an INR figure like every other, so equity is
   // under target: moving savings into equity helps, trimming the fund into debt overshoots debt.
   const helpful = planFrom(sav, 400000, [dEq, 400000]);
   const harmful = planFrom(mf, 300000, [dDebt, 300000]);

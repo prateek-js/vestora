@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { AssetCategory, CurrencyCode, Holding, TaxTag } from '../types/wealth';
 import { todayIso, isoFromToday, withDerivedMaturity } from './maturity';
-import { renormaliseHolding } from './portfolioStorage';
+import { RENORM_RATE } from './portfolioStorage';
 
 /**
  * Real client-side Excel (.xlsx/.xls) and CSV/TSV statement ingestion.
@@ -133,17 +133,15 @@ function parseAmount(raw: string | number | undefined | null): number | null {
 }
 
 /**
- * Reads the statement's currency column so figures stated in a foreign
- * denomination can be re-denominated to INR at the pinned rate (see
- * renormaliseHolding). Vestora stores everything in INR — the detected code
- * never lands on a holding as-is.
+ * Reads the statement's currency column and answers one question: were these
+ * figures stated in a foreign denomination? Vestora stores everything in INR —
+ * foreign rows get the pinned 86.50 re-denomination (see RENORM_RATE), INR
+ * rows pass through at face value.
  */
-function parseCurrencyCode(raw: string | undefined): CurrencyCode {
-  if (!raw) return 'INR';
+function isForeignDenomination(raw: string | undefined): boolean {
+  if (!raw) return false;
   const up = raw.trim().toUpperCase();
-  if (up.includes('USD') || up.includes('$')) return 'USD';
-  if (up.includes('EUR') || up.includes('€')) return 'EUR';
-  return 'INR';
+  return up.includes('USD') || up.includes('$') || up.includes('EUR') || up.includes('€');
 }
 
 /** Accepts YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, MM/DD/YYYY, DD-MMM-YYYY, or Excel serial numbers. */
@@ -362,8 +360,12 @@ function parsePortfolioSheet(
 
     const rawCat = col.category >= 0 ? row[col.category] : undefined;
     const category = mapCategoryString(rawCat, rawName);
-    // A detected foreign code marks the row for re-denomination; INR rows stay untouched.
-    const currency = col.currency >= 0 ? parseCurrencyCode(row[col.currency]) : 'INR';
+    // A foreign currency cell marks the row for the pinned-rate re-denomination;
+    // INR rows stay at face value. Foreign figures are converted right here, so
+    // the row leaves the parser as a pure INR holding.
+    const foreign = col.currency >= 0 && isForeignDenomination(row[col.currency]);
+    const reDenominated = foreign ? RENORM_RATE : 1;
+    const currency: CurrencyCode = 'INR';
     const rate = col.rate >= 0 ? parseAmount(row[col.rate]) : null;
     const gain30d = col.gain30d >= 0 ? parseAmount(row[col.gain30d]) : null;
     const schemeCode = col.schemeCode >= 0 ? parseAmount(row[col.schemeCode]) : null;
@@ -379,18 +381,21 @@ function parsePortfolioSheet(
       category,
       institution: col.institution >= 0 && row[col.institution] ? row[col.institution].trim() : 'Spreadsheet Import',
       accountNumberMask: col.account >= 0 && row[col.account] ? row[col.account].trim() : undefined,
-      investedAmount,
-      currentValue,
+      investedAmount: investedAmount * reDenominated,
+      currentValue: currentValue * reDenominated,
       currency,
+      // Foreign-denominated figures keep their foreign listing story: the
+      // benchmark rows stay denied to them exactly as before.
+      listedVenue: foreign ? 'FOREIGN' : undefined,
       interestRatePct: rate ?? undefined,
       units: units ?? undefined,
       schemeCode: schemeCode !== null ? Math.round(schemeCode) : undefined,
       navOrPrice: nav ?? undefined,
       purchaseDate,
       maturityDate,
-      unrealizedGain,
+      unrealizedGain: currentValue * reDenominated - investedAmount * reDenominated,
       unrealizedGainPct,
-      gain30dPct: gain30d ?? undefined,
+      gain30dPct: gain30d ?? undefined, // a percentage is denomination-free
       taxTag,
       notes: col.notes >= 0 && row[col.notes] ? row[col.notes].trim() : `Imported from spreadsheet on ${todayIso()}`,
     };
@@ -625,7 +630,7 @@ function parseRowsToStatement(
 
   return {
     format,
-    holdings: holdings.map(renormaliseHolding).map(withDerivedMaturity),
+    holdings: holdings.map(withDerivedMaturity),
     skipped,
     sheetName,
   };

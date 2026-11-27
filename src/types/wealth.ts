@@ -1,4 +1,4 @@
-export type CurrencyCode = 'INR' | 'USD' | 'EUR';
+export type CurrencyCode = 'INR';
 
 export type AssetCategory =
   | 'MUTUAL_FUND'

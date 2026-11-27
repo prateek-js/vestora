@@ -63,7 +63,7 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
             </h2>
             <p className="text-xs text-ink/70 mt-1 max-w-2xl">
               Automated surveillance of capital gains tax liabilities, statutory deduction allowances (80C &
-              NPS), single-asset concentration limits, and cross-border currency exposure.
+              NPS), and single-asset concentration limits.
             </p>
           </div>
 

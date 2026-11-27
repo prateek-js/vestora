@@ -67,17 +67,23 @@ test('corrupt JSON in storage returns null instead of throwing', () => {
 
 test('a saved USD holding loads re-denominated to INR at the pinned 86.50 rate', () => {
   store.clear();
-  savePersistedPortfolio({
-    profileId: 'custom',
-    baseCurrency: 'INR',
-    mode: 'personal',
-    holdings: [{
-      id: 'h-us', name: 'US basket', category: 'EQUITY_STOCK', institution: 'IB',
-      investedAmount: 22000, currentValue: 38500, currency: 'USD',
-      purchaseDate: '2022-06-18', unrealizedGain: 16500, unrealizedGainPct: 75,
-      taxTag: 'LTCG_EQUITY',
-    }],
-  });
+  // A pre-change saved portfolio, written the way a legacy browser left it:
+  // raw storage JSON with a 'USD' holding. At rest nothing is typed — the
+  // string is the shape loadPersistedPortfolio actually has to defend against.
+  store.set(
+    'vestora.portfolio.v1',
+    JSON.stringify({
+      profileId: 'custom',
+      baseCurrency: 'USD',
+      mode: 'personal',
+      holdings: [{
+        id: 'h-us', name: 'US basket', category: 'EQUITY_STOCK', institution: 'IB',
+        investedAmount: 22000, currentValue: 38500, currency: 'USD',
+        purchaseDate: '2022-06-18', unrealizedGain: 16500, unrealizedGainPct: 75,
+        taxTag: 'LTCG_EQUITY',
+      }],
+    })
+  );
   const loaded = loadPersistedPortfolio()!;
   const h = loaded.holdings[0];
   assert.equal(h.currency, 'INR');

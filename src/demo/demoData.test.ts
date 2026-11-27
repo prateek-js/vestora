@@ -38,7 +38,6 @@ test('with nothing saved the sample portfolio and its default loan are used', ()
   const p = pickPortfolio(null);
   assert.equal(p.source, 'sample');
   assert.equal(p.holdings.length, 9);
-  assert.equal(p.baseCurrency, 'INR');
   assert.deepEqual(p.loan, DEFAULT_LOAN);
 });
 
@@ -53,10 +52,11 @@ test('a saved personal portfolio is used and carries no invented loan', () => {
   assert.equal(p.loan, null);
 });
 
-test('a saved foreign portfolio is treated as INR', () => {
-  // A foreign-currency saved portfolio re-denominates on load; pickPortfolio is always INR.
-  const p = pickPortfolio(saved({ baseCurrency: 'USD', holdings: [holding({ currency: 'USD' })] }));
-  assert.equal(p.baseCurrency, 'INR');
+test('whatever loaded from storage is presented as saved', () => {
+  // The loader re-denominates legacy foreign holdings before pickPortfolio
+  // ever sees them (pinned with figure assertions in portfolioStorage.test.ts).
+  const p = pickPortfolio(saved());
+  assert.equal(p.source, 'saved');
 });
 
 test('an empty saved portfolio falls back to the sample', () => {
@@ -76,13 +76,12 @@ test('a personal portfolio has no loan and its own source', () => {
   const p = personalPortfolio([holding()]);
   assert.equal(p.source, 'personal');
   assert.equal(p.loan, null);
-  assert.equal(p.baseCurrency, 'INR');
   assert.equal(p.holdings.length, 1);
 });
 
 test('portfolioTotal sums holdings as stored', () => {
   const inr = holding({ id: 'a', currency: 'INR', currentValue: 100000 });
-  const usd = holding({ id: 'b', currency: 'USD', currentValue: 1000 });
+  const usd = holding({ id: 'b', currency: 'INR', currentValue: 1000 }); // plain number; no conversion exists
   assert.equal(
     portfolioTotal({ holdings: [inr, usd] }),
     100000 + 1000 // the USD fixture is a raw number; no conversion exists anymore

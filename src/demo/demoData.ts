@@ -11,8 +11,6 @@ export type BenchmarkStatus = 'loading' | 'live' | 'sample';
 
 export interface DemoPortfolio {
   holdings: Holding[];
-  /** Kept in the journey's shape; every portfolio is INR now. */
-  baseCurrency: 'INR';
   source: 'sample' | 'saved' | 'personal';
   /** Only known for the sample; saved and personal portfolios have no loan data and never get an invented one. */
   loan: LoanInputs | null;
@@ -29,7 +27,7 @@ export function portfolioTotal(p: { holdings: Holding[] }): number {
 
 /** A portfolio the visitor built or imported in the demo itself. Never persisted, never given a loan. */
 export function personalPortfolio(holdings: Holding[]): DemoPortfolio {
-  return { holdings, baseCurrency: 'INR', source: 'personal', loan: null };
+  return { holdings, source: 'personal', loan: null };
 }
 
 /** The visitor's own saved portfolio when it has real value in it, otherwise the sample. */
@@ -42,7 +40,6 @@ export function pickPortfolio(persisted: PersistedPortfolio | null): DemoPortfol
   ) {
     return {
       holdings: persisted.holdings,
-      baseCurrency: 'INR',
       source: 'saved',
       loan: null,
     };
@@ -50,7 +47,6 @@ export function pickPortfolio(persisted: PersistedPortfolio | null): DemoPortfol
   const profile = DEMO_PROFILES[0];
   return {
     holdings: sampleHoldingsFor(profile),
-    baseCurrency: 'INR',
     source: 'sample',
     loan: DEFAULT_LOAN,
   };

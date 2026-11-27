@@ -798,7 +798,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
           <div className="bg-mist border border-slate-700 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between text-2xs text-ink/70">
               <span className="font-medium text-ink">
-                Live Indian &amp; Global Benchmarks (AMFI · GoI G-Sec · NPS · Gold)
+                Live Indian Benchmarks (AMFI · GoI G-Sec · NPS · Gold)
               </span>
               <span className="font-mono">Yield / 3Y CAGR</span>
             </div>

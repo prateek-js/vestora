@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
-import type { Holding } from '../types/wealth';
+import type { CurrencyCode, Holding } from '../types/wealth';
 import { DEMO_PROFILES } from '../data/mockData.ts';
 import { sampleHoldingsFor } from '../utils/portfolioStorage.ts';
 import { buildExport } from '../utils/backupRestore.ts';
@@ -42,20 +42,28 @@ test('reads a JSON backup', () => {
 });
 
 test('a pre-change backup with a USD base and USD holdings restores re-denominated to INR', () => {
-  const usd: Holding = {
-    id: 'h-106-old',
-    name: 'US Equity Portfolio (Alphabet, Nvidia, Microsoft)',
-    category: 'EQUITY_STOCK',
-    institution: 'Interactive Brokers US',
-    investedAmount: 22000,
-    currentValue: 38500,
-    currency: 'USD',
-    purchaseDate: '2022-06-18',
-    unrealizedGain: 16500,
-    unrealizedGainPct: 75,
-    taxTag: 'LTCG_EQUITY',
-  };
-  const text = JSON.stringify(buildExport('p', [usd]));
+  // A pre-change export, hand-written the way the old build produced it: a
+  // JSON backup string whose holding is denominated in USD.
+  const text = JSON.stringify({
+    app: 'vestora',
+    version: 1,
+    exportedAt: '2026-01-15T10:00:00.000Z',
+    profileId: 'p',
+    baseCurrency: 'USD',
+    holdings: [{
+      id: 'h-106-old',
+      name: 'US Equity Portfolio (Alphabet, Nvidia, Microsoft)',
+      category: 'EQUITY_STOCK',
+      institution: 'Interactive Brokers US',
+      investedAmount: 22000,
+      currentValue: 38500,
+      currency: 'USD',
+      purchaseDate: '2022-06-18',
+      unrealizedGain: 16500,
+      unrealizedGainPct: 75,
+      taxTag: 'LTCG_EQUITY',
+    }],
+  });
   const result = parseImportedFile('backup.json', text);
   const h = result.holdings[0];
   assert.equal(h.currency, 'INR');
@@ -65,16 +73,36 @@ test('a pre-change backup with a USD base and USD holdings restores re-denominat
   assert.equal(h.listedVenue, 'FOREIGN');
 });
 
-test('a statement whose figures are all USD imports as INR holdings', () => {
-  const csv = buildHoldingsCsv(withCurrency('USD', 0, 1, 2));
+test('a statement whose figures are all USD re-denominates at the pinned 86.50', () => {
+  // Hand-built external statement: a US broker's export, stated in USD.
+  const csv = [
+    'Instrument Name,Category,Institution,Invested Amount,Current Value,Currency,Purchase Date',
+    '"US Equity Portfolio (Alphabet, Nvidia, Microsoft)",Stock,Interactive Brokers US,22000,38500,USD,2022-06-18',
+    'S&P 500 ETF,Stock,Interactive Brokers US,5000,6000,USD,2023-01-10',
+  ].join('\r\n');
   const result = parseImportedFile('usd.csv', csv);
   assert.ok(result.holdings.every((h) => h.currency === 'INR'));
+  const basket = result.holdings.find((h) => h.name.startsWith('US Equity Portfolio'))!;
+  // 38,500 USD × 86.50 = the ₹33,30,250 the app displayed for this basket pre-change.
+  assert.equal(basket.currentValue, 3330250);
+  assert.equal(basket.investedAmount, 1903000);
+  assert.equal(basket.unrealizedGain, 1427250);
+  assert.equal(basket.listedVenue, 'FOREIGN');
 });
 
-test('a statement mixing currencies imports as INR too', () => {
-  const csv = buildHoldingsCsv(withCurrency('USD', 0));
+test('a statement mixing INR and USD rows converts only the foreign rows', () => {
+  const csv = [
+    'Instrument Name,Category,Institution,Invested Amount,Current Value,Currency,Purchase Date',
+    'Nifty 50 Index Fund,Mutual Fund,PPFAS AMC,450000,612000,INR,2022-04-12',
+    'S&P 500 ETF,Stock,Interactive Brokers US,5000,6000,USD,2023-01-10',
+  ].join('\r\n');
   const result = parseImportedFile('mixed.csv', csv);
-  assert.ok(result.holdings.every((h) => h.currency === 'INR'));
+  const nifty = result.holdings.find((h) => h.name === 'Nifty 50 Index Fund')!;
+  const spx = result.holdings.find((h) => h.name === 'S&P 500 ETF')!;
+  assert.equal(nifty.currentValue, 612000, 'INR rows pass through at face value');
+  assert.equal(spx.currentValue, 519000, '6,000 USD × 86.50');
+  assert.equal(spx.listedVenue, 'FOREIGN');
+  assert.equal(nifty.listedVenue, undefined, 'INR rows get no invented venue');
 });
 
 test('rejects an unsupported file', () => {

@@ -117,7 +117,7 @@ function portfolio(): Holding[] {
   return [
     ...funds,
     holding({ id: 'epf', name: 'EPF', category: 'EPF', currentValue: 999999 }),
-    holding({ id: 'us', name: 'US Equity', category: 'EQUITY_STOCK', currency: 'USD', currentValue: 5000, listedVenue: 'FOREIGN' }),
+    holding({ id: 'us', name: 'US Equity', category: 'EQUITY_STOCK', currentValue: 5000, listedVenue: 'FOREIGN' }),
   ];
 }
 
