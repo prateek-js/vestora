@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Figtree:wght@300..800&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { width: 1270px; height: 760px; overflow: hidden; }
+  .stage { width: 1270px; height: 760px; position: relative; background: var(--mist); box-sizing: border-box; padding: 60px 70px; display: flex; flex-direction: column; }
+  .logo-row { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; }
+  .logo-word { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 18px; }
+  .middle { display: flex; align-items: center; gap: 40px; flex: 1; }
+  .copy { width: 560px; }
+  h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 58px; line-height: 1.1; margin: 0 0 20px; letter-spacing: -0.01em; }
+  .sub { font-size: 24px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0; }
+  .scatter { position: relative; flex: 1; height: 480px; }
+  .tagcard { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px; padding: 18px 22px; box-shadow: 6px 6px 0 rgba(20,33,61,0.09); }
+  .tag-name { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; }
+  .tag-note { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--ink); opacity: 0.58; margin-top: 6px; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="logo-row">
+    <div class="logo-mark">V</div>
+    <div class="logo-word">VESTORA</div>
+  </div>
+  <div class="middle">
+    <div class="copy">
+      <h1>Nine investments.<br>Nobody looking at<br>them together.</h1>
+      <p class="sub">Each one made sense when you bought it. Together they lean one way — and no tab, statement or advisor shows you that.</p>
+    </div>
+    <div class="scatter">
+      <div class="tagcard" style="left:0px; top:10px; transform: rotate(-3deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--debt);"></span>Fixed Deposit</div>
+        <div class="tag-note">matured, sitting idle</div>
+      </div>
+      <div class="tagcard" style="right:0px; top:0px; transform: rotate(2deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--equity);"></span>Mutual Funds</div>
+        <div class="tag-note">4 funds, 3 overlaps</div>
+      </div>
+      <div class="tagcard" style="left:10px; top:200px; transform: rotate(2deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--gold);"></span>Gold Bond</div>
+        <div class="tag-note">coupon 2.5%</div>
+      </div>
+      <div class="tagcard" style="right:20px; top:195px; transform: rotate(-2deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--equity);"></span>US Stocks</div>
+        <div class="tag-note">one basket, far away</div>
+      </div>
+      <div class="tagcard" style="left:0px; top:390px; transform: rotate(-1deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--risk);"></span>Home Loan</div>
+        <div class="tag-note">8.55% · 15 years left</div>
+      </div>
+      <div class="tagcard" style="right:0px; top:400px; transform: rotate(3deg);">
+        <div class="tag-name"><span class="dot" style="background: var(--cash);"></span>Savings</div>
+        <div class="tag-note">3% if you're lucky</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

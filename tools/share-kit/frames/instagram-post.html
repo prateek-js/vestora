@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Figtree:wght@300..800&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { width: 1080px; height: 1350px; overflow: hidden; }
+  .stage { width: 1080px; height: 1350px; position: relative; background: var(--mist); box-sizing: border-box; padding: 80px 80px 70px; display: flex; flex-direction: column; align-items: center; }
+  .logo-row { display: flex; align-items: center; gap: 14px; align-self: flex-start; }
+  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; }
+  .logo-word { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 22px; }
+  h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 68px; line-height: 1.15; text-align: center; margin: 70px 0 0; letter-spacing: -0.01em; }
+  h1 .door { color: var(--level); }
+  .scene { margin-top: 60px; position: relative; width: 920px; height: 480px; }
+  .street-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 5px; background: var(--ink); border-radius: 3px; }
+  .door-card { position: absolute; right: 60px; bottom: 5px; width: 300px; height: 380px; background: var(--paper); border: 4px solid var(--ink); border-radius: 20px 20px 0 0; box-shadow: 10px 10px 0 rgba(20,33,61,0.10); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+  .door-mark { width: 84px; height: 84px; border-radius: 22px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 50px; }
+  .door-name { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: 0.18em; font-size: 24px; }
+  .sign { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px; padding: 20px 22px; box-shadow: 6px 6px 0 rgba(20,33,61,0.08); }
+  .sign-top { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 21px; letter-spacing: 0.06em; }
+  .sign-sub { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--ink); opacity: 0.6; margin-top: 8px; }
+  .walker-sm { position: absolute; left: 150px; bottom: 5px; }
+  .footer { margin-top: auto; text-align: center; }
+  .privacy { font-size: 24px; color: var(--ink); opacity: 0.62; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="logo-row">
+    <div class="logo-mark">V</div>
+    <div class="logo-word">VESTORA</div>
+  </div>
+  <h1>The street ends at a door.<br>Behind it, your money<br><span class="door">makes sense</span>.</h1>
+  <div class="scene">
+    <div class="sign" style="left:0; top:60px;">
+      <div class="sign-top">FINANCE SITES</div>
+      <div class="sign-sub">47 OPEN TABS</div>
+    </div>
+    <div class="sign" style="left:70px; top:230px;">
+      <div class="sign-top">ADVISOR</div>
+      <div class="sign-sub">HIS CUT ON EVERY SALE</div>
+    </div>
+    <div class="sign" style="left:330px; top:140px;">
+      <div class="sign-top">WEALTH MANAGER</div>
+      <div class="sign-sub">1% EVERY YEAR</div>
+    </div>
+    <svg class="walker-sm" width="90" height="128" viewBox="0 0 120 170" fill="none" aria-hidden="true">
+      <circle cx="66" cy="30" r="18" fill="#14213D"/>
+      <path d="M66 48 L60 100" stroke="#14213D" stroke-width="14" stroke-linecap="round"/>
+      <path d="M62 68 L30 88" stroke="#14213D" stroke-width="10" stroke-linecap="round"/>
+      <path d="M62 68 L96 84" stroke="#14213D" stroke-width="10" stroke-linecap="round"/>
+      <path d="M60 100 L32 150" stroke="#14213D" stroke-width="12" stroke-linecap="round"/>
+      <path d="M60 100 L92 152" stroke="#14213D" stroke-width="12" stroke-linecap="round"/>
+    </svg>
+    <div class="door-card">
+      <div class="door-mark">V</div>
+      <div class="door-name">VESTORA</div>
+    </div>
+    <div class="street-ground"></div>
+  </div>
+  <div class="footer">
+    <div class="privacy">Everything stays on your device. Nothing is sent anywhere.</div>
+  </div>
+</div>
+</body>
+</html>

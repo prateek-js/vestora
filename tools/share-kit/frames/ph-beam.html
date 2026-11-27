@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Figtree:wght@300..800&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { width: 1270px; height: 760px; overflow: hidden; }
+  .stage { width: 1270px; height: 760px; position: relative; background: var(--mist); box-sizing: border-box; padding: 60px 70px; display: flex; flex-direction: column; }
+  .logo-row { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; }
+  .logo-word { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 18px; }
+  .middle { display: flex; align-items: center; gap: 30px; flex: 1; }
+  .copy { width: 620px; }
+  h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 56px; line-height: 1.12; margin: 0 0 22px; letter-spacing: -0.01em; }
+  h1 .honest { color: var(--level); }
+  .sub { font-size: 24px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0 0 30px; }
+  .url { display: inline-block; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 21px; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 14px 30px; }
+  .privacy { font-size: 19px; color: var(--ink); opacity: 0.62; margin-top: 18px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="logo-row">
+    <div class="logo-mark">V</div>
+    <div class="logo-word">VESTORA</div>
+  </div>
+  <div class="middle">
+    <div class="copy">
+      <h1>See the honest shape<br>of your money.<br><span class="honest">Rebalance</span> without<br>commissions.</h1>
+      <p class="sub">One quiet planner for FDs, funds, stocks, gold and your home loan.</p>
+      <div class="url">vestora-wealth.ai.studio/demo/</div>
+      <div class="privacy">Everything stays on your device. Nothing is sent anywhere.</div>
+    </div>
+    <svg width="480" height="400" viewBox="0 0 480 400" fill="none" aria-hidden="true">
+      <line x1="240" y1="80" x2="240" y2="330" stroke="#14213D" stroke-width="5"/>
+      <line x1="140" y1="336" x2="340" y2="336" stroke="#14213D" stroke-width="5" stroke-linecap="round"/>
+      <line x1="60" y1="80" x2="420" y2="80" stroke="#029A67" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="240" cy="80" r="10" fill="#14213D"/>
+      <line x1="60" y1="80" x2="60" y2="170" stroke="#14213D" stroke-width="2.5"/>
+      <rect x="18" y="170" width="84" height="13" rx="6" fill="#14213D"/>
+      <rect x="30" y="126" width="26" height="44" rx="4" fill="#4C5CE6"/>
+      <rect x="62" y="140" width="22" height="30" rx="4" fill="#1F8A9E"/>
+      <line x1="420" y1="80" x2="420" y2="170" stroke="#14213D" stroke-width="2.5"/>
+      <rect x="378" y="170" width="84" height="13" rx="6" fill="#14213D"/>
+      <rect x="388" y="130" width="24" height="40" rx="4" fill="#1F8A9E"/>
+      <rect x="417" y="140" width="20" height="30" rx="4" fill="#C99A2E"/>
+      <rect x="442" y="147" width="16" height="23" rx="4" fill="#6B7A90"/>
+      <text x="240" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="20" fill="#029A67" font-weight="700" letter-spacing="4">LEVEL</text>
+    </svg>
+  </div>
+</div>
+</body>
+</html>
