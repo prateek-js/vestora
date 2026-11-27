@@ -35,7 +35,12 @@ export function initAnalytics(): void {
 export function logAnalytics(message: string, attributes?: Record<string, unknown>): void {
   if (!initialized) return;
   try {
-    posthog.log.info(message, attributes);
+    // LogAttributeValue excludes bare `unknown`; narrow to the JSON-serialisable
+    // values these call sites actually pass, else send without attributes.
+    const ok = !!attributes && Object.values(attributes).every(
+      (v) => v === null || v === undefined || ['string', 'number', 'boolean'].includes(typeof v) || Array.isArray(v) || (typeof v === 'object')
+    );
+    posthog.captureLog({ body: message, attributes: ok ? (attributes as never) : undefined });
   } catch {
     // Log delivery must never break the app.
   }
