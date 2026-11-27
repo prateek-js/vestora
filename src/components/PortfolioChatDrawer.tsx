@@ -138,7 +138,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
     dialogRef: drawerRef,
     restoreFocusRef: launcherRef,
     initialFocusRef: inputRef,
-    onEscape: () => close(),
+    onEscape: () => closeDrawer(),
   });
 
   // Ctrl+/ toggles the drawer — uncontrolled mode only (the host owns opening in controlled mode).
@@ -158,7 +158,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
     if (isOpen) {
       scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages.length, notes?.length]);
 
   const closeDrawer = () => {
     if (onClose) onClose();

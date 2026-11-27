@@ -341,7 +341,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-level rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
+              className="px-3 py-1.5 text-xs font-semibold text-paper bg-ink rounded-lg hover:bg-ink/90 transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Holding</span>

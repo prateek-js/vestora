@@ -25,13 +25,6 @@ import { DEMO_PROFILES } from '../data/mockData';
 import { sampleHoldingsFor } from '../utils/portfolioStorage';
 import { useSplit } from './useSplit';
 
-const EXPORT_LABEL: Record<ExportFormat, string> = {
-  xlsx: 'Excel',
-  csv: 'CSV',
-  pdf: 'PDF',
-  json: 'Vestora file',
-};
-
 // The spreadsheet code and the chat panel stay out of the first load.
 const Editor = lazy(() => import('./components/Editor').then((m) => ({ default: m.Editor })));
 const PortfolioChatDrawerLazy = lazy(() =>
@@ -213,13 +206,18 @@ export default function DemoApp() {
   // Stable so the chat panel's focus-trap hook can depend on it.
   const handleChatClose = useCallback(() => setChatOpen(false), []);
 
-  /** Makes a chat-requested download; the heavy writers load on demand and can fail, so the promise is always caught. */
+  /** Makes a chat-requested download; the heavy writers load on demand and can fail, so the promise is always caught. The drawer reports success unconditionally, so a real failure surfaces as a note. */
   const runDemoExport = (format: ExportFormat, holdings: Holding[]) => {
+    const fail = () =>
+      setChatNotes((prev) => [
+        ...prev,
+        { id: `note-export-${Date.now()}`, text: 'The download failed — please try the export again from the page.' },
+      ]);
     try {
       const result = exportPortfolio(format, holdings);
-      if (result) result.catch(() => {});
+      if (result) result.catch(fail);
     } catch {
-      // Download failures are silent in the demo; the chat suggests trying again.
+      fail();
     }
   };
 
