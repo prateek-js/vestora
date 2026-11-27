@@ -192,7 +192,8 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                     </div>
                     <div className="text-emerald-700 font-mono font-semibold text-xs shrink-0 ml-3">
                       {formatCurrency(
-                        outcome.updatedHoldings.find((h) => h.id === u.id)?.currentValue ?? 0
+                        outcome.updatedHoldings.find((h) => h.id === u.id)?.currentValue ?? 0,
+                        { compact: true }
                       )}
                     </div>
                   </div>

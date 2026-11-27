@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { DEMO_PROFILES } from '../data/mockData.ts';
 import {
   loadPersistedPortfolio,
+  renormaliseHolding,
   savePersistedPortfolio,
   sampleHoldingsFor,
 } from './portfolioStorage.ts';
@@ -152,6 +153,48 @@ test('a legacy INR prepayment loads through untouched', () => {
   assert.equal(p.amountInBase, 200000);
   assert.equal(p.interestSaved, 90000);
   assert.equal(p.currency, 'INR');
+});
+
+test('a malformed legacy holding with missing amounts migrates to zeroes, not NaN', () => {
+  store.clear();
+  // Pre-change data written by an older build: investedAmount/unrealizedGain
+  // missing. Migration must stay total — no NaN may reach the ledger.
+  store.set(
+    'vestora.portfolio.v1',
+    JSON.stringify({
+      profileId: 'custom',
+      baseCurrency: 'USD',
+      mode: 'personal',
+      holdings: [{
+        id: 'h-bad', name: 'Broken legacy row', category: 'MUTUAL_FUND',
+        currentValue: 5000, currency: 'USD',
+        purchaseDate: '2023-03-03', taxTag: 'LTCG_EQUITY',
+      }],
+    })
+  );
+  const loaded = loadPersistedPortfolio()!;
+  const h = loaded.holdings[0];
+  assert.equal(h.currency, 'INR');
+  assert.equal(h.currentValue, 432500, '5,000 USD × 86.50');
+  assert.equal(h.investedAmount, 0, 'missing invested amount becomes 0, not NaN');
+  assert.equal(h.unrealizedGain, 0, 'missing gain becomes 0, not NaN');
+});
+
+test('re-denomination leaves unit counts and per-unit prices untouched', () => {
+  // Units are denomination-free counts; NAV is denomination-bound but the
+  // modeling decision (both migration paths) is to leave both alone — a later
+  // NAV refresh recomputes from units × INR NAV. This pins that decision.
+  const foreign = {
+    id: 'h-units', name: 'US ETF', category: 'EQUITY_STOCK' as const,
+    institution: 'IB',
+    investedAmount: 6000, currentValue: 10000, currency: 'USD' as never,
+    units: 25, navOrPrice: 400, purchaseDate: '2022-01-01',
+    unrealizedGain: 4000, unrealizedGainPct: 66.67, taxTag: 'LTCG_EQUITY' as const,
+  };
+  const out = renormaliseHolding(foreign);
+  assert.equal(out.units, 25, 'unit counts never convert');
+  assert.equal(out.navOrPrice, 400, 'per-unit prices never convert');
+  assert.equal(out.currentValue, 865000, 'amounts do convert');
 });
 
 test('an already-INR saved holding loads through untouched', () => {

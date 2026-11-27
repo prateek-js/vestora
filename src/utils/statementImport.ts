@@ -710,7 +710,7 @@ export function downloadPortfolioExcelTemplate(): void {
     ['Institution', 'Optional', 'Bank, AMC, or broker name'],
     ['Invested Amount', 'Yes', 'Original cost / principal amount'],
     ['Current Value', 'Yes', 'Latest market value or maturity value'],
-    ['Currency', 'Optional', 'INR, USD, or EUR (defaults to your active currency)'],
+    ['Currency', 'Optional', 'INR, USD, or EUR — INR rows import as-is; USD/EUR rows re-denominate to INR at our pinned rate'],
     ['Interest Rate %', 'Optional', 'Annual rate for FD, RD, Bonds, EPF, PPF'],
     ['Purchase Date', 'Optional', 'YYYY-MM-DD or DD-MM-YYYY'],
     ['Maturity Date', 'Optional', 'YYYY-MM-DD or DD-MM-YYYY (used for Maturity Radar)'],

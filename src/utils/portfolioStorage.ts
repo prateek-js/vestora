@@ -37,14 +37,24 @@ export const RENORM_RATE = 86.5;
  * listedVenue FOREIGN (its benchmark rows were already foreign-denied by
  * currency before, so the venue marker preserves that behaviour). INR
  * holdings pass through untouched — no listedVenue is invented for them.
+ * Amounts missing from malformed legacy rows become 0, never NaN —
+ * migration must be total for every stored shape.
  */
 export function renormaliseHolding(h: Holding): Holding {
-  if (h.currency === 'INR') return h;
+  const amount = (n: unknown) => (typeof n === 'number' && Number.isFinite(n) ? n : 0);
+  if (h.currency === 'INR') {
+    return {
+      ...h,
+      investedAmount: amount(h.investedAmount),
+      currentValue: amount(h.currentValue),
+      unrealizedGain: amount(h.unrealizedGain),
+    };
+  }
   return {
     ...h,
-    investedAmount: h.investedAmount * RENORM_RATE,
-    currentValue: h.currentValue * RENORM_RATE,
-    unrealizedGain: h.unrealizedGain * RENORM_RATE,
+    investedAmount: amount(h.investedAmount) * RENORM_RATE,
+    currentValue: amount(h.currentValue) * RENORM_RATE,
+    unrealizedGain: amount(h.unrealizedGain) * RENORM_RATE,
     currency: 'INR',
     listedVenue: 'FOREIGN',
   };

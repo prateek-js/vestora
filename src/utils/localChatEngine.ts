@@ -1472,17 +1472,17 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Starting Net Worth',
-          value: formatCurrency(totalWorth),
+          value: formatCurrency(totalWorth, { compact: true }),
           tone: 'neutral',
         },
         {
           label: `Stress Outcome (${params.projectionHorizonYears}Y)`,
-          value: formatCurrency(sim.finalScenarioNetWorth),
+          value: formatCurrency(sim.finalScenarioNetWorth, { compact: true }),
           tone: sim.scenarioAlphaVsBaselinePct >= 0 ? 'emerald' : 'amber',
         },
         {
           label: 'Shuffled Advantage',
-          value: `+${formatCurrency(Math.max(0, sim.shuffledAdvantageVsScenario))}`,
+          value: `+${formatCurrency(Math.max(0, sim.shuffledAdvantageVsScenario), { compact: true })}`,
           tone: 'emerald',
         },
         {
@@ -1520,7 +1520,7 @@ export function processLocalChatMessage(
 
     const previewNames = urgent
       .slice(0, 3)
-      .map((h) => `${h.name} (${formatCurrency(h.currentValue)})`)
+      .map((h) => `${h.name} (${formatCurrency(h.currentValue, { compact: true })})`)
       .join(', ');
 
     const firstTarget = urgent[0];
@@ -1530,7 +1530,7 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Matured Now',
-          value: `${metrics.maturedHoldings.length} (${formatCurrency(metrics.totalMaturedAmount)})`,
+          value: `${metrics.maturedHoldings.length} (${formatCurrency(metrics.totalMaturedAmount, { compact: true })})`,
           tone: metrics.maturedHoldings.length > 0 ? 'amber' : 'neutral',
         },
         {
@@ -1567,17 +1567,17 @@ export function processLocalChatMessage(
       metrics: [
         {
           label: 'Harvestable LTCG',
-          value: formatCurrency(harvest.harvestableNow),
+          value: formatCurrency(harvest.harvestableNow, { compact: true }),
           tone: harvest.harvestableNow > 0 ? 'emerald' : 'neutral',
         },
         {
           label: '80C + 80CCD Gap',
-          value: formatCurrency(sec.section80cShortfall + sec.nps80ccdShortfall),
+          value: formatCurrency(sec.section80cShortfall + sec.nps80ccdShortfall, { compact: true }),
           tone: sec.section80cShortfall + sec.nps80ccdShortfall > 0 ? 'amber' : 'emerald',
         },
         {
           label: 'Est. Tax Savings',
-          value: formatCurrency(harvest.estimatedTaxSaved + sec.potentialTaxSaved),
+          value: formatCurrency(harvest.estimatedTaxSaved + sec.potentialTaxSaved, { compact: true }),
           tone: 'emerald',
         },
       ],
@@ -1628,7 +1628,7 @@ export function processLocalChatMessage(
       text: top5
         .map(
           (h, i) =>
-            `${i + 1}. ${h.name} — ${formatCurrency(h.currentValue)} (${formatPercent(h.unrealizedGainPct, 1)})`
+            `${i + 1}. ${h.name} — ${formatCurrency(h.currentValue, { compact: true })} (${formatPercent(h.unrealizedGainPct, 1)})`
         )
         .join('\n'),
       actions: [{ label: 'Open Full Ledger', variant: 'primary', action: { type: 'NAVIGATE', tab: 'overview' } }],
@@ -1673,7 +1673,7 @@ export function processLocalChatMessage(
         { label: 'Net Worth', value: formatCurrency(metrics.totalValuation, { compact: true }), tone: 'emerald' },
         {
           label: 'Total Gain',
-          value: `${metrics.totalGain >= 0 ? '+' : ''}${formatCurrency(metrics.totalGain)} (${formatPercent(metrics.totalGainPct, 1)})`,
+          value: `${metrics.totalGain >= 0 ? '+' : ''}${formatCurrency(metrics.totalGain, { compact: true })} (${formatPercent(metrics.totalGainPct, 1)})`,
           tone: metrics.totalGain >= 0 ? 'emerald' : 'rose',
         },
         {
