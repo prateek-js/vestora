@@ -28,7 +28,7 @@
 
   <svg class="beam-svg clip" id="beam-svg" data-start="0" data-duration="8" data-track-index="1" width="880" height="640" viewBox="0 0 880 640" fill="none">
     <g id="arm-group">
-      <line x1="90" y1="220" x2="790" y2="220" stroke="#029a67" stroke-width="14" stroke-linecap="round"/>
+      <line id="arm-line" x1="90" y1="220" x2="790" y2="220" stroke="#029a67" stroke-width="14" stroke-linecap="round"/>
       <line x1="90" y1="220" x2="90" y2="360" stroke="#14213d" stroke-width="5"/>
       <rect x="20" y="360" width="140" height="20" rx="10" fill="#14213d"/>
       <rect x="42" y="270" width="44" height="90" rx="6" fill="#4c5ce6"/>
@@ -52,12 +52,17 @@
 
   tl.fromTo('#beam-headline', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.1);
 
-  // The swing: tilted 11deg -> settles level with the demo's overshoot feel.
+  // The swing: equity-heavy, so the LEFT pan sinks (the product's convention:
+  // positive tilt lifts the growth pan, so equity-heavy renders negative).
+  // While tilted the arm carries the Tilt-amber accent; it turns brand green
+  // as it settles level. Overshoot matches the demo's own easing feel.
   gsap.set('#arm-group', { transformOrigin: '50% 34.4%' });
-  tl.set('#arm-group', { rotate: 11 }, 0.3);
-  tl.to('#arm-group', { rotate: 0, duration: 1.6, ease: 'back.out(1.6)' }, 3.2);
+  tl.set('#arm-group', { rotate: -11 }, 0.3);
+  tl.set('#arm-line', { stroke: '#e8a33d' }, 0.3);
+  tl.to('#arm-group', { rotate: 0, duration: 1.6, ease: 'back.out(1.6)' }, 4.2);
+  tl.to('#arm-line', { stroke: '#029a67', duration: 0.9, ease: 'power2.inOut' }, 4.3);
 
-  tl.fromTo('#level-word', { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power4.out' }, 4.6);
+  tl.fromTo('#level-word', { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power4.out' }, 5.6);
 
   window.__timelines = window.__timelines || {};
   window.__timelines['beam'] = tl;
