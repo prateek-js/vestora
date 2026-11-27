@@ -214,7 +214,11 @@ export default function DemoApp() {
             reached={openChapters}
             onGo={go}
           />
-          <a href="/#overview" className="shrink-0 text-sm font-medium underline underline-offset-4">
+          <a
+            href="/#overview"
+            className="shrink-0 text-sm font-medium underline underline-offset-4"
+            title="Your saved portfolio, every tool, nothing stored on our servers"
+          >
             Full app
           </a>
         </div>

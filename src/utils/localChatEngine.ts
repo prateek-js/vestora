@@ -1695,7 +1695,7 @@ export function processLocalChatMessage(
   }
 
   return {
-    title: 'On-Device Portfolio Assistant',
+    title: 'Portfolio chat',
     text: 'Try asking for a "Portfolio summary", adding an asset ("Add HDFC FD 5L at 7.4%"), running a simulation ("Simulate 8% inflation over 5 years"), attaching an Excel/CSV file, or exporting a PDF/Excel report.',
   };
 }

@@ -168,11 +168,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="/demo/"
               className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-paper hover:bg-ink/5 border border-level/50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-              aria-label="Take the guided tour"
-              title="A short guided tour of how rebalancing works"
+              aria-label="New here? Take the tour"
+              title="A 2-minute walk-through with a sample portfolio — the full app is one click away"
             >
               <Compass className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-              <span className="hidden sm:inline">Take the tour</span>
+              <span className="hidden sm:inline">New here? Take the tour</span>
             </a>
 
             {/* Consolidated Save/Export, Import & Data Tools Menu */}

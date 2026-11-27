@@ -374,7 +374,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
               <div className="flex items-center gap-2.5 min-w-0">
                 <VestoraLogo size={28} />
                 <div className="min-w-0">
-                  <h2 className="text-sm font-bold text-ink truncate">Portfolio Assistant</h2>
+                  <h2 className="text-sm font-bold text-ink truncate">Portfolio chat</h2>
                   <p className="text-2xs text-emerald-700 flex items-center gap-1 truncate">
                     <ShieldCheck className="w-3 h-3 shrink-0" />
                     <span>On-device · Zero external API calls</span>
