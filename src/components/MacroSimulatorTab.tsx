@@ -533,7 +533,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
                     textAnchor="middle"
                     fill="#14213d"
                     fontSize="10"
-                    fontFamily="'JetBrains Mono', monospace"
+                    fontFamily="Figtree, sans-serif"
                   >
                     {p.label}
                   </text>

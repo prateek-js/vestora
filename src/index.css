@@ -16,11 +16,52 @@
   --color-emerald-500: #02a26d;
   --color-emerald-600: #02a26d;
   --color-emerald-700: #047857;
+  --color-emerald-800: #03533d;
+  --color-emerald-900: #023e2d;
 
   /* Royal Cobalt secondary series ramp (Net Gains / Global Equities) */
   --color-indigo-400: #6e7df7;
   --color-indigo-500: #4c5ce6;
   --color-indigo-600: #3d4cd4;
+
+  /* amber → Tilt (#e8a33d at 500). 600+ are darkened until white text clears 4.6:1 (600), text clears 6.5:1 (700), 9:1 (800). */
+  --color-amber-50: #fcf7f0;
+  --color-amber-100: #faf0e0;
+  --color-amber-200: #f5e0c2;
+  --color-amber-300: #eecc9b;
+  --color-amber-400: #ebbc76;
+  --color-amber-500: #e8a33d;
+  --color-amber-600: #a96500;
+  --color-amber-700: #885100;
+  --color-amber-800: #6a3f00;
+  --color-amber-900: #502f00;
+  --color-amber-950: #382200;
+
+  /* rose → Risk (#d8454b at 500). Same contrast ladder as amber. */
+  --color-rose-50: #fbf1f1;
+  --color-rose-100: #f8e3e4;
+  --color-rose-200: #f0c6c8;
+  --color-rose-300: #e7a2a5;
+  --color-rose-400: #e07c80;
+  --color-rose-500: #d8454b;
+  --color-rose-600: #d63b42;
+  --color-rose-700: #b3262b;
+  --color-rose-800: #8d1d22;
+  --color-rose-900: #6a161a;
+  --color-rose-950: #4d1013;
+
+  /* sky → Debt teal (#1f8a9e at 500): the app's info/'moderate' hue is the same teal as its risk bar and the debt bucket. */
+  --color-sky-50: #f1fafb;
+  --color-sky-100: #e2f5f8;
+  --color-sky-200: #c6eaf1;
+  --color-sky-300: #a1dde8;
+  --color-sky-400: #42bed5;
+  --color-sky-500: #1f8a9e;
+  --color-sky-600: #1d8093;
+  --color-sky-700: #176675;
+  --color-sky-800: #12505c;
+  --color-sky-900: #0d3c45;
+  --color-sky-950: #0a2a31;
 
   /* Named demo tokens — src/demo/demo.css mirrors these; keep in sync */
   --color-ink: #14213d;
@@ -36,12 +77,16 @@
   --color-gold: #c99a2e;
   --color-cash: #6b7a90;
 
-  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  /* ONE family everywhere (owner decision 2026-11-27): display, body and mono all resolve to Figtree.
+     The three tokens stay separate so a utility like `font-display` keeps working; they just agree. */
+  --font-display: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
-  /* Remap Tailwind's mono token so the .font-mono UTILITY (which beats any
-     base rule) emits JetBrains Mono — otherwise every mono element silently
-     falls back to whatever mono the visitor's OS has. */
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* One typeface for numerals. `font-mono` is kept as the class name (240 call
+     sites) but the token resolves to Figtree — the demo's language — and the base
+     rule below turns on tabular figures so ₹ columns still align. Remapping the
+     token (not a base rule) matters: Tailwind's .font-mono utility beats any
+     base rule and would otherwise fall back to the visitor's OS mono. */
+  --font-mono: 'Figtree', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Extra-small label size used across dense financial UI (62 call sites). */
@@ -61,12 +106,10 @@
     font-family: var(--font-display);
     line-height: 1.08;
     letter-spacing: -0.015em;
-    /* Bricolage Grotesque's width axis: a slightly condensed cut reads as a headline, not a UI label. */
-    font-stretch: 88%;
   }
 
+  /* Numerals align in columns. Family comes from the --font-mono token (Figtree), never set here. */
   .font-mono, .tabular-nums {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
   }
 

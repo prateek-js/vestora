@@ -4,23 +4,26 @@
 <meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Figtree:wght@300..800&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { width: 1080px; height: 1920px; overflow: hidden; }
   .stage { width: 1080px; height: 1920px; position: relative; background: var(--mist); box-sizing: border-box; padding: 90px 80px; display: flex; flex-direction: column; }
   .logo-row { display: flex; align-items: center; gap: 14px; }
-  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; }
-  .logo-word { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 22px; }
-  h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 1.1; margin: 90px 0 0; letter-spacing: -0.01em; }
+  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 26px; }
+  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 22px; }
+  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 76px; line-height: 1.1; margin: 90px 0 0; letter-spacing: -0.01em; }
   .street { margin-top: 70px; position: relative; height: 980px; }
   .building { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 18px; padding: 28px 26px; box-shadow: 8px 8px 0 rgba(20,33,61,0.10); }
-  .sign-top { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 25px; letter-spacing: 0.06em; }
-  .sign-sub { font-family: 'JetBrains Mono', monospace; font-size: 19px; color: var(--ink); opacity: 0.62; margin-top: 10px; line-height: 1.4; }
-  .tag { display: inline-block; margin-top: 16px; padding: 6px 14px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; color: var(--paper); }
+  .sign-top { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 25px; letter-spacing: 0.06em;   font-variant-numeric: tabular-nums;
+  }
+  .sign-sub { font-family: 'Figtree', sans-serif; font-size: 19px; color: var(--ink); opacity: 0.62; margin-top: 10px; line-height: 1.4;   font-variant-numeric: tabular-nums;
+  }
+  .tag { display: inline-block; margin-top: 16px; padding: 6px 14px; border-radius: 999px; font-family: 'Figtree', sans-serif; font-size: 17px; font-weight: 700; color: var(--paper);   font-variant-numeric: tabular-nums;
+  }
   .walker { position: absolute; }
   .ground { position: absolute; bottom: 40px; left: 0; right: 0; height: 4px; background: var(--ink); opacity: 0.9; border-radius: 2px; }
-  .closing { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 46px; line-height: 1.25; margin-top: auto; }
+  .closing { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 46px; line-height: 1.25; margin-top: auto; }
   .closing .door { color: var(--level); }
 </style>
 </head>

@@ -22,6 +22,7 @@ body {
 }
 
 .display {
-  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  font-stretch: 88%;
+  /* One family (owner ruling 2026-11-27): display is Figtree like everything else.
+     The class stays so frame markup keeps working. */
+  font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
 }

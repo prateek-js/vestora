@@ -35,24 +35,27 @@ export interface CategoryAllocationItem {
   pct: number;
 }
 
-/* Darkened same-family hues: every value clears 4.5:1 as small text on Paper (the donut's
-   hovered-slice centre label reuses these colours as text, OverviewTab) and 3:1 as a slice
-   fill. 11-way distinctness preserved (min pairwise ΔE 14.4, vs 10.6 in the old set). */
+/* Brand-anchored categorical palette. Each category takes a shade from its Vestora family —
+   equity blues (Mutual Funds is the exact Equity token), debt teals, level greens for the
+   retirement trio, a dark Gold, and slate for cash — so the donut reads as the same product as
+   the demo's beam. Constraints (enforced by src/utils/themeTokens.test.ts): every value clears
+   4.5:1 as small text on Paper (the hovered-slice centre label reuses them as text), and the 11
+   slices stay distinguishable (min pairwise ΔE76 16.9; the stock-hue set it replaced was 14.4). */
 export const CATEGORY_META: Record<
   AssetCategory,
   { label: string; shortLabel: string; color: string }
 > = {
-  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#4f46e5' },
-  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#7c3aed' },
-  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#0369a1' },
-  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#1e40af' },
-  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#0e7490' },
-  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#0f766e' },
-  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#b45309' },
-  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#047857' },
-  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#064e3b' },
-  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#4d7c0f' },
-  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#64748b' },
+  MUTUAL_FUND: { label: 'Mutual Funds', shortLabel: 'Mutual Funds', color: '#4c5ce6' },
+  EQUITY_STOCK: { label: 'Direct Equities', shortLabel: 'Equities', color: '#0f2c8a' },
+  FIXED_DEPOSIT: { label: 'Fixed Deposits', shortLabel: 'Fixed Deposits', color: '#046e95' },
+  RECURRING_DEPOSIT: { label: 'Recurring Deposits', shortLabel: 'Recurring Dep.', color: '#074d83' },
+  CORP_BOND: { label: 'Corporate Bonds', shortLabel: 'Corp Bonds', color: '#20646f' },
+  GOVT_BOND: { label: 'Govt Bonds (G-Sec)', shortLabel: 'Govt Bonds', color: '#07837f' },
+  SOVEREIGN_GOLD_BOND: { label: 'Gold / SGB', shortLabel: 'Gold / SGB', color: '#946300' },
+  EPF: { label: 'EPF Retirement', shortLabel: 'EPF', color: '#07835a' },
+  PPF: { label: 'PPF Tax-Free', shortLabel: 'PPF', color: '#03863c' },
+  NPS: { label: 'NPS Pension', shortLabel: 'NPS', color: '#226750' },
+  SAVINGS_CASH: { label: 'Savings & Cash', shortLabel: 'Cash', color: '#303f5a' },
 };
 
 const MONTHLY_PROFILES = [

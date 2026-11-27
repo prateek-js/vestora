@@ -886,14 +886,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <XAxis
                     dataKey="month"
                     stroke="#14213d"
-                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "Figtree, sans-serif" }}
                     tickLine={false}
                     axisLine={{ stroke: "#D8E0EA" }}
                     dy={6}
                   />
                   <YAxis
                     stroke="#14213d"
-                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "Figtree, sans-serif" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => formatCurrency(val, { compact: true })}
@@ -1125,14 +1125,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <XAxis
                     dataKey="month"
                     stroke="#14213d"
-                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "Figtree, sans-serif" }}
                     tickLine={false}
                     axisLine={{ stroke: "#D8E0EA" }}
                     dy={6}
                   />
                   <YAxis
                     stroke="#14213d"
-                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "JetBrains Mono, monospace" }}
+                    tick={{ fill: "#14213d", fontSize: 11, fontFamily: "Figtree, sans-serif" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => formatCurrency(val, { compact: true })}

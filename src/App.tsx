@@ -701,7 +701,7 @@ export default function App() {
 
       {/* Portfolio data management: export / restore / reset */}
       {isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-xs">
           <div className="bg-paper border border-slate-700 rounded-xl w-full max-w-sm shadow-ink/10 shadow-xl p-6">
             <h3 className="text-base font-bold text-ink flex items-center gap-2">
               <RotateCcw className="w-4 h-4 text-amber-600" />

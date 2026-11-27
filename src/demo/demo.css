@@ -16,11 +16,10 @@
   --color-gold: #c99a2e;
   --color-cash: #6b7a90;
 
-  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
-  /* Remap Tailwind's mono token so the .font-mono utility emits JetBrains Mono
-     (mirrors index.css — keep in sync). */
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Mirrors index.css: `font-mono` resolves to Figtree (tabular figures), keep in sync. */
+  --font-mono: 'Figtree', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -44,8 +43,6 @@
     font-family: var(--font-display);
     line-height: 1.08;
     letter-spacing: -0.015em;
-    /* Bricolage Grotesque's width axis: a slightly condensed cut reads as a headline, not a UI label. */
-    font-stretch: 88%;
   }
 
   :focus-visible {

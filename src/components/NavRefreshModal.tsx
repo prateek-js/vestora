@@ -155,7 +155,7 @@ export const NavRefreshModal: React.FC<NavRefreshModalProps> = ({
                 type="button"
                 onClick={runRefresh}
                 disabled={funds.length === 0}
-                className="px-5 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-600 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-ink/10 disabled:opacity-50"
+                className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-ink/10 disabled:opacity-50"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Refresh {funds.length} Funds</span>
