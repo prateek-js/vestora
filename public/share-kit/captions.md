@@ -88,8 +88,8 @@ takes about two minutes: vestora-wealth.ai.studio/demo/
 
 ## Music licence
 
-Track: **<title>** by **<artist>**
-Source: **<source URL>**
-Licence: **CC0 1.0 Universal** (https://creativecommons.org/publicdomain/zero/1.0/)
-— free to use, share and redistribute, no attribution required. Attribution
-anyway, with thanks.
+Track: **"Way V Sumt In Th Way"** by Paul Kuniholm (2024)
+Source: https://commons.wikimedia.org/wiki/File:Paul_Kuniholm_Ambient_Seattle_2024_(WayVSumtInThWay).wav
+(clip: 0:28–0:58 of the original, faded)
+Licence: **CC0 1.0 Universal** — free to use, share and redistribute, no
+attribution required. Attribution anyway, with thanks.

@@ -8,3 +8,4 @@ coverage/
 !.env.example
 .idea/
 .playwright-mcp/
+tools/share-kit/reel/.hyperframes/
