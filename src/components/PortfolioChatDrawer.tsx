@@ -48,6 +48,17 @@ interface PortfolioChatDrawerProps {
   onRebalanceHoldingById: (holdingId: string) => void;
   onOpenEditModal: (holding: Holding) => void;
   onOpenAddModal: (draft?: Holding) => void;
+  /** Controlled mode: when provided, visibility follows this prop, no launcher renders, and every close path calls onClose. */
+  open?: boolean;
+  onClose?: () => void;
+  /** System lines shown in the feed (e.g. the demo's routing notes). */
+  notes?: { id: string; text: string }[];
+  /** Header subtitle; defaults to the app's on-device line. */
+  subtitle?: string;
+  /** Routes OPEN_ADD_MODAL/OPEN_EDIT_MODAL to a host-provided form (e.g. the demo's HoldingForm) instead of the internal modal. */
+  onOpenForm?: (req: { mode: 'add' | 'edit'; holding?: Holding; draft?: Holding }) => void;
+  /** Called before the close in NAVIGATE handling — the host may translate the tab (e.g. to a demo chapter). */
+  mapTabToTarget?: (tab: 'overview' | 'rebalance' | 'radar' | 'tax' | 'simulator') => void;
 }
 
 interface QuickChip {
@@ -101,8 +112,15 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
   onRebalanceHoldingById,
   onOpenEditModal,
   onOpenAddModal,
+  open,
+  onClose,
+  notes,
+  subtitle,
+  onOpenForm,
+  mapTabToTarget,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = open !== undefined ? open : internalIsOpen;
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>(() => [WELCOME_MESSAGE()]);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
@@ -119,19 +137,21 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
     dialogRef: drawerRef,
     restoreFocusRef: launcherRef,
     initialFocusRef: inputRef,
-    onEscape: () => setIsOpen(false),
+    onEscape: () => close(),
   });
 
+  // Ctrl+/ toggles the drawer — uncontrolled mode only (the host owns opening in controlled mode).
   useEffect(() => {
+    if (open !== undefined) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        setInternalIsOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     if (isOpen) {
@@ -139,7 +159,10 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
     }
   }, [isOpen, messages.length]);
 
-  const closeDrawer = () => setIsOpen(false);
+  const closeDrawer = () => {
+    if (onClose) onClose();
+    else setInternalIsOpen(false);
+  };
 
   const appendAssistantMessage = (payload: Omit<ChatMessage, 'id' | 'sender' | 'timestamp'>) => {
     setMessages((prev) => [
@@ -247,7 +270,9 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         });
         return;
       case 'NAVIGATE':
-        onNavigateToTab(action.tab);
+        mapTabToTarget?.(action.tab);
+        if (!mapTabToTarget) onNavigateToTab(action.tab);
+        closeDrawer();
         return;
       case 'START_BLANK':
         onStartBlank();
@@ -267,11 +292,13 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         onRebalanceHoldingById(action.holdingId);
         return;
       case 'OPEN_EDIT_MODAL':
-        setIsOpen(false);
+        if (onOpenForm) { onOpenForm({ mode: 'edit', holding: action.holding }); closeDrawer(); return; }
+        setInternalIsOpen(false);
         onOpenEditModal(action.holding);
         return;
       case 'OPEN_ADD_MODAL':
-        setIsOpen(false);
+        if (onOpenForm) { onOpenForm({ mode: 'add', draft: action.draft }); closeDrawer(); return; }
+        setInternalIsOpen(false);
         onOpenAddModal(action.draft);
         return;
       case 'CONFIRM_ADD_HOLDING': {
@@ -317,11 +344,14 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
 
   return (
     <>
-      {/* Floating Compact Launcher Button — stays mounted while the drawer is open so focus can return here */}
+      {open === undefined && (
+      <>
+      {/* Floating Compact Launcher Button — uncontrolled mode only (the host owns opening in controlled mode).
+          Stays mounted while the drawer is open so focus can return here. */}
       <button
         type="button"
         ref={launcherRef}
-        onClick={() => setIsOpen(true)}
+        onClick={() => setInternalIsOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label="Open on-device portfolio chat"
@@ -331,6 +361,8 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         <span className="whitespace-nowrap">Portfolio Chat</span>
         <span className="hidden sm:inline text-2xs font-mono opacity-75">Ctrl+/</span>
       </button>
+      </>
+      )}
 
       {/* Slide-Over Chat Drawer */}
       {isOpen && (
@@ -377,7 +409,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   <h2 className="text-sm font-bold text-ink truncate">Portfolio chat</h2>
                   <p className="text-2xs text-emerald-700 flex items-center gap-1 truncate">
                     <ShieldCheck className="w-3 h-3 shrink-0" />
-                    <span>On-device · Zero external API calls</span>
+                    <span>{subtitle ?? 'On-device · Zero external API calls'}</span>
                   </p>
                 </div>
               </div>
@@ -411,8 +443,8 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   type="button"
                   onClick={() => {
                     if (chip.kind === 'add_form') {
-                      setIsOpen(false);
-                      onOpenAddModal();
+                      if (onOpenForm) { onOpenForm({ mode: 'add' }); closeDrawer(); }
+                      else { setInternalIsOpen(false); onOpenAddModal(); }
                     } else if (chip.kind === 'import_file') {
                       fileInputRef.current?.click();
                     } else if (chip.prompt) {
@@ -432,6 +464,13 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
 
             {/* Message Feed */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5">
+              {(notes ?? []).map((note) => (
+                <div key={note.id} className="flex justify-center">
+                  <p className="max-w-[92%] rounded-xl border border-ink/15 bg-mist px-3 py-2 text-sm leading-relaxed text-ink/80">
+                    {note.text}
+                  </p>
+                </div>
+              ))}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
