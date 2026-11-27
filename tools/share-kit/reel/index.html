@@ -2,42 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
+    <meta name="viewport" content="width=1080, height=1920" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
     <style>
-      /* Placeholders: replace all three with the film's own palette and display face. */
+      /* Vestora tokens — mirror src/index.css */
       :root {
-        --ground: #000;
-        --ink: #ffffff;
-        --font-display: sans-serif;
+        --ground: #eef2f6;
+        --ink: #14213d;
+        --paper: #ffffff;
+        --level: #02a26d;
+        --level-line: #029a67;
+        --tilt: #e8a33d;
+        --risk: #d8454b;
+        --equity: #4c5ce6;
+        --debt: #1f8a9e;
+        --gold: #c99a2e;
+        --cash: #6b7a90;
+        --font-display: 'Bricolage Grotesque', sans-serif;
+        --font-body: 'Figtree', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
       }
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      @font-face {
+        font-family: 'Bricolage Grotesque';
+        font-style: normal;
+        font-weight: 300 800;
+        font-stretch: 75% 100%;
+        src: url('assets/fonts/bricolage-var.woff2') format('woff2');
       }
-      html,
-      body {
-        margin: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
+      @font-face {
+        font-family: 'Figtree';
+        font-style: normal;
+        font-weight: 400 800;
+        src: url('assets/fonts/figtree-var.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 700;
+        src: local('JetBrains Mono'), local('Menlo'), local('Courier New');
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px; height: 1920px; overflow: hidden;
         background: var(--ground);
-      }
-      #root {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: var(--font-display);
-      }
-      #title {
+        font-family: var(--font-body);
         color: var(--ink);
-        font-size: 72px;
-        font-weight: 600;
-        letter-spacing: -0.03em;
       }
+      #root { width: 100%; height: 100%; position: relative; }
+      .scene-host { position: absolute; inset: 0; }
     </style>
   </head>
   <body>
@@ -45,15 +57,18 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="10"
-      data-width="1920"
-      data-height="1080"
+      data-duration="28"
+      data-width="1080"
+      data-height="1920"
     >
-      <h1 id="title" class="clip" data-start="0" data-duration="10" data-track-index="0">Title</h1>
+      <div data-composition-id="street" data-composition-src="compositions/street.html" data-start="0" data-duration="14" data-track-index="1" data-track-kind="graphics"></div>
+      <div data-composition-id="beam" data-composition-src="compositions/beam.html" data-start="14" data-duration="8" data-track-index="2" data-track-kind="graphics"></div>
+      <div data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="22" data-duration="6" data-track-index="3" data-track-kind="graphics"></div>
+      <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="28" data-track-index="0" data-track-kind="music"></audio>
     </div>
     <script>
+      // Root timeline: scene fades are handled inside each composition's own timeline.
       const tl = gsap.timeline({ paused: true });
-      // Example: tl.fromTo("#title", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0);
       window.__timelines["main"] = tl;
       tl.seek(0);
     </script>

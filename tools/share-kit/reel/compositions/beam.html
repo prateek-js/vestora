@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  #root {
+    width: 1080px; height: 1920px; position: relative; overflow: hidden;
+    background: #eef2f6; color: #14213d;
+    font-family: 'Figtree', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .headline {
+    position: absolute; top: 200px; left: 80px; right: 80px; text-align: center;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+    font-size: 84px; line-height: 1.14; letter-spacing: -0.01em;
+  }
+  .beam-svg { position: absolute; top: 620px; left: 50%; transform: translateX(-50%); }
+  .level-word {
+    position: absolute; top: 1290px; left: 0; right: 0; text-align: center;
+    font-family: 'JetBrains Mono', Menlo, monospace; font-weight: 700;
+    font-size: 44px; letter-spacing: 0.35em; color: #029a67;
+  }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="beam" data-width="1080" data-height="1920">
+  <div class="headline clip" id="beam-headline" data-start="0" data-duration="8" data-track-index="0">One door at the end of the street. Behind it, your money gets weighed.</div>
+
+  <svg class="beam-svg clip" id="beam-svg" data-start="0" data-duration="8" data-track-index="1" width="880" height="640" viewBox="0 0 880 640" fill="none">
+    <g id="arm-group">
+      <line x1="90" y1="220" x2="790" y2="220" stroke="#029a67" stroke-width="14" stroke-linecap="round"/>
+      <line x1="90" y1="220" x2="90" y2="360" stroke="#14213d" stroke-width="5"/>
+      <rect x="20" y="360" width="140" height="20" rx="10" fill="#14213d"/>
+      <rect x="42" y="270" width="44" height="90" rx="6" fill="#4c5ce6"/>
+      <rect x="96" y="295" width="34" height="65" rx="6" fill="#1f8a9e"/>
+      <line x1="790" y1="220" x2="790" y2="360" stroke="#14213d" stroke-width="5"/>
+      <rect x="720" y="360" width="140" height="20" rx="10" fill="#14213d"/>
+      <rect x="736" y="285" width="40" height="75" rx="6" fill="#1f8a9e"/>
+      <rect x="784" y="302" width="32" height="58" rx="6" fill="#c99a2e"/>
+      <rect x="822" y="314" width="26" height="46" rx="6" fill="#6b7a90"/>
+    </g>
+    <circle cx="440" cy="220" r="16" fill="#14213d"/>
+    <line x1="440" y1="220" x2="440" y2="560" stroke="#14213d" stroke-width="8"/>
+    <line x1="300" y1="570" x2="580" y2="570" stroke="#14213d" stroke-width="8" stroke-linecap="round"/>
+  </svg>
+
+  <div class="level-word clip" id="level-word" data-start="0" data-duration="8" data-track-index="2">LEVEL</div>
+</div>
+
+<script>
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo('#beam-headline', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.1);
+
+  // The swing: tilted 11deg -> settles level with the demo's overshoot feel.
+  gsap.set('#arm-group', { transformOrigin: '50% 34.4%' });
+  tl.set('#arm-group', { rotate: 11 }, 0.3);
+  tl.to('#arm-group', { rotate: 0, duration: 1.6, ease: 'back.out(1.6)' }, 3.2);
+
+  tl.fromTo('#level-word', { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power4.out' }, 4.6);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['beam'] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>

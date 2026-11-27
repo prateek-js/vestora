@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  #root {
+    width: 1080px; height: 1920px; position: relative; overflow: hidden;
+    background: #eef2f6; color: #14213d;
+    font-family: 'Figtree', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .logo-mark {
+    width: 150px; height: 150px; border-radius: 38px; background: #02a26d; color: #ffffff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 88px;
+  }
+  .brand {
+    margin-top: 46px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
+    letter-spacing: 0.22em; font-size: 44px;
+  }
+  .line {
+    margin-top: 40px; text-align: center;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+    font-size: 76px; line-height: 1.16; letter-spacing: -0.01em;
+  }
+  .line .honest { color: #029a67; }
+  .url {
+    margin-top: 70px; font-family: 'JetBrains Mono', Menlo, monospace; font-weight: 600;
+    font-size: 40px; background: #ffffff; border: 5px solid #14213d; border-radius: 999px;
+    padding: 26px 60px;
+  }
+  .privacy { margin-top: 46px; font-size: 32px; color: rgba(20,33,61,0.62); text-align: center; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+  <div class="logo-mark clip" id="logo" data-start="0" data-duration="6" data-track-index="0">V</div>
+  <div class="brand clip" id="brand" data-start="0" data-duration="6" data-track-index="1">VESTORA</div>
+  <div class="line clip" id="line" data-start="0" data-duration="6" data-track-index="2">Your money,<br>honestly <span class="honest">weighed</span>.</div>
+  <div class="url clip" id="url" data-start="0" data-duration="6" data-track-index="3">vestora-wealth.ai.studio/demo/</div>
+  <div class="privacy clip" id="privacy" data-start="0" data-duration="6" data-track-index="4">Everything stays on your device.<br>Nothing is sent anywhere.</div>
+</div>
+
+<script>
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo('#logo', { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, 0.1);
+  tl.fromTo('#brand', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 0.4);
+  tl.fromTo('#line', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 0.7);
+  tl.fromTo('#url', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 1.05);
+  tl.fromTo('#privacy', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.35);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['endcard'] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>

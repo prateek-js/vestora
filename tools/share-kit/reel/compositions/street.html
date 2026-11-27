@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  #root {
+    width: 1080px; height: 1920px; position: relative; overflow: hidden;
+    background: #eef2f6; color: #14213d;
+    font-family: 'Figtree', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .headline {
+    position: absolute; top: 220px; left: 80px; right: 80px;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+    font-size: 88px; line-height: 1.12; letter-spacing: -0.01em;
+  }
+  .street { position: absolute; top: 620px; left: 0; right: 0; height: 1140px; }
+  .ground { position: absolute; bottom: 84px; left: 0; right: 0; height: 6px; background: #14213d; border-radius: 3px; }
+  .building {
+    position: absolute;
+    background: #ffffff; border: 5px solid #14213d; border-radius: 26px;
+    padding: 32px 32px; box-shadow: 14px 14px 0 rgba(20,33,61,0.10);
+    width: 560px;
+  }
+  .sign-top { font-family: 'JetBrains Mono', Menlo, monospace; font-weight: 700; font-size: 38px; letter-spacing: 0.06em; }
+  .sign-sub { font-family: 'JetBrains Mono', Menlo, monospace; font-size: 28px; color: rgba(20,33,61,0.62); margin-top: 14px; line-height: 1.4; }
+  .tag {
+    display: inline-block; margin-top: 22px; padding: 10px 26px; border-radius: 999px;
+    font-family: 'JetBrains Mono', Menlo, monospace; font-size: 28px; font-weight: 700; color: #ffffff;
+  }
+  .walker { position: absolute; bottom: 110px; right: 120px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="street" data-width="1080" data-height="1920">
+  <div class="headline clip" id="headline" data-start="0" data-duration="14" data-track-index="0">Your money walks past a lot of advice.</div>
+
+  <div class="street">
+    <div class="ground"></div>
+
+    <div class="building clip" id="b-sites" data-start="0.5" data-duration="13.5" data-track-index="1" style="left: 80px; top: 30px;">
+      <div class="sign-top">FINANCE SITES</div>
+      <div class="sign-sub">47 OPEN TABS<br>GENERIC TIPS</div>
+      <span class="tag" style="background: #6b7a90; color: #14213d;">LOUD</span>
+    </div>
+
+    <div class="building clip" id="b-advisor" data-start="4.2" data-duration="9.8" data-track-index="2" style="right: 80px; top: 370px;">
+      <div class="sign-top">ADVISOR</div>
+      <div class="sign-sub">HIS CUT ON<br>EVERY SALE</div>
+      <span class="tag" style="background: #e8a33d; color: #14213d;">BIASED</span>
+    </div>
+
+    <div class="building clip" id="b-wm" data-start="7.9" data-duration="6.1" data-track-index="3" style="left: 80px; top: 710px;">
+      <div class="sign-top">WEALTH MANAGER</div>
+      <div class="sign-sub">1% OF EVERYTHING,<br>EVERY YEAR</div>
+      <span class="tag" style="background: #d8454b;">PRICEY</span>
+    </div>
+
+    <svg class="walker clip" id="walker" data-start="0" data-duration="14" data-track-index="4" width="128" height="181" viewBox="0 0 120 170" fill="none">
+      <circle cx="66" cy="30" r="18" fill="#14213d"/>
+      <path d="M66 48 L60 100" stroke="#14213d" stroke-width="14" stroke-linecap="round"/>
+      <path d="M62 68 L30 88" stroke="#14213d" stroke-width="10" stroke-linecap="round"/>
+      <path d="M62 68 L96 84" stroke="#14213d" stroke-width="10" stroke-linecap="round"/>
+      <path d="M60 100 L32 150" stroke="#14213d" stroke-width="12" stroke-linecap="round"/>
+      <path d="M60 100 L92 152" stroke="#14213d" stroke-width="12" stroke-linecap="round"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo('#headline', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.05);
+
+  tl.fromTo('#b-sites', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.5);
+  tl.fromTo('#b-advisor', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 4.2);
+  tl.fromTo('#b-wm', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 7.9);
+
+  // The walker crosses via transform (x), never layout properties.
+  // Stops: in from right edge -> pause at SITES -> cross to ADVISOR side -> pause -> cross to WM -> exit right toward the door.
+  tl.fromTo('#walker', { x: 0 }, { x: -620, duration: 1.6, ease: 'power2.inOut' }, 0.6);
+  tl.to('#walker', { x: 0, duration: 1.8, ease: 'power2.inOut' }, 4.4);
+  tl.to('#walker', { x: -540, duration: 1.8, ease: 'power2.inOut' }, 8.1);
+  tl.to('#walker', { x: -860, duration: 1.6, ease: 'power2.inOut' }, 11.6);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['street'] = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>
