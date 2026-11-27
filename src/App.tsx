@@ -719,7 +719,7 @@ export default function App() {
                 type="button"
                 onClick={handleExportExcel}
                 disabled={holdings.length === 0}
-                className="w-full px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 Save Portfolio as Excel (.xlsx)

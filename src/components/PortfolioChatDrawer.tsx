@@ -325,7 +325,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label="Open on-device portfolio chat"
-        className={`fixed bottom-5 right-5 z-40 h-11 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-700 text-white font-semibold text-xs shadow-lg shadow-ink/10 border border-emerald-600/60 inline-flex items-center gap-2 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${isOpen ? 'pointer-events-none opacity-0' : ''}`}
+        className={`fixed bottom-5 right-5 z-40 h-11 px-4 rounded-xl bg-ink hover:bg-ink/90 text-paper font-semibold text-xs shadow-lg shadow-ink/10 border border-emerald-600/60 inline-flex items-center gap-2 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${isOpen ? 'pointer-events-none opacity-0' : ''}`}
       >
         <MessageSquareText className="w-4 h-4 shrink-0" />
         <span className="whitespace-nowrap">Portfolio Chat</span>
@@ -481,7 +481,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                             onClick={() => handleActionClick(item.action)}
                             className={`px-2.5 py-1.5 min-h-[32px] text-2xs font-semibold rounded-md transition-colors whitespace-nowrap ${
                               item.variant === 'primary'
-                                ? 'bg-emerald-500 hover:bg-emerald-700 text-white'
+                                ? 'bg-ink hover:bg-ink/90 text-paper'
                                 : item.variant === 'danger'
                                 ? 'bg-rose-600 hover:bg-rose-700 text-white'
                                 : 'bg-paper hover:bg-ink/5 text-ink border border-slate-700'
@@ -549,7 +549,7 @@ export const PortfolioChatDrawer: React.FC<PortfolioChatDrawerProps> = ({
                   type="submit"
                   disabled={!input.trim()}
                   aria-label="Send message"
-                  className="h-10 w-10 shrink-0 rounded-lg bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white flex items-center justify-center transition-colors"
+                  className="h-10 w-10 shrink-0 rounded-lg bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper flex items-center justify-center transition-colors"
                 >
                   <Send className="w-4 h-4" />
                 </button>

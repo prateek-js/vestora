@@ -384,7 +384,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
               className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shrink-0 font-mono shadow-sm active:scale-95 ${
                 isMatchingInputs
                   ? 'bg-emerald-500/15 text-emerald-800 border border-emerald-500/50'
-                  : 'bg-emerald-500 hover:bg-emerald-700 text-white'
+                  : 'bg-ink hover:bg-ink/90 text-paper'
               }`}
             >
               {isMatchingInputs ? (

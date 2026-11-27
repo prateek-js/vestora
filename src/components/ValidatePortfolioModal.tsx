@@ -831,7 +831,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                     onStartBlank();
                     onClose();
                   }}
-                  className="w-full px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors"
+                  className="w-full px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors"
                 >
                   Clear All & Start Blank
                 </button>
@@ -882,7 +882,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <button
                 type="button"
                 onClick={handleApplyExcel}
-                className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2"
+                className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-2"
               >
                 <span>
                   {applyStrategy === 'replace' ? 'Simulate with' : 'Add'} {previewHoldings.length} Holdings
@@ -895,7 +895,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
               <button
                 type="button"
                 onClick={handleApplyManual}
-                className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2"
+                className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-2"
               >
                 <span>
                   {applyStrategy === 'replace' ? 'Restart & Simulate Portfolio' : 'Add Entries'}

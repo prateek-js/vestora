@@ -359,7 +359,7 @@ export const AddHoldingModal: React.FC<AddHoldingModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm shadow-ink/10"
+              className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors shadow-sm shadow-ink/10"
             >
               {isEditMode ? 'Save Changes' : 'Save Investment'}
             </button>

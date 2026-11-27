@@ -155,7 +155,7 @@ export const ReinvestModal: React.FC<ReinvestModalProps> = ({
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-ink/10"
+                className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-ink/10"
               >
                 <span>Confirm & Rebalance Portfolio</span>
                 <ArrowRight className="w-3.5 h-3.5" />

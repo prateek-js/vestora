@@ -541,7 +541,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
         <button
           type="button"
           onClick={onNavigateToOverview}
-          className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors"
+          className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors"
         >
           Go to Overview
         </button>
@@ -919,7 +919,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                       className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                         isStaged
                           ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/50'
-                          : 'bg-emerald-500 hover:bg-emerald-700 text-white'
+                          : 'bg-ink hover:bg-ink/90 text-paper'
                       }`}
                     >
                       {isStaged ? (
@@ -1261,7 +1261,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                               className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                                 alreadyInCart
                                   ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40'
-                                  : 'bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white'
+                                  : 'bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper'
                               }`}
                             >
                               {isResolving ? (
@@ -1310,7 +1310,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                 <button
                   type="submit"
                   disabled={mfSearching || !mfQuery.trim()}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                  className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-50 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
                 >
                   {mfSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
                   <span>Search Market</span>
@@ -1409,7 +1409,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                             className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                               alreadyInCart
                                 ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40'
-                                : 'bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white'
+                                : 'bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper'
                             }`}
                           >
                             {alreadyInCart ? (
@@ -1635,7 +1635,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         setCustomBondName('');
                         setShowCustomBondForm(false);
                       }}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 rounded-lg transition-colors"
+                      className="px-3.5 py-1.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-45 rounded-lg transition-colors"
                     >
                       + Add Custom Bond / FD to Split
                     </button>
@@ -1696,7 +1696,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap ${
                             alreadyInCart
                               ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40'
-                              : 'bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white'
+                              : 'bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper'
                           }`}
                         >
                           {alreadyInCart ? (
@@ -1763,7 +1763,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                           alreadyInCart
                             ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40'
-                            : 'bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white'
+                            : 'bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper'
                         }`}
                       >
                         <Plus className="w-3 h-3" />
@@ -1812,7 +1812,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         });
                         setCustomStockName('');
                       }}
-                      className="flex-1 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 rounded-lg transition-colors whitespace-nowrap"
+                      className="flex-1 px-3 py-1.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-45 rounded-lg transition-colors whitespace-nowrap"
                     >
                       + Add Stock
                     </button>
@@ -1907,7 +1907,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                           className={`px-2.5 py-1.5 text-2xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 whitespace-nowrap shrink-0 ${
                             alreadyInCart
                               ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/40'
-                              : 'bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 text-white'
+                              : 'bg-ink hover:bg-ink/90 disabled:opacity-45 text-paper'
                           }`}
                         >
                           {alreadyInCart ? (
@@ -2050,7 +2050,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                         loanMonthsSaved: homeLoanImpact.monthsSaved,
                       })
                     }
-                    className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                    className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-45 rounded-lg transition-colors inline-flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>
@@ -2218,7 +2218,7 @@ export const RebalanceTab: React.FC<RebalanceTabProps> = ({
                   type="button"
                   disabled={!canExecute}
                   onClick={handleConfirmExecute}
-                  className="px-5 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shadow-sm shadow-ink/10"
+                  className="px-5 py-2.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shadow-sm shadow-ink/10"
                 >
                   <span>Execute Rebalance &amp; Update Portfolio</span>
                   <ArrowRight className="w-3.5 h-3.5" />

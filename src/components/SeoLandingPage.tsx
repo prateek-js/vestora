@@ -514,7 +514,7 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
 
           <a
             href={page.ctaHref}
-            className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+            className="px-3.5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
           >
             <span>Open Portal</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -545,7 +545,7 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <a
               href={page.ctaHref}
-              className="px-4 py-2.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors inline-flex items-center gap-1.5"
+              className="px-4 py-2.5 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors inline-flex items-center gap-1.5"
             >
               <span>{page.ctaLabel}</span>
               <ArrowRight className="w-3.5 h-3.5" />

@@ -581,7 +581,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               type="button"
               data-tour="import-card"
               onClick={() => onOpenValidateModal('excel')}
-              className="group text-left bg-emerald-500 hover:bg-emerald-700 border border-emerald-600/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-ink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-mist"
+              className="group text-left bg-ink hover:bg-ink/90 border border-emerald-600/60 rounded-xl p-5 transition-colors duration-150 flex flex-col justify-between gap-4 shadow-lg shadow-ink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 focus-visible:ring-offset-mist"
             >
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3">
@@ -1285,7 +1285,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <button
                     type="button"
                     onClick={onOpenAddModal}
-                    className="px-4 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2"
+                    className="px-4 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add holding

@@ -333,7 +333,7 @@ export const UploadStatementModal: React.FC<UploadStatementModalProps> = ({
                 <button
                   type="button"
                   onClick={confirmImport}
-                  className="px-5 py-2 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-ink/10"
+                  className="px-5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-ink/10"
                 >
                   <span>Import {parsed.holdings.length} Holdings</span>
                   <ArrowRight className="w-3.5 h-3.5" />
