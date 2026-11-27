@@ -51,12 +51,28 @@ export function renormaliseHolding(h: Holding): Holding {
 }
 
 /**
+ * Legacy prepayment records were written with `currency` set to the
+ * then-active display base; their amounts are in that currency. Same rule as
+ * holdings: non-INR figures re-denominate at the pinned rate, INR passes
+ * through. Month counts are denomination-free.
+ */
+function renormalisePrepayment(p: DebtPrepaymentRecord): DebtPrepaymentRecord {
+  if (p.currency === 'INR') return p;
+  return {
+    ...p,
+    amountInBase: p.amountInBase * RENORM_RATE,
+    interestSaved: p.interestSaved * RENORM_RATE,
+    currency: 'INR',
+  };
+}
+
+/**
  * Loads the persisted portfolio for this browser. Returns null when nothing
  * was saved (first visit) or the stored shape is unrecognized — callers then
  * fall back to sample data. Derived maturity fields are recomputed on load so
  * a portfolio reopened weeks later reflects the calendar, not the save date.
- * Holdings saved before Vestora was INR-only re-denominate to INR at the
- * pinned rate on load; the loaded state is always INR.
+ * Holdings (and legacy prepayment records) saved before Vestora was INR-only
+ * re-denominate to INR at the pinned rate on load; the loaded state is always INR.
  */
 export function loadPersistedPortfolio(): PersistedPortfolio | null {
   try {
@@ -73,7 +89,9 @@ export function loadPersistedPortfolio(): PersistedPortfolio | null {
       baseCurrency: 'INR',
       mode: parsed.mode ?? (parsed.profileId === 'custom' ? 'personal' : 'demo'),
       holdings: parsed.holdings.map(renormaliseHolding).map(withDerivedMaturity),
-      prepayments: Array.isArray(parsed.prepayments) ? parsed.prepayments : [],
+      prepayments: Array.isArray(parsed.prepayments)
+        ? parsed.prepayments.map(renormalisePrepayment)
+        : [],
     };
   } catch {
     return null;

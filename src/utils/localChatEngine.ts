@@ -1591,7 +1591,7 @@ export function processLocalChatMessage(
   if (/\b(rebalanc|diversif|home loan|amfi|g-sec|treasury)\b/i.test(lower)) {
     return {
       title: 'Rebalance & Market Explorer',
-      text: 'Break partial or full capital from any Savings, FD, Bond, or Equity holding and compare live AMFI Mutual Funds, NPS Tier-I, GoI G-Secs, U.S. Treasuries, or Home Loan prepayments.',
+      text: 'Break partial or full capital from any Savings, FD, Bond, or Equity holding and compare live AMFI Mutual Funds, NPS Tier-I, GoI G-Secs & T-Bills, or Home Loan prepayments.',
       actions: [{ label: 'Open Rebalance Engine', variant: 'primary', action: { type: 'NAVIGATE', tab: 'rebalance' } }],
     };
   }

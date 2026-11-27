@@ -75,3 +75,13 @@ test('asking to set a holding to USD gets the INR acknowledgment, no change', ()
   assert.deepEqual(calls, [], 'currency request must change nothing');
   assert.ok(!/→ USD|Switched/i.test(json), `reply still speaks currency switching: ${json}`);
 });
+
+test('the rebalance reply never advertises U.S. Treasuries', () => {
+  // The Treasuries machinery was deleted; the engine still routes "treasury"
+  // asks here (GoI T-Bills exist), so the copy must not name the dead feature.
+  for (const message of ['treasury', 'amfi', 'home loan', 'g-sec']) {
+    const reply = processLocalChatMessage(message, ctx, makeCallbacks([]));
+    assert.ok(!/U\.?S\.? Treasuries/i.test(reply.text), `"${message}" reply still says Treasuries: ${reply.text}`);
+    assert.ok(/GoI G-Secs/.test(reply.text), `"${message}" reply lost the Indian instruments: ${reply.text}`);
+  }
+});

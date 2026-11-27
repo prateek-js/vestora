@@ -93,6 +93,67 @@ test('a saved USD holding loads re-denominated to INR at the pinned 86.50 rate',
   assert.equal(h.listedVenue, 'FOREIGN');
 });
 
+test('a legacy prepayment recorded in a foreign display base loads re-denominated to INR', () => {
+  store.clear();
+  // Pre-change, the prepayment widget recorded amountInBase in the
+  // then-active display currency (USD) with currency: 'USD' on the record.
+  store.set(
+    'vestora.portfolio.v1',
+    JSON.stringify({
+      profileId: 'custom',
+      baseCurrency: 'USD',
+      mode: 'personal',
+      holdings: [],
+      prepayments: [{
+        id: 'prepay-1',
+        date: '2026-01-10',
+        sourceName: 'HDFC Savings Account',
+        loanLabel: 'Home-loan prepayment',
+        amountInBase: 100000,
+        currency: 'USD',
+        loanRatePct: 8.55,
+        interestSaved: 45000,
+        monthsSaved: 7,
+      }],
+    })
+  );
+  const loaded = loadPersistedPortfolio()!;
+  const p = loaded.prepayments![0];
+  assert.equal(p.currency, 'INR');
+  assert.equal(p.amountInBase, 8650000, '1,00,000 USD × 86.50');
+  assert.equal(p.interestSaved, 3892500, 'interest saved converts with the amount');
+  assert.equal(p.monthsSaved, 7, 'month counts are denomination-free');
+});
+
+test('a legacy INR prepayment loads through untouched', () => {
+  store.clear();
+  store.set(
+    'vestora.portfolio.v1',
+    JSON.stringify({
+      profileId: 'custom',
+      baseCurrency: 'INR',
+      mode: 'personal',
+      holdings: [],
+      prepayments: [{
+        id: 'prepay-inr',
+        date: '2026-02-10',
+        sourceName: 'Savings',
+        loanLabel: 'Home-loan prepayment',
+        amountInBase: 200000,
+        currency: 'INR',
+        loanRatePct: 8.55,
+        interestSaved: 90000,
+        monthsSaved: 9,
+      }],
+    })
+  );
+  const loaded = loadPersistedPortfolio()!;
+  const p = loaded.prepayments![0];
+  assert.equal(p.amountInBase, 200000);
+  assert.equal(p.interestSaved, 90000);
+  assert.equal(p.currency, 'INR');
+});
+
 test('an already-INR saved holding loads through untouched', () => {
   store.clear();
   savePersistedPortfolio({
