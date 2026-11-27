@@ -1,0 +1,27 @@
+/* Vestora share-kit tokens — mirror src/index.css (keep in sync). */
+:root {
+  --ink: #14213d;
+  --mist: #eef2f6;
+  --paper: #ffffff;
+  --level: #02a26d;
+  --level-line: #029a67;
+  --tilt: #e8a33d;
+  --risk: #d8454b;
+  --equity: #4c5ce6;
+  --debt: #1f8a9e;
+  --gold: #c99a2e;
+  --cash: #6b7a90;
+}
+
+body {
+  margin: 0;
+  background: var(--mist);
+  color: var(--ink);
+  font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.display {
+  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  font-stretch: 88%;
+}
