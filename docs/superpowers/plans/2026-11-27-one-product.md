@@ -162,10 +162,7 @@ Replace the `ChatPanelLazy` import with `lazy(() => import('../components/Portfo
     if (chapter) { setChatOpen(false); onGoChapter(chapter); }
     else setChatNotes(prev => [...prev, { id: `${Date.now()}`, text: 'That view is in the full app at /#' + tab + '.' }]);
   }}
-  onStartBlank={/* existing demo wiring */}
-  onResetToSample={/* existing demo wiring */}
-  onExportExcel={...} onExportCsv={...} onExportPdf={...} onExportJson={...}
-  onOpenForm={(req) => { setChatOpen(false); formOpener(req); }}
+  onOpenForm={(req) => { setChatOpen(false); openChatForm(req); }}
   onRebalanceHoldingById={(id) => {
     if (!(personal?.holdings ?? []).some(h => h.id === id)) {
       setChatNotes(prev => [...prev, { id: `gone-${Date.now()}`, text: 'That holding is gone — it is no longer in your list, so there is nothing to move.' }]);
@@ -177,7 +174,7 @@ Replace the `ChatPanelLazy` import with `lazy(() => import('../components/Portfo
 />
 ```
 
-(Exact callback bodies follow the existing ChatPanel wiring in DemoApp.tsx:131-160 — same behavior, new names. Where ChatPanel used `chapterForTab`, keep that helper.)
+(The drawer's engine callbacks cover START_BLANK/RESET_SAMPLE/EXPORT internally via its own `onEdit` + exportPortfolio wiring — the demo passes only `onEdit`-style discrete callbacks, `onOpenForm` → the existing `openChatForm`, and `mapTabToTarget` → the existing `go`/`goMineFromChat` from DemoApp's current ChatPanel mount. `chapterForTab` lives in the journey module — reuse it, don't copy it.)
 
 - [ ] **Step 2: Delete ChatPanel**
 
