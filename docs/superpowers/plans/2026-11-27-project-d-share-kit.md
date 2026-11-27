@@ -155,9 +155,9 @@ git commit -m "feat: share-kit image set for WhatsApp, Instagram and Product Hun
 - Consumes: `public/share-kit/linkedin-card.png` (Task 1, committed).
 - Produces: all five heads pointing at the new card with correct dimensions.
 
-- [ ] **Step 1: Swap the metas in all five heads**
+- [ ] **Step 1: Swap the metas and JSON-LD image in all five heads**
 
-`og:image` and `twitter:image` content → `/share-kit/linkedin-card.png`; `og:image:width` → 1200; `og:image:height` → **627** (the old value 630 is exactly the bug Review Focus 1 names); `og:image:alt` → "Vestora — your money, honestly weighed". Touch image metas only.
+`og:image` and `twitter:image` content → `/share-kit/linkedin-card.png`; `og:image:width` → 1200; `og:image:height` → **627** (the old value 630 is exactly the bug Review Focus 1 names); `og:image:alt` → "Vestora — your money, honestly weighed". In `index.html` only: the JSON-LD structured-data `"image"` field (currently the old og-image.png URL) → the new card's absolute URL (builder-check ruling: the spec's "no longer referenced by any head" covers it; leaving it stale keeps the dark card in Google's rich results). Touch image fields only.
 
 - [ ] **Step 2: Verify every head**
 
@@ -189,7 +189,7 @@ git commit -m "feat: point og/twitter images at the light-theme share card"
 
 - [ ] **Step 1: Write captions.md**
 
-Sections: **LinkedIn** (post text pairing with the card), **WhatsApp Status** (short lines for status 1 and 2), **Instagram** (caption for the post, references the reel), **Product Hunt** (gallery line per frame + a maker's first comment). Plain voice, no jargon, no return promises; the privacy line appears in each platform's text; hashtag sets (#PersonalFinance #India #Privacy #Fintech — nothing spammy). Bottom section: **Music licence** — "Track: <title> by <artist> (<source URL>), licence <name/URL>." with a placeholder to fill in Task 5.
+Top of file, before any caption: a bold **"Do not post publicly until current main is deployed and production /demo/ is verified"** note (builder-check ruling — production still serves the Nov-24 dark build). Then the sections: **LinkedIn** (post text pairing with the card), **WhatsApp Status** (short lines for status 1 and 2), **Instagram** (caption for the post, references the reel), **Product Hunt** (gallery line per frame + a maker's first comment). Plain voice, no jargon, no return promises; the privacy line appears in each platform's text; hashtag sets (#PersonalFinance #India #Privacy #Fintech — nothing spammy). Bottom section: **Music licence** — "Track: <title> by <artist> (<source URL>), licence <name/URL>." with a placeholder to fill in Task 5.
 
 - [ ] **Step 2: Anti-goal read-through**
 
@@ -226,7 +226,7 @@ Download Bricolage Grotesque (display weight range used) and Figtree (400–800)
 
 - [ ] **Step 3: Source the music track**
 
-From Pixabay Audio or YouTube Audio Library (free for commercial use): minimal, warm, lightly optimistic instrumental, no vocals, with a natural lift around two-thirds through — pick a candidate whose build-up can land as the beam levels (~70–80% mark). Save as `reel/assets/music.mp3`. Fill captions.md's licence section with title, artist, source URL, licence name/URL.
+**CC0-only sourcing rule (builder-check ruling):** the repo is public on GitHub, so the tracked MP3 must be freely redistributable — source the track from a CC0 library (Freesound's CC0 filter, Wikimedia Commons CC0; NOT Pixabay/YT Audio Library, whose licences cover use-in-a-work but not standalone redistribution). Mood unchanged: minimal, warm, lightly optimistic instrumental, no vocals, natural lift around two-thirds through, landing as the beam levels (~70–80% mark). Save as `reel/assets/music.mp3`. Fill captions.md's licence section with title, artist, source URL, and CC0 dedication link. If no suitable CC0 track exists after a real search: gitignore the audio, record source + re-download instructions in captions.md, and note the reproducibility gap in the ledger.
 
 - [ ] **Step 4: Verify the scaffold**
 
