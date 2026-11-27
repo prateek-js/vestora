@@ -604,10 +604,10 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                                 {h.category.replace('_', ' ')}
                               </td>
                               <td className="py-2 px-3 text-right font-mono tabular-nums text-ink/70">
-                                {formatCurrency(h.investedAmount)}
+                                {formatCurrency(h.investedAmount, { showDecimals: false })}
                               </td>
                               <td className="py-2 px-3 text-right font-mono tabular-nums font-medium text-ink">
-                                {formatCurrency(h.currentValue)}
+                                {formatCurrency(h.currentValue, { showDecimals: false })}
                               </td>
                               <td className="py-2 px-3 text-center">
                                 <button
@@ -773,7 +773,7 @@ export const ValidatePortfolioModal: React.FC<ValidatePortfolioModalProps> = ({
                 <div className="text-xs font-mono text-ink/70 tabular-nums">
                   Ready: <span className="text-ink font-semibold">{manualSummary.validCount}</span> rows · Total Value:{' '}
                   <span className="text-emerald-700 font-semibold">
-                    {formatCurrency(manualSummary.totalValue)}
+                    {formatCurrency(manualSummary.totalValue, { showDecimals: false })}
                   </span>
                 </div>
               </div>

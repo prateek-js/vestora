@@ -469,7 +469,7 @@ export function generateSmartDiversificationPlans(
             id: 'home-loan-prepay',
             kind: 'HOME_LOAN',
             title: 'Home Loan Principal Prepayment',
-            subtitle: `${prefs.homeLoanRatePct.toFixed(2)}% tax-free return · Saves ${formatCurrency(impact.interestSaved)} interest (${impact.monthsSaved} mos off)`,
+            subtitle: `${prefs.homeLoanRatePct.toFixed(2)}% tax-free return · Saves ${formatCurrency(impact.interestSaved, { compact: true })} interest (${impact.monthsSaved} mos off)`,
             currency: 'INR',
             allocatedInBase: prepayAmt,
             loanRatePct: prefs.homeLoanRatePct,
@@ -488,12 +488,12 @@ export function generateSmartDiversificationPlans(
         plans.push({
           id: 'smart-loan-arbitrage',
           categoryLabel: 'Debt vs. Post-Tax Yield Arbitrage',
-          title: `Retire ${formatCurrency(prepayAmt)} Home Loan Principal`,
+          title: `Retire ${formatCurrency(prepayAmt, { compact: true })} Home Loan Principal`,
           rationale: `${loanSource.name} yields ~${sourcePostTaxPct.toFixed(1)}% after your ${prefs.taxSlabPct}% tax slab, while your home loan costs ${prefs.homeLoanRatePct.toFixed(2)}% tax-free (~${impact.preTaxEquivalent30Pct.toFixed(1)}% pre-tax equivalent). Shifting 70% to principal payoff and 30% to equity-taxed arbitrage locks in guaranteed wealth creation.`,
           sourceHolding: loanSource,
           moveAmountInBase: totalMoved,
           destinations,
-          benefitSummary: `+${formatCurrency(impact.interestSaved)} interest saved · ${impact.monthsSaved} mos shaved`,
+          benefitSummary: `+${formatCurrency(impact.interestSaved, { compact: true })} interest saved · ${impact.monthsSaved} mos shaved`,
           ...risk,
           isLiveApiBacked: isLive,
         });
@@ -564,7 +564,7 @@ export function generateSmartDiversificationPlans(
         categoryLabel: isMat ? 'Matured Capital Re-Deployment' : 'Idle Cash Optimization',
         title: isMat
           ? `Deploy Matured ${idleSource.name}`
-          : `Put ${formatCurrency(safeMove)} Excess Savings to Work`,
+          : `Put ${formatCurrency(safeMove, { compact: true })} Excess Savings to Work`,
         rationale: isMat
           ? `${idleSource.name} has already matured and stops compounding efficiently if left idle. Splitting across live market funds matches your ${TARGET_MIX_BY_GOAL[prefs.goal].label} profile.`
           : `Cash represents ${analysis.currentPct.cash}% of your portfolio vs. your ${analysis.targetPct.cash}% target. Moving the surplus into ${prefs.taxSlabPct >= 20 ? 'equity-taxed Arbitrage (12.5% LTCG vs ' + prefs.taxSlabPct + '% slab)' : `Live GoI Sovereign Bonds (~${gsecBenchRate.toFixed(2)}%)`} and Nifty 50 Index (~${eqRate.toFixed(1)}% 3Y CAGR) stops inflation erosion while keeping T+2 liquidity.`,
@@ -632,7 +632,7 @@ export function generateSmartDiversificationPlans(
         id: 'smart-concentration-trim',
         categoryLabel: 'Concentration Risk Reduction',
         title: `Trim ${topH.name} (${analysis.topHolding.sharePct}% → ${newTopShare}%)`,
-        rationale: `${topH.name} currently accounts for ${analysis.topHolding.sharePct}% of your entire net worth (above the 20% single-instrument threshold). Rotating ${formatCurrency(trimAmt)} into uncorrelated market funds lowers single-asset drawdown risk.`,
+        rationale: `${topH.name} currently accounts for ${analysis.topHolding.sharePct}% of your entire net worth (above the 20% single-instrument threshold). Rotating ${formatCurrency(trimAmt, { compact: true })} into uncorrelated market funds lowers single-asset drawdown risk.`,
         sourceHolding: topH,
         moveAmountInBase: trimAmt,
         destinations,
@@ -714,12 +714,12 @@ export function generateSmartDiversificationPlans(
       plans.push({
         id: 'smart-nps-80ccd',
         categoryLabel: 'Section 80CCD(1B) Live NPS Shield',
-        title: `Allocate ${formatCurrency(npsMove)} to Top-Ranked NPS Tier I`,
-        rationale: `You have unused Section 80CCD(1B) NPS deduction room. Deploying into live ${topEqNps.schemeName} (${topEqNps.cagr3yPct?.toFixed(1) ?? '11.5'}% 3Y CAGR) saves ~${formatCurrency(taxSaved)} in direct income tax at your ${prefs.taxSlabPct}% slab.`,
+        title: `Allocate ${formatCurrency(npsMove, { compact: true })} to Top-Ranked NPS Tier I`,
+        rationale: `You have unused Section 80CCD(1B) NPS deduction room. Deploying into live ${topEqNps.schemeName} (${topEqNps.cagr3yPct?.toFixed(1) ?? '11.5'}% 3Y CAGR) saves ~${formatCurrency(taxSaved, { compact: true })} in direct income tax at your ${prefs.taxSlabPct}% slab.`,
         sourceHolding: npsSource,
         moveAmountInBase: npsMove,
         destinations,
-        benefitSummary: `Saves ~${formatCurrency(taxSaved)} income tax · 80CCD(1B)`,
+        benefitSummary: `Saves ~${formatCurrency(taxSaved, { compact: true })} income tax · 80CCD(1B)`,
         ...risk,
         isLiveApiBacked: true,
       });

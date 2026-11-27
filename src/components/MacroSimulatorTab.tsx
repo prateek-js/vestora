@@ -541,7 +541,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           <div className="bg-mist p-3 rounded-lg border border-slate-700/80">
             <span className="text-ink/70 block">Baseline End Net Worth:</span>
             <span className="text-base font-bold text-ink">
-              {formatCurrency(simResult.finalBaselineNetWorth)}
+              {formatCurrency(simResult.finalBaselineNetWorth, { compact: true })}
             </span>
             <span className="text-2xs text-ink/70 block mt-0.5">Under 5% normal inflation</span>
           </div>
@@ -549,7 +549,7 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           <div className="bg-mist p-3 rounded-lg border border-slate-700/80">
             <span className="text-ink/70 block">Current Portfolio (Unhedged):</span>
             <span className="text-base font-bold text-rose-700">
-              {formatCurrency(simResult.finalScenarioNetWorth)}
+              {formatCurrency(simResult.finalScenarioNetWorth, { compact: true })}
             </span>
             <span className="text-2xs text-ink/70 block mt-0.5">
               Drawdown drag: {formatPercent(simResult.scenarioAlphaVsBaselinePct)}
@@ -559,10 +559,10 @@ export const MacroSimulatorTab: React.FC<MacroSimulatorTabProps> = ({
           <div className="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/40">
             <span className="text-emerald-800 block font-semibold">Shuffled Portfolio Outcome:</span>
             <span className="text-base font-bold text-emerald-800">
-              {formatCurrency(simResult.finalShuffledNetWorth)}
+              {formatCurrency(simResult.finalShuffledNetWorth, { compact: true })}
             </span>
             <span className="text-2xs text-emerald-800 font-bold block mt-0.5">
-              +{formatCurrency(simResult.shuffledAdvantageVsScenario)} Protected Capital!
+              +{formatCurrency(simResult.shuffledAdvantageVsScenario, { compact: true })} Protected Capital!
             </span>
           </div>
         </div>

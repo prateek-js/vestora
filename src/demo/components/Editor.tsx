@@ -48,7 +48,7 @@ export function Editor({
 
   const total = portfolioTotal({ holdings });
   const canContinue = total > 0;
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
 
   // Lets another chapter open the form here (for example "edit this one" from the plan).
   useEffect(() => {

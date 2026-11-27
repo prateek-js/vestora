@@ -165,11 +165,11 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
 
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-ink/70">
-              Active: {formatCurrency(taxSectionAudit.section80cTotal)}
+              Active: {formatCurrency(taxSectionAudit.section80cTotal, { compact: true })}
             </span>
             {taxSectionAudit.section80cShortfall > 0 ? (
               <span className="text-amber-700">
-                Gap: {formatCurrency(taxSectionAudit.section80cShortfall)}
+                Gap: {formatCurrency(taxSectionAudit.section80cShortfall, { compact: true })}
               </span>
             ) : (
               <span className="text-emerald-700 flex items-center gap-1">
@@ -213,11 +213,11 @@ export const TaxAndInsightsTab: React.FC<TaxAndInsightsTabProps> = ({
 
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-ink/70">
-              Active: {formatCurrency(taxSectionAudit.nps80ccdTotal)}
+              Active: {formatCurrency(taxSectionAudit.nps80ccdTotal, { compact: true })}
             </span>
             {taxSectionAudit.nps80ccdShortfall > 0 ? (
               <span className="text-amber-700">
-                Gap: {formatCurrency(taxSectionAudit.nps80ccdShortfall)}
+                Gap: {formatCurrency(taxSectionAudit.nps80ccdShortfall, { compact: true })}
               </span>
             ) : (
               <span className="text-emerald-700 flex items-center gap-1">

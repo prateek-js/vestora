@@ -835,7 +835,7 @@ export async function parseFileForChat(file: File): Promise<ChatReplyPayload> {
       metrics: [
         { label: 'Parsed Holdings', value: `${preview.parsed.holdings.length}`, tone: 'emerald' },
         { label: 'Skipped Rows', value: `${preview.parsed.skipped.length}`, tone: 'neutral' },
-        { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
+        { label: 'Total Value', value: formatCurrency(totalVal, { compact: true }), tone: 'emerald' },
       ],
       actions: [
         {
@@ -875,7 +875,7 @@ export async function parseFileForChat(file: File): Promise<ChatReplyPayload> {
       metrics: [
         { label: 'Holdings', value: `${parsed.holdings.length}`, tone: 'emerald' },
         { label: 'Base Currency', value: 'INR', tone: 'neutral' },
-        { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
+        { label: 'Total Value', value: formatCurrency(totalVal, { compact: true }), tone: 'emerald' },
       ],
       actions: [
         {
@@ -919,7 +919,7 @@ export async function parseFileForChat(file: File): Promise<ChatReplyPayload> {
     metrics: [
       { label: 'Parsed Holdings', value: `${parsedCsv.holdings.length}`, tone: 'emerald' },
       { label: 'Skipped Rows', value: `${parsedCsv.skipped.length}`, tone: 'neutral' },
-      { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
+      { label: 'Total Value', value: formatCurrency(totalVal, { compact: true }), tone: 'emerald' },
     ],
     actions: [
       {
@@ -970,7 +970,7 @@ export function processLocalChatMessage(
           text: `Parsed ${parsed.holdings.length} holdings locally (${formatFormatLabel(parsed.format)}). Choose how to apply them:`,
           metrics: [
             { label: 'Parsed Rows', value: `${parsed.holdings.length}`, tone: 'emerald' },
-            { label: 'Total Value', value: formatCurrency(totalVal), tone: 'emerald' },
+            { label: 'Total Value', value: formatCurrency(totalVal, { compact: true }), tone: 'emerald' },
           ],
           actions: [
             {
@@ -1066,14 +1066,15 @@ export function processLocalChatMessage(
     };
   }
 
-  // 4. Currency switching
   // 4. Currency requests. Vestora is INR-only: any switch/set-currency ask —
   // "switch to USD", "make <holding> EUR" — just acknowledges; nothing changes.
+  // The gate requires a currency token AND a currency verb AND no digit: every
+  // holding-edit command carries an amount ("set X value to ₹6L"), while the
+  // currency asks never do ("make X USD"), so edits fall through untouched.
   if (
-    /\b(usd|inr|eur|dollar|euro|rupee|\$|₹|€)\b|\$|₹|€/i.test(lower) &&
-    (/\b(currency|switch|convert|show|use|make|set|change|denominate|track)\b/i.test(lower) ||
-      /(?:in|to|into)\s+(?:usd|eur|\$|€)/i.test(lower)) &&
-    !/^(?:please\s+)?(?:add|buy|invest|deposit|top\s*up|put|log|record|save)\b/i.test(lower)
+    /\b(usd|inr|eur|dollar|euro|rupee)|\$|₹|€/i.test(lower) &&
+    /\b(currency|switch|convert|show|use|make|set|change|denominate|track)\b/i.test(lower) &&
+    !/\d/.test(lower)
   ) {
     return {
       title: 'Currency Is Locked to INR',
@@ -1275,7 +1276,7 @@ export function processLocalChatMessage(
           ],
           actions: [
             {
-              label: `Confirm (-${formatCurrency(delta)})`,
+              label: `Confirm (-${formatCurrency(delta, { compact: true })})`,
               variant: 'primary',
               action: {
                 type: 'CONFIRM_UPDATE_HOLDING',
@@ -1385,7 +1386,7 @@ export function processLocalChatMessage(
         ],
         actions: [
           {
-            label: `Top Up (+${formatCurrency(addedInTargetCcy)})`,
+            label: `Top Up (+${formatCurrency(addedInTargetCcy, { compact: true })})`,
             variant: 'primary',
             action: {
               type: 'CONFIRM_UPDATE_HOLDING',
@@ -1669,7 +1670,7 @@ export function processLocalChatMessage(
       title: `Portfolio Snapshot (${ctx.portfolioMode === 'demo' ? ctx.profileName : 'Personal'})`,
       text: `All calculations run locally in your browser. ${metrics.maturedHoldings.length} matured positions and ${metrics.maturingSoonHoldings.length} due within 30 days.`,
       metrics: [
-        { label: 'Net Worth', value: formatCurrency(metrics.totalValuation), tone: 'emerald' },
+        { label: 'Net Worth', value: formatCurrency(metrics.totalValuation, { compact: true }), tone: 'emerald' },
         {
           label: 'Total Gain',
           value: `${metrics.totalGain >= 0 ? '+' : ''}${formatCurrency(metrics.totalGain)} (${formatPercent(metrics.totalGainPct, 1)})`,

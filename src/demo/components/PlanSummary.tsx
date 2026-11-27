@@ -22,7 +22,7 @@ const quietButton = 'rounded-full border border-ink/30 px-6 py-3 font-semibold h
 export function PlanSummary({ portfolio, journey, split, onBack, onEditConditions }: PlanSummaryProps) {
   const { holdings } = portfolio;
   const { input, result, outcome } = split;
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   const source = holdings.find((h) => h.id === journey.sourceId) ?? null;
   const total = placedTotal(input);
 

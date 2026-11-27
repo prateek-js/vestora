@@ -69,7 +69,7 @@ export function SeeIt({ portfolio, benchmarks, benchmarkStatus, journey, set, on
     baseline: Math.round(t.baselineNominal),
     scenario: Math.round(t.scenarioNominal),
   }));
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   const horizon = journey.factors.projectionHorizonYears;
   const chartSummary = `In ${horizon} ${horizon === 1 ? 'year' : 'years'} your portfolio could be worth ${money(sim.finalBaselineNetWorth)} in calm conditions, or ${money(sim.finalScenarioNetWorth)} with the conditions you chose.`;
 

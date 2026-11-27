@@ -14,7 +14,7 @@ const FORMAT_LABEL: Record<ExportFormat, string> = {
   json: 'Vestora file',
 };
 
-export function ExportBar(  { holdings, formats = ['xlsx', 'pdf', 'csv'] }: ExportBarProps) {
+export function ExportBar({ holdings, formats = ['xlsx', 'pdf', 'csv'] }: ExportBarProps) {
   const [error, setError] = useState<string | null>(null);
   const empty = holdings.length === 0;
 

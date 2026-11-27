@@ -28,7 +28,7 @@ export function PlayResults({
   loanRatePct,
   onEditConditions,
 }: PlayResultsProps) {
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   const beam = beamState(result.mixAfter, target);
   const sentence = gapSentence(result.mixAfter, target);
   const pans = panWeights(result.mixAfter);

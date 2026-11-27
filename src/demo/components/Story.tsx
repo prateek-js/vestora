@@ -217,7 +217,7 @@ export function Story({ portfolio, savedAvailable, onUseSaved, onUseSample, hasP
                   ? 'You are using the portfolio you built, with '
                   : 'We will use a sample with '}
               {portfolio.holdings.length} investments worth{' '}
-              <span className="num font-semibold">{formatCurrency(total)}</span>.
+              <span className="num font-semibold">{formatCurrency(total, { compact: true })}</span>.
               You can change anything. Your numbers stay on this device.
             </p>
           </>

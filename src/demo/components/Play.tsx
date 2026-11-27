@@ -25,7 +25,7 @@ export function Play({ portfolio, journey, split, set, onNext, onEditConditions 
   const { holdings, loan } = portfolio;
   const { plans, catalog, input, result, outcome } = split;
   const target = TARGET_MIX_BY_GOAL[journey.goal].weights;
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
 
   // First visit: start from the plan the app would suggest, so the screen already shows a change.
   useEffect(() => {

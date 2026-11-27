@@ -19,7 +19,7 @@ function isMatured(h: Holding): boolean {
 
 export function SourcePicker({ holdings, sourceId, moveAmountInBase, onPick, onAmount }: SourcePickerProps) {
   const uid = useId();
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   const valueOf = (h: Holding) => Math.max(0, h.currentValue);
   const sorted = [...holdings].sort((a, b) => valueOf(b) - valueOf(a));
   const source = holdings.find((h) => h.id === sourceId) ?? null;

@@ -258,7 +258,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.urgent30Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.urgent30Value)}
+              {formatCurrency(bucketTotals.urgent30Value, { compact: false, showDecimals: false })}
             </div>
           </div>
 
@@ -268,7 +268,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window60Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.window60Value)}
+              {formatCurrency(bucketTotals.window60Value, { compact: false, showDecimals: false })}
             </div>
           </div>
 
@@ -278,7 +278,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.window90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.window90Value)}
+              {formatCurrency(bucketTotals.window90Value, { compact: false, showDecimals: false })}
             </div>
           </div>
 
@@ -288,7 +288,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
               <span className="font-mono text-ink/70 tabular-nums">{bucketTotals.beyond90Count}</span>
             </div>
             <div className="text-base font-bold font-mono text-ink mt-1 tabular-nums">
-              {formatCurrency(bucketTotals.beyond90Value)}
+              {formatCurrency(bucketTotals.beyond90Value, { compact: false, showDecimals: false })}
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                       {/* Valuation & Explicit Window Text */}
                       <div className="md:col-span-2 flex md:flex-col items-center md:items-end justify-between gap-1 font-mono tabular-nums">
                         <span className="text-xs font-bold text-ink">
-                          {formatCurrency(valueInBase)}
+                          {formatCurrency(valueInBase, { compact: true })}
                         </span>
                         <span className={`text-2xs font-semibold ${labelColorClass}`}>
                           {windowLabel}
@@ -491,7 +491,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
 
                   <div className="mt-2 flex items-baseline justify-between">
                     <div className="text-base font-bold font-mono text-ink tabular-nums">
-                      {formatCurrency(val)}
+                      {formatCurrency(val, { compact: false })}
                     </div>
                     <div className="text-2xs text-ink/70">
                       {h.category.replace('_', ' ')}
@@ -663,7 +663,7 @@ export const MaturityRadarTab: React.FC<MaturityRadarTabProps> = ({
                   <div className="mt-3 text-2xs text-ink/70 flex items-center justify-between px-1">
                     <span>Projected 1st-Year Yield on Staged Capital:</span>
                     <span className="text-emerald-700 font-mono font-bold">
-                      +{formatCurrency(projectedGainAnnual)}
+                      +{formatCurrency(projectedGainAnnual, { showDecimals: false })}
                     </span>
                   </div>
                 )}

@@ -222,7 +222,7 @@ export const StreetStoryGame: React.FC<StreetStoryGameProps> = ({
     return {
       count: holdings.length,
       maturedName: source?.name ?? 'HDFC Bank Matured Fixed Deposit',
-      maturedAmount: source ? formatCurrency(source.currentValue) : '₹6.92L',
+      maturedAmount: source ? formatCurrency(source.currentValue, { compact: true }) : '₹6.92L',
     };
   }, [holdings]);
 

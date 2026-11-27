@@ -39,7 +39,7 @@ function Row({
   onChange: (amount: number) => void;
 }) {
   const uid = useId();
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   return (
     <li className="border-t border-ink/10 py-3 first:border-t-0">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -88,7 +88,7 @@ export function DestinationPicker({
   onUseSuggestion,
   onClear,
 }: DestinationPickerProps) {
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, { compact: true });
   const step = moveAmountInBase >= 100000 ? 1000 : moveAmountInBase >= 10000 ? 100 : 1;
   const left = Math.max(0, unallocatedInBase);
   const groups = ORDER.map((id) => ({ id, items: catalog.filter((d) => segmentOf(d) === id) })).filter(
