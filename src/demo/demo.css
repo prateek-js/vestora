@@ -18,6 +18,9 @@
 
   --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  /* Remap Tailwind's mono token so the .font-mono utility emits JetBrains Mono
+     (mirrors index.css — keep in sync). */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
