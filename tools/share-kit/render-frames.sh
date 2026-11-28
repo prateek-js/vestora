@@ -3,7 +3,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 declare -A SIZES=(
-  [linkedin-card]="1200,627"
+  [linkedin-card]="1200,630"
+  [linkedin-carousel-1]="1080,1350"
+  [linkedin-carousel-2]="1080,1350"
+  [linkedin-carousel-3]="1080,1350"
   [whatsapp-status-1]="1080,1920"
   [whatsapp-status-2]="1080,1920"
   [instagram-post]="1080,1350"
@@ -13,13 +16,13 @@ declare -A SIZES=(
 )
 mkdir -p public/share-kit
 fail=0
-for name in linkedin-card whatsapp-status-1 whatsapp-status-2 instagram-post ph-problem ph-beam ph-rebalance; do
+for name in linkedin-card linkedin-carousel-1 linkedin-carousel-2 linkedin-carousel-3 whatsapp-status-1 whatsapp-status-2 instagram-post ph-problem ph-beam ph-rebalance; do
   src="tools/share-kit/frames/$name.html"
   out="public/share-kit/$name.png"
   [ -f "$src" ] || { echo "SKIP (no frame): $src"; continue; }
   npx playwright screenshot --viewport-size "${SIZES[$name]}" --wait-for-timeout 2500 "file://$(pwd)/$src" "$out"
 done
-for name in linkedin-card whatsapp-status-1 whatsapp-status-2 instagram-post ph-problem ph-beam ph-rebalance; do
+for name in linkedin-card linkedin-carousel-1 linkedin-carousel-2 linkedin-carousel-3 whatsapp-status-1 whatsapp-status-2 instagram-post ph-problem ph-beam ph-rebalance; do
   [ -f "public/share-kit/$name.png" ] || { echo "MISSING: $name.png"; fail=1; }
 done
 exit $fail

@@ -2,55 +2,91 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { width: 1270px; height: 760px; overflow: hidden; }
-  .stage { width: 1270px; height: 760px; position: relative; background: var(--mist); box-sizing: border-box; padding: 60px 70px; display: flex; flex-direction: column; }
-  .logo-row { display: flex; align-items: center; gap: 12px; }
-  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 21px; }
-  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 18px; }
-  .middle { display: flex; align-items: center; gap: 30px; flex: 1; }
-  .copy { width: 620px; }
-  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 56px; line-height: 1.12; margin: 0 0 22px; letter-spacing: -0.01em; }
-  h1 .honest { color: var(--level); }
-  .sub { font-size: 24px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0 0 30px; }
-  .url { display: inline-block; font-family: 'Figtree', sans-serif; font-weight: 600; font-size: 21px; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 14px 30px;   font-variant-numeric: tabular-nums;
+  .stage {
+    width: 1270px; height: 760px;
+    display: flex; background: var(--mist); color: var(--ink-deep);
   }
-  .privacy { font-size: 19px; color: var(--ink); opacity: 0.62; margin-top: 18px; }
+  .left {
+    width: 700px; height: 760px;
+    padding: 52px 54px 52px 62px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .logo-img { width: 42px; height: 42px; border-radius: 10px; }
+  .logo-word { font-size: 18px; }
+  .eyebrow {
+    font-size: 13.5px; font-weight: 800; letter-spacing: 0.15em;
+    color: var(--level); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 56px; font-weight: 800; line-height: 1.07; letter-spacing: -0.02em;
+    margin-bottom: 18px; color: var(--ink-deep);
+  }
+  h1 .accent { color: var(--level); }
+  .sub {
+    font-size: 20px; line-height: 1.48; color: rgba(20, 33, 61, 0.78);
+    max-width: 560px; font-weight: 450;
+  }
+  .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .feat {
+    background: var(--paper); border-radius: 14px;
+    padding: 18px 20px;
+    border-left: 4px solid var(--level);
+    box-shadow: 0 6px 18px rgba(10, 20, 40, 0.05);
+  }
+  .feat-t { font-size: 18px; font-weight: 800; color: var(--ink-deep); }
+  .feat-d { font-size: 14.5px; color: rgba(20, 33, 61, 0.68); margin-top: 4px; font-weight: 500; }
+  .right {
+    width: 570px; height: 760px;
+    background: var(--art-beam-bg);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .right img {
+    width: 560px; height: auto; display: block;
+    transform: translateY(16px);
+  }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="logo-row">
-    <div class="logo-mark">V</div>
-    <div class="logo-word">VESTORA</div>
-  </div>
-  <div class="middle">
-    <div class="copy">
-      <h1>See the honest shape<br>of your money.<br><span class="honest">Rebalance</span> without<br>commissions.</h1>
-      <p class="sub">One quiet planner for FDs, funds, stocks, gold and your home loan.</p>
-      <div class="url">vestora-wealth.ai.studio/demo/</div>
-      <div class="privacy">Everything stays on your device. Nothing is sent anywhere.</div>
+  <div class="left">
+    <div class="logo-row">
+      <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+      <div class="logo-word">VESTORA <span>WEALTH</span></div>
     </div>
-    <svg width="480" height="400" viewBox="0 0 480 400" fill="none" aria-hidden="true">
-      <line x1="240" y1="80" x2="240" y2="330" stroke="#14213D" stroke-width="5"/>
-      <line x1="140" y1="336" x2="340" y2="336" stroke="#14213D" stroke-width="5" stroke-linecap="round"/>
-      <line x1="60" y1="80" x2="420" y2="80" stroke="#029A67" stroke-width="7" stroke-linecap="round"/>
-      <circle cx="240" cy="80" r="10" fill="#14213D"/>
-      <line x1="60" y1="80" x2="60" y2="170" stroke="#14213D" stroke-width="2.5"/>
-      <rect x="18" y="170" width="84" height="13" rx="6" fill="#14213D"/>
-      <rect x="30" y="126" width="26" height="44" rx="4" fill="#4C5CE6"/>
-      <rect x="62" y="140" width="22" height="30" rx="4" fill="#1F8A9E"/>
-      <line x1="420" y1="80" x2="420" y2="170" stroke="#14213D" stroke-width="2.5"/>
-      <rect x="378" y="170" width="84" height="13" rx="6" fill="#14213D"/>
-      <rect x="388" y="130" width="24" height="40" rx="4" fill="#1F8A9E"/>
-      <rect x="417" y="140" width="20" height="30" rx="4" fill="#C99A2E"/>
-      <rect x="442" y="147" width="16" height="23" rx="4" fill="#6B7A90"/>
-      <text x="240" y="42" text-anchor="middle" font-family="Figtree, sans-serif" font-size="20" fill="#029A67" font-weight="700" letter-spacing="4">LEVEL</text>
-    </svg>
+
+    <div>
+      <div class="eyebrow">02 · Unified Rebalancing Calculator</div>
+      <h1>See the true shape of<br>your money — <span class="accent">0%<br>bias.</span></h1>
+      <p class="sub">Compare post-tax FD returns against home loan prepayment, 40,000+ Direct-Growth AMFI mutual funds, live NPS Tier-I NAVs, and RBI G-Secs.</p>
+    </div>
+
+    <div class="grid">
+      <div class="feat">
+        <div class="feat-t">40,000+ Direct MFs</div>
+        <div class="feat-d">Live AMFI NAVs &amp; 0% commission</div>
+      </div>
+      <div class="feat">
+        <div class="feat-t">Home Loan vs FD Math</div>
+        <div class="feat-d">Post-tax yield vs EMI savings</div>
+      </div>
+      <div class="feat">
+        <div class="feat-t">FD Maturity &amp; Tax Audit</div>
+        <div class="feat-d">₹1.25L LTCG &amp; 80CCD(1B) NPS</div>
+      </div>
+      <div class="feat">
+        <div class="feat-t">5-Yr Stress &amp; Chatbox</div>
+        <div class="feat-d">Edit &amp; simulate 100% locally</div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <img src="assets/art-beam.png" alt="Balanced scale comparing Indian portfolio investments">
   </div>
 </div>
 </body>

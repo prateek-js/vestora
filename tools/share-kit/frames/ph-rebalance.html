@@ -2,41 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { width: 1270px; height: 760px; overflow: hidden; }
-  .stage { width: 1270px; height: 760px; position: relative; background: var(--mist); box-sizing: border-box; padding: 60px 70px; display: flex; flex-direction: column; }
-  .logo-row { display: flex; align-items: center; gap: 12px; }
-  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 21px; }
-  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 18px; }
-  .middle { display: flex; align-items: center; gap: 44px; flex: 1; min-height: 0; }
-  .copy { width: 470px; }
-  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 54px; line-height: 1.12; margin: 0 0 22px; letter-spacing: -0.01em; }
-  .sub { font-size: 23px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0 0 28px; }
-  .url { display: inline-block; font-family: 'Figtree', sans-serif; font-weight: 600; font-size: 20px; background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 13px 28px;   font-variant-numeric: tabular-nums;
+  .stage {
+    width: 1270px; height: 760px;
+    display: flex; background: var(--mist); color: var(--ink-deep);
   }
-  .shot { flex: 1; border-radius: 18px; overflow: hidden; border: 3px solid var(--ink); box-shadow: 10px 10px 0 rgba(20,33,61,0.10); background: var(--paper); max-height: 520px; }
-  .shot img { width: 100%; height: auto; display: block; }
+  .left {
+    width: 730px; height: 760px;
+    padding: 52px 58px 52px 62px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .logo-img { width: 42px; height: 42px; border-radius: 10px; }
+  .logo-word { font-size: 18px; }
+  .eyebrow {
+    font-size: 13.5px; font-weight: 800; letter-spacing: 0.15em;
+    color: var(--level); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 56px; font-weight: 800; line-height: 1.06; letter-spacing: -0.02em;
+    margin-bottom: 18px; color: var(--ink-deep);
+  }
+  h1 .accent { color: var(--level); }
+  .sub {
+    font-size: 20.5px; line-height: 1.48; color: rgba(20, 33, 61, 0.78);
+    max-width: 575px; font-weight: 450;
+  }
+  .cta {
+    background: var(--ink-deep); color: var(--paper);
+    border-radius: 18px; padding: 26px 32px;
+    max-width: 585px;
+    box-shadow: 0 14px 32px rgba(10, 20, 40, 0.14);
+  }
+  .cta-top { font-size: 22px; font-weight: 800; color: var(--paper); }
+  .cta-url { font-size: 23px; font-weight: 800; color: #34d99b; margin-top: 8px; }
+  .cta-meta { font-size: 15px; color: rgba(238, 242, 246, 0.74); margin-top: 12px; font-weight: 500; }
+  .right {
+    width: 540px; height: 760px;
+    background: var(--art-privacy-bg);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .right img {
+    width: 500px; height: auto; display: block;
+    transform: translateY(10px);
+  }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="logo-row">
-    <div class="logo-mark">V</div>
-    <div class="logo-word">VESTORA</div>
+  <div class="left">
+    <div class="logo-row">
+      <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+      <div class="logo-word">VESTORA <span>WEALTH</span></div>
+    </div>
+
+    <div>
+      <div class="eyebrow">03 · Private On-Device Wealth Tracker</div>
+      <h1>Runs in your browser.<br><span class="accent">Nothing leaves your<br>device.</span></h1>
+      <p class="sub">No account creation, no bank-password scraping, no external AI calls. Import Excel, CSV, or CAMS/KFintech CAS locally and export your rebalance plan anytime.</p>
+    </div>
+
+    <div class="cta">
+      <div class="cta-top">Take the 2-minute guided rebalance demo</div>
+      <div class="cta-url tabular">vestorawealths.app/demo/</div>
+      <div class="cta-meta">100% free · 0% commission · Full wealth portal at vestorawealths.app</div>
+    </div>
   </div>
-  <div class="middle">
-    <div class="copy">
-      <h1>Try the guided<br>rebalance.</h1>
-      <p class="sub">A short walk through your own numbers: what to move, where it goes, what changes. Nothing is saved, nothing is sent.</p>
-      <div class="url">vestora-wealth.ai.studio/demo/</div>
-    </div>
-    <div class="shot">
-      <img src="assets/demo-plan.png" alt="The demo journey's rebalance plan screen">
-    </div>
+  <div class="right">
+    <img src="assets/art-privacy.png" alt="Laptop displaying emerald privacy shield for local wealth tracking">
   </div>
 </div>
 </body>

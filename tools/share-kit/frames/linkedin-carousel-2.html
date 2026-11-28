@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { width: 1080px; height: 1350px; overflow: hidden; }
+  .stage {
+    width: 1080px; height: 1350px;
+    background: var(--mist);
+    color: var(--ink-deep);
+    padding: 54px 62px 54px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .header { display: flex; justify-content: space-between; align-items: center; }
+  .logo-img { width: 44px; height: 44px; border-radius: 10px; }
+  .logo-word { font-size: 19px; }
+  .page-num { font-size: 17px; font-weight: 700; letter-spacing: 0.14em; color: rgba(20, 33, 61, 0.72); }
+  .headline-block { margin-top: 32px; }
+  .eyebrow {
+    font-size: 14.5px; font-weight: 800; letter-spacing: 0.15em;
+    color: var(--risk); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 62px; font-weight: 800; line-height: 1.08; letter-spacing: -0.02em;
+    color: var(--ink-deep);
+  }
+  h1 .accent { color: var(--risk); }
+  .cards {
+    display: flex; flex-direction: column; gap: 26px;
+    margin: 44px 0;
+  }
+  .row-card {
+    background: var(--paper); border-radius: 22px;
+    padding: 34px 40px 34px 36px;
+    box-shadow: 0 14px 34px rgba(10, 20, 40, 0.06);
+    display: flex; align-items: center; justify-content: space-between; gap: 28px;
+    position: relative;
+  }
+  .row-left { display: flex; align-items: stretch; gap: 22px; flex: 1; }
+  .bar { width: 5px; border-radius: 4px; flex-shrink: 0; }
+  .bar.ink { background: var(--ink-deep); }
+  .bar.tilt { background: var(--tilt); }
+  .bar.risk { background: var(--risk); }
+  .row-title { font-size: 27px; font-weight: 800; color: var(--ink-deep); margin-bottom: 8px; }
+  .row-desc { font-size: 20.5px; line-height: 1.42; color: rgba(20, 33, 61, 0.72); font-weight: 450; }
+  .row-stat { text-align: right; flex-shrink: 0; min-width: 150px; }
+  .stat-num { font-size: 32px; font-weight: 800; line-height: 1.1; }
+  .stat-num.ink { color: var(--ink-deep); }
+  .stat-num.tilt { color: var(--tilt); }
+  .stat-num.risk { color: var(--risk); }
+  .stat-tag {
+    font-size: 13px; font-weight: 800; letter-spacing: 0.14em; margin-top: 6px;
+    text-transform: uppercase;
+  }
+  .stat-tag.ink { color: var(--ink-deep); }
+  .stat-tag.tilt { color: var(--tilt); }
+  .stat-tag.risk { color: var(--risk); }
+  .dark-cta {
+    background: var(--ink-deep); color: var(--paper);
+    border-radius: 22px; padding: 32px 38px;
+    display: flex; justify-content: space-between; align-items: center; gap: 24px;
+  }
+  .cta-title { font-size: 25px; font-weight: 800; margin-bottom: 6px; }
+  .cta-sub { font-size: 17px; color: rgba(238, 242, 246, 0.76); font-weight: 450; }
+  .cta-swipe { font-size: 19px; font-weight: 800; letter-spacing: 0.08em; color: #34d99b; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div>
+    <div class="header">
+      <div class="logo-row">
+        <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+        <div class="logo-word">VESTORA <span>WEALTH</span></div>
+      </div>
+      <div class="page-num tabular">02 / 03</div>
+    </div>
+    <div class="headline-block">
+      <div class="eyebrow">Why Personal Finance Advice Fails</div>
+      <h1>Everyone has a pitch.<br><span class="accent">Nobody weighs the whole.</span></h1>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="row-card">
+      <div class="row-left">
+        <div class="bar ink"></div>
+        <div>
+          <div class="row-title">Finance Sites &amp; Calculators</div>
+          <div class="row-desc">Generic top-10 lists that never factor in your 30% tax slab, maturing FDs, or existing home loan.</div>
+        </div>
+      </div>
+      <div class="row-stat tabular">
+        <div class="stat-num ink">47 Tabs</div>
+        <div class="stat-tag ink">Loud</div>
+      </div>
+    </div>
+
+    <div class="row-card">
+      <div class="row-left">
+        <div class="bar tilt"></div>
+        <div>
+          <div class="row-title">Commission Advisors</div>
+          <div class="row-desc">Push Regular mutual funds &amp; NFOs while ignoring tax-free 8.55% home loan prepayment math.</div>
+        </div>
+      </div>
+      <div class="row-stat tabular">
+        <div class="stat-num tilt">1.5% Cut</div>
+        <div class="stat-tag tilt">Biased</div>
+      </div>
+    </div>
+
+    <div class="row-card">
+      <div class="row-left">
+        <div class="bar risk"></div>
+        <div>
+          <div class="row-title">Wealth Managers</div>
+          <div class="row-desc">Charge an annual AUM fee on one slice — rarely auditing ₹1.25L LTCG harvesting or idle FDs.</div>
+        </div>
+      </div>
+      <div class="row-stat tabular">
+        <div class="stat-num risk">1% AUM</div>
+        <div class="stat-tag risk">Siloed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dark-cta">
+    <div>
+      <div class="cta-title">There is a quieter, honest alternative.</div>
+      <div class="cta-sub">0% commission portfolio rebalancer · Direct MFs · Home Loan vs FD · vestorawealths.app</div>
+    </div>
+    <div class="cta-swipe">SWIPE &rarr;</div>
+  </div>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 **Vestora** brings all your investments into one clear workspace—helping you catch idle matured deposits, audit tax-saving opportunities, gauge portfolio risk, and stress-test your net worth against economic shocks—without creating an account or sending your data to any server.
 
-**Live App:** [https://vestora-wealth.ai.studio](https://vestora-wealth.ai.studio)
+**Live App:** [https://vestorawealths.app](https://vestorawealths.app)
 
 ![Vestora Overview Dashboard](docs/images/overview-dashboard.jpg)
 

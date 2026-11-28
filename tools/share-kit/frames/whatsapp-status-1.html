@@ -2,66 +2,89 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { width: 1080px; height: 1920px; overflow: hidden; }
-  .stage { width: 1080px; height: 1920px; position: relative; background: var(--mist); box-sizing: border-box; padding: 90px 80px; display: flex; flex-direction: column; }
-  .logo-row { display: flex; align-items: center; gap: 14px; }
-  .logo-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 26px; }
-  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 22px; }
-  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 76px; line-height: 1.1; margin: 90px 0 0; letter-spacing: -0.01em; }
-  .street { margin-top: 70px; position: relative; height: 980px; }
-  .building { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 18px; padding: 28px 26px; box-shadow: 8px 8px 0 rgba(20,33,61,0.10); }
-  .sign-top { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 25px; letter-spacing: 0.06em;   font-variant-numeric: tabular-nums;
+  .stage {
+    width: 1080px; height: 1920px;
+    background: var(--art-investor-bg);
+    color: var(--ink-deep);
+    padding: 96px 64px 72px;
+    display: flex; flex-direction: column; justify-content: space-between;
   }
-  .sign-sub { font-family: 'Figtree', sans-serif; font-size: 19px; color: var(--ink); opacity: 0.62; margin-top: 10px; line-height: 1.4;   font-variant-numeric: tabular-nums;
+  .logo-img { width: 48px; height: 48px; border-radius: 12px; }
+  .logo-word { font-size: 21px; }
+  .eyebrow {
+    margin-top: 38px;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.16em;
+    color: var(--tilt); text-transform: uppercase; margin-bottom: 18px;
   }
-  .tag { display: inline-block; margin-top: 16px; padding: 6px 14px; border-radius: 999px; font-family: 'Figtree', sans-serif; font-size: 17px; font-weight: 700; color: var(--paper);   font-variant-numeric: tabular-nums;
+  h1 {
+    font-size: 68px; font-weight: 800; line-height: 1.08; letter-spacing: -0.02em;
+    color: var(--ink-deep);
   }
-  .walker { position: absolute; }
-  .ground { position: absolute; bottom: 40px; left: 0; right: 0; height: 4px; background: var(--ink); opacity: 0.9; border-radius: 2px; }
-  .closing { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 46px; line-height: 1.25; margin-top: auto; }
-  .closing .door { color: var(--level); }
+  h1 .accent { color: var(--risk); }
+  .art-wrap {
+    margin: 10px -64px -32px;
+    display: flex; justify-content: center; align-items: flex-end;
+    flex: 1;
+  }
+  .art-wrap img { width: 1040px; height: auto; display: block; }
+  .bottom { position: relative; z-index: 2; }
+  .card {
+    background: var(--paper); border-radius: 24px;
+    padding: 18px 36px;
+    box-shadow: 0 20px 48px rgba(10, 20, 40, 0.09);
+  }
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(20, 33, 61, 0.09);
+  }
+  .row:last-child { border-bottom: none; }
+  .rk { font-size: 23px; font-weight: 800; color: var(--ink-deep); }
+  .rv { font-size: 22px; font-weight: 800; color: var(--ink-deep); }
+  .rv.tilt { color: var(--tilt); }
+  .rv.risk { color: var(--risk); }
+  .hint {
+    margin-top: 26px; text-align: center;
+    font-size: 21px; font-weight: 700; color: rgba(20, 33, 61, 0.78);
+  }
+  .hint span { color: var(--level); font-weight: 800; }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="logo-row">
-    <div class="logo-mark">V</div>
-    <div class="logo-word">VESTORA</div>
+  <div>
+    <div class="logo-row">
+      <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+      <div class="logo-word">VESTORA <span>WEALTH</span></div>
+    </div>
+    <div class="eyebrow">Sound Familiar?</div>
+    <h1>Your money walks past<br>a lot of <span class="accent">biased advice.</span></h1>
   </div>
-  <h1>Your money walks<br>past a lot of advice.</h1>
-  <div class="street">
-    <div class="building" style="left:0; top:30px; width:420px;">
-      <div class="sign-top">FINANCE SITES</div>
-      <div class="sign-sub">47 OPEN TABS<br>GENERIC TIPS</div>
-      <span class="tag" style="background: var(--cash);">LOUD</span>
-    </div>
-    <div class="building" style="right:0; top:300px; width:430px;">
-      <div class="sign-top">ADVISOR</div>
-      <div class="sign-sub">HIS CUT ON<br>EVERY SALE</div>
-      <span class="tag" style="background: var(--tilt);">BIASED</span>
-    </div>
-    <div class="building" style="left:40px; top:640px; width:440px;">
-      <div class="sign-top">WEALTH MANAGER</div>
-      <div class="sign-sub">1% OF EVERYTHING,<br>EVERY YEAR</div>
-      <span class="tag" style="background: var(--risk);">PRICEY</span>
-    </div>
-    <!-- the walker, simple Ink figure -->
-    <svg class="walker" style="right:180px; top:660px;" width="120" height="170" viewBox="0 0 120 170" fill="none" aria-hidden="true">
-      <circle cx="66" cy="30" r="18" fill="#14213D"/>
-      <path d="M66 48 L60 100" stroke="#14213D" stroke-width="14" stroke-linecap="round"/>
-      <path d="M62 68 L30 88" stroke="#14213D" stroke-width="10" stroke-linecap="round"/>
-      <path d="M62 68 L96 84" stroke="#14213D" stroke-width="10" stroke-linecap="round"/>
-      <path d="M60 100 L32 150" stroke="#14213D" stroke-width="12" stroke-linecap="round"/>
-      <path d="M60 100 L92 152" stroke="#14213D" stroke-width="12" stroke-linecap="round"/>
-    </svg>
-    <div class="ground"></div>
+
+  <div class="art-wrap">
+    <img src="assets/art-investor.png" alt="Indian investor overwhelmed by disconnected finance charts">
   </div>
-  <div class="closing">There's <span class="door">a door</span> at the end<br>of the street.</div>
+
+  <div class="bottom">
+    <div class="card">
+      <div class="row">
+        <span class="rk">Finance websites</span>
+        <span class="rv">47 open tabs, generic tips</span>
+      </div>
+      <div class="row">
+        <span class="rk">Commission advisors</span>
+        <span class="rv tilt">1.5% Regular MF cut yearly</span>
+      </div>
+      <div class="row">
+        <span class="rk">Wealth managers</span>
+        <span class="rv risk">1% AUM · ignore home loan</span>
+      </div>
+    </div>
+    <div class="hint">Tap next for India’s <span>0% commission scale &rarr;</span></div>
+  </div>
 </div>
 </body>
 </html>

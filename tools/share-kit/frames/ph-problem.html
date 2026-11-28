@@ -2,64 +2,96 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { width: 1270px; height: 760px; overflow: hidden; }
-  .stage { width: 1270px; height: 760px; position: relative; background: var(--mist); box-sizing: border-box; padding: 60px 70px; display: flex; flex-direction: column; }
-  .logo-row { display: flex; align-items: center; gap: 12px; }
-  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--level); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 21px; }
-  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 18px; }
-  .middle { display: flex; align-items: center; gap: 40px; flex: 1; }
-  .copy { width: 560px; }
-  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 58px; line-height: 1.1; margin: 0 0 20px; letter-spacing: -0.01em; }
-  .sub { font-size: 24px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0; }
-  .scatter { position: relative; flex: 1; height: 480px; }
-  .tagcard { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px; padding: 18px 22px; box-shadow: 6px 6px 0 rgba(20,33,61,0.09); }
-  .tag-name { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 24px; }
-  .tag-note { font-family: 'Figtree', sans-serif; font-size: 16px; color: var(--ink); opacity: 0.58; margin-top: 6px;   font-variant-numeric: tabular-nums;
+  .stage {
+    width: 1270px; height: 760px;
+    display: flex; background: var(--mist); color: var(--ink-deep);
   }
-  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+  .left {
+    width: 685px; height: 760px;
+    padding: 52px 54px 52px 62px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .logo-img { width: 42px; height: 42px; border-radius: 10px; }
+  .logo-word { font-size: 18px; }
+  .eyebrow {
+    font-size: 13.5px; font-weight: 800; letter-spacing: 0.15em;
+    color: var(--tilt); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 56px; font-weight: 800; line-height: 1.06; letter-spacing: -0.02em;
+    margin-bottom: 18px; color: var(--ink-deep);
+  }
+  h1 .accent { color: var(--risk); }
+  .sub {
+    font-size: 20px; line-height: 1.48; color: rgba(20, 33, 61, 0.76);
+    max-width: 550px; font-weight: 450;
+  }
+  .pills { display: flex; flex-direction: column; gap: 13px; }
+  .pill {
+    background: var(--paper); border-radius: 14px;
+    padding: 17px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 6px 18px rgba(10, 20, 40, 0.05);
+    border: 1px solid rgba(20, 33, 61, 0.06);
+  }
+  .pill-k { font-size: 18px; font-weight: 800; color: var(--ink-deep); }
+  .pill-v { font-size: 17.5px; font-weight: 700; color: var(--ink-deep); }
+  .pill-v.tilt { color: var(--tilt); }
+  .pill-v.risk { color: var(--risk); }
+  .right {
+    width: 585px; height: 760px;
+    padding: 14px 22px 14px 0;
+    background: var(--mist);
+    display: flex; align-items: stretch; justify-content: stretch;
+  }
+  .art-panel {
+    width: 100%; height: 100%;
+    background: var(--art-investor-bg);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .art-panel img {
+    width: 530px; height: auto; display: block;
+    transform: translateY(16px);
+  }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="logo-row">
-    <div class="logo-mark">V</div>
-    <div class="logo-word">VESTORA</div>
-  </div>
-  <div class="middle">
-    <div class="copy">
-      <h1>Nine investments.<br>Nobody looking at<br>them together.</h1>
-      <p class="sub">Each one made sense when you bought it. Together they lean one way — and no tab, statement or advisor shows you that.</p>
+  <div class="left">
+    <div class="logo-row">
+      <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+      <div class="logo-word">VESTORA <span>WEALTH</span></div>
     </div>
-    <div class="scatter">
-      <div class="tagcard" style="left:0px; top:16px; transform: rotate(-3deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--debt);"></span>Fixed Deposit</div>
-        <div class="tag-note">matured, sitting idle</div>
+
+    <div>
+      <div class="eyebrow">01 · The Portfolio Silo Problem</div>
+      <h1>Nine investments.<br><span class="accent">Nobody weighing<br>them together.</span></h1>
+      <p class="sub">Fixed Deposits, Direct &amp; Regular mutual funds, stocks, gold, NPS, and a home loan sit in separate silos — turning every renewal or rebalance into a guess.</p>
+    </div>
+
+    <div class="pills">
+      <div class="pill">
+        <span class="pill-k">Finance websites</span>
+        <span class="pill-v">47 tabs, generic tips</span>
       </div>
-      <div class="tagcard" style="right:0px; top:0px; transform: rotate(2deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--equity);"></span>Mutual Funds</div>
-        <div class="tag-note">4 funds, drifting one way</div>
+      <div class="pill">
+        <span class="pill-k">Commission advisors</span>
+        <span class="pill-v tilt">1.5% Regular MF trail cuts</span>
       </div>
-      <div class="tagcard" style="left:10px; top:200px; transform: rotate(2deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--gold);"></span>Gold Bond</div>
-        <div class="tag-note">coupon 2.5%</div>
+      <div class="pill">
+        <span class="pill-k">Wealth managers</span>
+        <span class="pill-v risk">1% AUM fee, ignore home loans</span>
       </div>
-      <div class="tagcard" style="right:20px; top:195px; transform: rotate(-2deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--equity);"></span>US Stocks</div>
-        <div class="tag-note">one basket, far away</div>
-      </div>
-      <div class="tagcard" style="left:0px; top:390px; transform: rotate(-1deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--risk);"></span>Home Loan</div>
-        <div class="tag-note">8.55% · 15 years left</div>
-      </div>
-      <div class="tagcard" style="right:0px; top:400px; transform: rotate(3deg);">
-        <div class="tag-name"><span class="dot" style="background: var(--cash);"></span>Savings</div>
-        <div class="tag-note">3% if you're lucky</div>
-      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="art-panel">
+      <img src="assets/art-investor.png" alt="Investor surrounded by disconnected Indian investment charts">
     </div>
   </div>
 </div>

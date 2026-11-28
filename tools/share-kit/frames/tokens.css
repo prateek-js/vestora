@@ -1,16 +1,35 @@
-/* Vestora share-kit tokens — mirror src/index.css (keep in sync). */
+/* Vestora Wealth share-kit tokens — mirror src/index.css (keep in sync). */
+@font-face {
+  font-family: 'Figtree';
+  src: url('../reel/assets/fonts/figtree-var.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   --ink: #14213d;
+  --ink-deep: #0a1428;
   --mist: #eef2f6;
   --paper: #ffffff;
   --level: #02a26d;
   --level-line: #029a67;
-  --tilt: #e8a33d;
+  --level-soft: #e6f7f1;
+  --tilt: #d98e1e;
   --risk: #d8454b;
   --equity: #4c5ce6;
   --debt: #1f8a9e;
   --gold: #c99a2e;
   --cash: #6b7a90;
+  --art-beam-bg: #d8e1ea;
+  --art-investor-bg: #d5e0e9;
+  --art-privacy-bg: #d9e2ec;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -19,10 +38,39 @@ body {
   color: var(--ink);
   font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04";
 }
 
 .display {
-  /* One family (owner ruling 2026-11-27): display is Figtree like everything else.
-     The class stays so frame markup keeps working. */
   font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.logo-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.logo-img {
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(10, 13, 28, 0.14);
+}
+
+.logo-word {
+  font-family: 'Figtree', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.logo-word span {
+  font-weight: 600;
+  opacity: 0.72;
 }

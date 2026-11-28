@@ -2,75 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <style>
-  html, body { width: 1200px; height: 627px; overflow: hidden; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
   .card {
-    width: 1200px; height: 627px; position: relative;
-    background: var(--mist); color: var(--ink);
-    box-sizing: border-box; padding: 56px 64px;
+    width: 1200px; height: 630px;
+    display: flex;
+    background: var(--mist);
+    color: var(--ink);
+  }
+  .left {
+    width: 660px; height: 630px;
+    padding: 46px 52px 42px 58px;
     display: flex; flex-direction: column; justify-content: space-between;
+    background: var(--mist);
   }
-  .logo-row { display: flex; align-items: center; gap: 12px; }
-  .logo-mark {
-    width: 34px; height: 34px; border-radius: 9px;
-    background: var(--level); color: var(--paper);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 20px;
+  .logo-img { width: 42px; height: 42px; border-radius: 10px; }
+  .logo-word { font-size: 18px; }
+  .eyebrow {
+    font-size: 12.5px; font-weight: 800; letter-spacing: 0.14em;
+    color: var(--level); text-transform: uppercase;
+    margin-bottom: 12px;
   }
-  .logo-word { font-family: 'Figtree', sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 17px; }
-  .middle { display: flex; align-items: center; gap: 48px; }
-  .copy { max-width: 560px; }
-  h1 { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 56px; line-height: 1.08; margin: 0 0 18px; letter-spacing: -0.01em; }
+  h1 {
+    font-size: 56px; font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.02em; margin-bottom: 16px; color: var(--ink-deep);
+  }
   h1 .honest { color: var(--level); }
-  .sub { font-size: 23px; line-height: 1.45; color: var(--ink); opacity: 0.72; margin: 0; }
-  .footer { display: flex; justify-content: space-between; align-items: baseline; }
-  .url { font-family: 'Figtree', sans-serif; font-weight: 600; font-size: 20px;   font-variant-numeric: tabular-nums;
+  .sub {
+    font-size: 20px; line-height: 1.46; color: rgba(20, 33, 61, 0.78);
+    max-width: 530px; margin-bottom: 26px; font-weight: 450;
   }
-  .privacy { font-size: 17px; color: var(--ink); opacity: 0.62; }
+  .metrics {
+    display: flex; gap: 34px;
+  }
+  .metric-val {
+    font-size: 21px; font-weight: 800; color: var(--level); line-height: 1.15;
+  }
+  .metric-lbl {
+    font-size: 13.5px; color: rgba(20, 33, 61, 0.66); margin-top: 3px; font-weight: 500;
+  }
+  .footer {
+    border-top: 1px solid rgba(20, 33, 61, 0.12);
+    padding-top: 18px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  }
+  .url {
+    font-size: 19px; font-weight: 800; color: var(--ink-deep); letter-spacing: -0.01em;
+  }
+  .privacy {
+    font-size: 14px; color: rgba(20, 33, 61, 0.65); font-weight: 500;
+  }
+  .right {
+    width: 540px; height: 630px;
+    background: var(--art-beam-bg);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .right img {
+    width: 530px; height: auto; display: block;
+    transform: translateY(14px);
+  }
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="logo-row">
-    <div class="logo-mark">V</div>
-    <div class="logo-word">VESTORA</div>
-  </div>
-  <div class="middle">
-    <div class="copy">
-      <h1>Your money,<br>honestly <span class="honest">weighed</span>.</h1>
-      <p class="sub">FDs, funds, stocks, gold and a home loan — seen together, on your device.</p>
+  <div class="left">
+    <div class="logo-row">
+      <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+      <div class="logo-word">VESTORA <span>WEALTH</span></div>
     </div>
-    <!-- The balance beam, level. Same geometry as the demo's Beam: pivot, arm, two pans. -->
-    <svg width="380" height="300" viewBox="0 0 380 300" fill="none" aria-hidden="true">
-      <!-- stand -->
-      <line x1="190" y1="60" x2="190" y2="252" stroke="#14213D" stroke-width="3"/>
-      <line x1="120" y1="256" x2="260" y2="256" stroke="#14213D" stroke-width="3" stroke-linecap="round"/>
-      <!-- beam arm, level -->
-      <line x1="50" y1="60" x2="330" y2="60" stroke="#029A67" stroke-width="5" stroke-linecap="round"/>
-      <!-- pivot -->
-      <circle cx="190" cy="60" r="7" fill="#14213D"/>
-      <!-- left pan: growth assets -->
-      <line x1="50" y1="60" x2="50" y2="118" stroke="#14213D" stroke-width="2"/>
-      <rect x="20" y="118" width="60" height="10" rx="5" fill="#14213D"/>
-      <rect x="28" y="88" width="18" height="30" rx="3" fill="#4C5CE6"/>
-      <rect x="50" y="98" width="16" height="20" rx="3" fill="#1F8A9E"/>
-      <!-- right pan: steadier assets -->
-      <line x1="330" y1="60" x2="330" y2="118" stroke="#14213D" stroke-width="2"/>
-      <rect x="300" y="118" width="60" height="10" rx="5" fill="#14213D"/>
-      <rect x="308" y="94" width="16" height="24" rx="3" fill="#1F8A9E"/>
-      <rect x="328" y="102" width="14" height="16" rx="3" fill="#C99A2E"/>
-      <rect x="346" y="106" width="12" height="12" rx="3" fill="#6B7A90"/>
-      <!-- the level mark -->
-      <text x="190" y="36" text-anchor="middle" font-family="Figtree, sans-serif" font-size="13" fill="#029A67" font-weight="700">LEVEL</text>
-    </svg>
+
+    <div class="body-block">
+      <div class="eyebrow">Indian Portfolio Rebalancing Calculator</div>
+      <h1>Your money,<br>honestly <span class="honest">weighed.</span></h1>
+      <p class="sub">Direct Mutual Funds, FDs, Stocks, Gold, NPS, RBI G-Secs &amp; your Home Loan — weighed together on one private screen.</p>
+      <div class="metrics">
+        <div>
+          <div class="metric-val">0% Fee</div>
+          <div class="metric-lbl">Zero commissions</div>
+        </div>
+        <div>
+          <div class="metric-val">100% Local</div>
+          <div class="metric-lbl">Stays on your device</div>
+        </div>
+        <div>
+          <div class="metric-val">2-Min Tour</div>
+          <div class="metric-lbl">FD vs Loan &amp; LTCG</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="url tabular">vestorawealths.app/demo/</div>
+      <div class="privacy">Nothing leaves your browser.</div>
+    </div>
   </div>
-  <div class="footer">
-    <div class="url">vestora-wealth.ai.studio/demo/</div>
-    <div class="privacy">Everything stays on your device. Nothing is sent anywhere.</div>
+  <div class="right">
+    <img src="assets/art-beam.png" alt="Balanced scale weighing Indian household investments">
   </div>
 </div>
 </body>

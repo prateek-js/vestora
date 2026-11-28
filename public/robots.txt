@@ -20,4 +20,4 @@ Allow: /
 User-agent: WhatsApp
 Allow: /
 
-Sitemap: https://vestora-wealth.ai.studio/sitemap.xml
+Sitemap: https://vestorawealths.app/sitemap.xml

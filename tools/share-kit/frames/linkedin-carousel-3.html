@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { width: 1080px; height: 1350px; overflow: hidden; }
+  .stage {
+    width: 1080px; height: 1350px;
+    background: var(--art-beam-bg);
+    color: var(--ink-deep);
+    padding: 54px 62px 52px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .header { display: flex; justify-content: space-between; align-items: center; }
+  .logo-img { width: 44px; height: 44px; border-radius: 10px; }
+  .logo-word { font-size: 19px; }
+  .page-num { font-size: 17px; font-weight: 700; letter-spacing: 0.14em; color: var(--level); }
+  .headline-block { margin-top: 26px; }
+  .eyebrow {
+    font-size: 14.5px; font-weight: 800; letter-spacing: 0.15em;
+    color: var(--level); text-transform: uppercase; margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 62px; font-weight: 800; line-height: 1.07; letter-spacing: -0.02em;
+    color: var(--ink-deep);
+  }
+  h1 .accent { color: var(--level); }
+  .art-wrap {
+    margin: -10px -62px;
+    display: flex; justify-content: center; align-items: center;
+    flex: 1;
+  }
+  .art-wrap img { width: 1010px; height: auto; display: block; }
+  .bottom-stack { display: flex; flex-direction: column; gap: 16px; }
+  .card {
+    background: var(--paper); border-radius: 22px;
+    padding: 30px 36px 26px;
+    box-shadow: 0 18px 44px rgba(10, 20, 40, 0.08);
+    border-left: 6px solid var(--level);
+  }
+  .card p {
+    font-size: 22px; line-height: 1.46; color: var(--ink-deep); font-weight: 500;
+    padding-bottom: 20px; border-bottom: 1px solid rgba(20, 33, 61, 0.09);
+  }
+  .metrics {
+    margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .m-val { font-size: 24px; font-weight: 800; color: var(--level); }
+  .m-lbl { font-size: 14.5px; color: rgba(20, 33, 61, 0.68); margin-top: 3px; font-weight: 500; }
+  .cta-bar {
+    background: var(--ink-deep); color: var(--paper);
+    border-radius: 18px; padding: 22px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cta-left { font-size: 21px; font-weight: 700; }
+  .cta-url { font-size: 22px; font-weight: 800; color: #34d99b; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div>
+    <div class="header">
+      <div class="logo-row">
+        <img class="logo-img" src="../../../public/logo-512.png" alt="Vestora Wealth logo">
+        <div class="logo-word">VESTORA <span>WEALTH</span></div>
+      </div>
+      <div class="page-num tabular">03 / 03</div>
+    </div>
+    <div class="headline-block">
+      <div class="eyebrow">Meet Vestora Wealth · Indian Portfolio Rebalancer</div>
+      <h1>One honest scale.<br><span class="accent">Zero commissions.</span></h1>
+    </div>
+  </div>
+
+  <div class="art-wrap">
+    <img src="assets/art-beam.png" alt="Balanced scale representing unbiased Indian wealth allocation">
+  </div>
+
+  <div class="bottom-stack">
+    <div class="card">
+      <p>Weigh Fixed Deposits, 40,000+ AMFI Direct Mutual Funds, Stocks, Gold, NPS Tier-I, RBI G-Secs &amp; Home Loan prepayment together — then rebalance step by step in your browser.</p>
+      <div class="metrics">
+        <div>
+          <div class="m-val">0% Fee</div>
+          <div class="m-lbl">No regular plan bias</div>
+        </div>
+        <div>
+          <div class="m-val">100% Local</div>
+          <div class="m-lbl">On-device privacy</div>
+        </div>
+        <div>
+          <div class="m-val">Tax &amp; Loan</div>
+          <div class="m-lbl">₹1.25L LTCG &amp; FD vs Loan</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-bar">
+      <div class="cta-left">Try the 2-minute guided rebalance tour</div>
+      <div class="cta-url tabular">vestorawealths.app/demo/</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
