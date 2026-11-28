@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { trackEvent } from '../utils/analytics';
 import type { AppTab } from '../utils/tabRouting';
 import { VestoraLogo } from './VestoraLogo';
+import { MakerTriggerButton } from './ContactMaker';
 import {
   ChevronDown,
   Compass,
@@ -40,6 +41,7 @@ interface NavbarProps {
   onStartTour: () => void;
   maturedCount: number;
   onResetToSample: () => void;
+  onOpenContact: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -58,6 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onStartTour,
   maturedCount,
   onResetToSample,
+  onOpenContact,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -172,8 +175,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="A 2-minute walk-through with a sample portfolio — the full app is one click away"
             >
               <Compass className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-              <span className="hidden sm:inline">New here? Take the tour</span>
+              <span className="hidden lg:inline">Take the tour</span>
             </a>
+
+            {/* Prominent Direct-to-Maker trigger */}
+            <MakerTriggerButton onClick={onOpenContact} variant="app" />
 
             {/* Consolidated Save/Export, Import & Data Tools Menu */}
             <div className="relative" data-tour="export-menu">

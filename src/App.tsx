@@ -36,9 +36,14 @@ import { generatePortfolioPdfReport } from './utils/pdfReport';
 import { OnboardingTour } from './components/OnboardingTour';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { PortfolioChatDrawer } from './components/PortfolioChatDrawer';
+import {
+  ContactMakerModal,
+  MakerDeskStrip,
+  type ContactTopicId,
+} from './components/ContactMaker';
 import { syncDocumentSeo } from './utils/seo';
 import { AppTab, planUrlSync, tabFromHash } from './utils/tabRouting';
-import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X, Mail } from 'lucide-react';
+import { RotateCcw, Download, Upload, ShieldCheck, FileSpreadsheet, FileText, CheckCircle2, X } from 'lucide-react';
 
 export default function App() {
   // Hydrate from localStorage when this browser has a saved portfolio; sample
@@ -93,6 +98,13 @@ export default function App() {
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(initial.needsWelcome);
   const [welcomeChoice, setWelcomeChoice] = useState<'sample' | 'scratch' | null>(null);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [contactTopic, setContactTopic] = useState<ContactTopicId>('question');
+
+  const openContact = (topic: ContactTopicId = 'question') => {
+    setContactTopic(topic);
+    setIsContactOpen(true);
+  };
 
   const handleCloseTour = () => {
     setIsTourOpen(false);
@@ -523,6 +535,7 @@ export default function App() {
         }}
         maturedCount={maturedCount}
         onResetToSample={() => setIsResetConfirmOpen(true)}
+        onOpenContact={() => openContact('question')}
       />
 
       {/* Global hidden file input for restoring saved .xlsx / .csv / .json exports */}
@@ -610,9 +623,14 @@ export default function App() {
         )}
       </main>
 
-      {/* Compliance, SEO Guides & Privacy Footer */}
+      {/* Maker Desk, SEO Guides & Privacy Footer */}
       <footer className="border-t border-ink/10 bg-mist">
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-3">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+          <MakerDeskStrip
+            onOpenContact={(topic) => openContact(topic ?? 'question')}
+            contextLabel={`vestorawealths.app/#${activeTab}`}
+          />
+
           <nav
             aria-label="Free Wealth Calculators and Guides"
             className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink/70 border-b border-ink/10 pb-3"
@@ -620,6 +638,9 @@ export default function App() {
             <span className="text-2xs font-mono uppercase tracking-wider text-ink/70">
               Free Calculators &amp; Guides:
             </span>
+            <a href="/demo/" className="hover:text-emerald-700 transition-colors">
+              2-Min Guided Tour
+            </a>
             <a href="/home-loan-vs-fd-calculator/" className="hover:text-emerald-700 transition-colors">
               Home Loan vs FD Calculator
             </a>
@@ -632,17 +653,6 @@ export default function App() {
             <a href="/ltcg-tax-harvesting-india/" className="hover:text-emerald-700 transition-colors">
               LTCG Tax Harvesting &amp; 80CCD(1B)
             </a>
-            <span className="ml-auto flex items-center gap-1.5">
-              <span className="text-2xs font-mono uppercase tracking-wider text-ink/70">Contact us:</span>
-              <a
-                href="mailto:prateekdesai1990@gmail.com"
-                className="inline-flex items-center gap-1.5 hover:text-emerald-700 transition-colors font-medium text-ink/80"
-                title="Email us — we read everything"
-              >
-                <Mail className="w-3.5 h-3.5 shrink-0" />
-                prateekdesai1990@gmail.com
-              </a>
-            </span>
           </nav>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-2xs text-ink/70 leading-relaxed max-w-3xl">
@@ -654,6 +664,13 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      <ContactMakerModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+        initialTopic={contactTopic}
+        contextLabel={`vestorawealths.app/#${activeTab}`}
+      />
 
       {/* Modals */}
       <ValidatePortfolioModal

@@ -2,7 +2,7 @@
   "name": "Vestora - Unified Wealth & Reinvestment OS",
   "short_name": "Vestora Wealth",
   "description": "Rebalance Mutual Funds, FDs, NPS, RBI G-Secs, Gold & Home Loans in one unbiased portal. Live yields, tax audit & stress tests — 0% fees, 100% on-device.",
-  "start_url": "/",
+  "start_url": "/demo/",
   "display": "standalone",
   "background_color": "#EEF2F6",
   "theme_color": "#EEF2F6",

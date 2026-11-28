@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, Sparkles } from 'lucide-react';
 import { VestoraLogo } from './VestoraLogo';
+import {
+  ContactMakerModal,
+  MakerDeskStrip,
+  type ContactTopicId,
+} from './ContactMaker';
 
 interface WelcomeScreenProps {
   onChooseSample: () => void;
@@ -17,6 +22,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onChooseSample,
   onChooseScratch,
 }) => {
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactTopic, setContactTopic] = useState<ContactTopicId>('hello');
+
   return (
     <div className="min-h-screen bg-mist text-ink flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md flex flex-col items-center text-center">
@@ -68,7 +76,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </span>
           </button>
         </div>
+
+        <MakerDeskStrip
+          compact
+          contextLabel="vestorawealths.app (welcome)"
+          onOpenContact={(topic) => {
+            setContactTopic(topic ?? 'hello');
+            setContactOpen(true);
+          }}
+        />
       </div>
+
+      <ContactMakerModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        initialTopic={contactTopic}
+        contextLabel="vestorawealths.app (welcome)"
+      />
     </div>
   );
 };

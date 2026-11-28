@@ -8,6 +8,12 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { SEO_PAGES, SEO_PAGE_LIST, SeoPageSlug } from '../data/seoPages';
+import {
+  ContactMakerModal,
+  MakerDeskStrip,
+  MakerTriggerButton,
+  type ContactTopicId,
+} from './ContactMaker';
 
 function formatInr(value: number): string {
   const abs = Math.abs(value);
@@ -484,13 +490,20 @@ interface SeoLandingPageProps {
 export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
   const page = SEO_PAGES[slug];
   const otherPages = SEO_PAGE_LIST.filter((p) => p.slug !== slug);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactTopic, setContactTopic] = useState<ContactTopicId>('question');
+
+  const openContact = (topic: ContactTopicId = 'question') => {
+    setContactTopic(topic);
+    setContactOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-mist text-ink flex flex-col">
       {/* Top Navigation */}
       <header className="sticky top-0 z-30 border-b border-slate-700/80 bg-mist/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-2.5 group">
+          <a href="/demo/" className="flex items-center gap-2.5 group">
             <img src="/logo-240.png" alt="Vestora Wealth logo" className="w-8 h-8 rounded-lg" />
             <span className="text-sm font-bold tracking-wider text-ink group-hover:text-emerald-800 transition-colors">
               VESTORA WEALTH
@@ -498,8 +511,8 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
           </a>
 
           <nav aria-label="Primary" className="hidden md:flex items-center gap-5 text-xs text-ink/70">
-            <a href="/" className="hover:text-ink transition-colors">
-              Interactive Story
+            <a href="/demo/" className="hover:text-ink transition-colors">
+              Guided Tour
             </a>
             <a href="/#overview" className="hover:text-ink transition-colors">
               Portfolio Overview
@@ -512,13 +525,16 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
             </a>
           </nav>
 
-          <a
-            href={page.ctaHref}
-            className="px-3.5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
-          >
-            <span>Open Portal</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          <div className="flex items-center gap-2 shrink-0">
+            <MakerTriggerButton onClick={() => openContact('question')} variant="seo" />
+            <a
+              href={page.ctaHref}
+              className="px-3.5 py-2 text-xs font-semibold text-paper bg-ink hover:bg-ink/90 rounded-lg transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <span>Open Portal</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       </header>
 
@@ -653,6 +669,11 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
             ))}
           </div>
         </section>
+        {/* Direct-to-Maker Desk */}
+        <MakerDeskStrip
+          onOpenContact={(topic) => openContact(topic ?? 'question')}
+          contextLabel={`vestorawealths.app/${slug}/`}
+        />
       </main>
 
       {/* Footer */}
@@ -666,6 +687,13 @@ export const SeoLandingPage: React.FC<SeoLandingPageProps> = ({ slug }) => {
           </span>
         </div>
       </footer>
+
+      <ContactMakerModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        initialTopic={contactTopic}
+        contextLabel={`vestorawealths.app/${slug}/`}
+      />
     </div>
   );
 };

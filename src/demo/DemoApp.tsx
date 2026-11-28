@@ -24,6 +24,12 @@ import { exportPortfolio, type ExportFormat } from './exports';
 import { DEMO_PROFILES } from '../data/mockData';
 import { sampleHoldingsFor } from '../utils/portfolioStorage';
 import { useSplit } from './useSplit';
+import {
+  ContactMakerModal,
+  MakerDeskStrip,
+  MakerTriggerButton,
+  type ContactTopicId,
+} from '../components/ContactMaker';
 
 // The spreadsheet code and the chat panel stay out of the first load.
 const Editor = lazy(() => import('./components/Editor').then((m) => ({ default: m.Editor })));
@@ -64,6 +70,13 @@ export default function DemoApp() {
   const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
   // Assistant lines appended on the chat's behalf (e.g. the empty-list routing note).
   const [chatNotes, setChatNotes] = useState<{ id: string; text: string }[]>([]);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactTopic, setContactTopic] = useState<ContactTopicId>('question');
+
+  const openContact = (topic: ContactTopicId = 'question') => {
+    setContactTopic(topic);
+    setContactOpen(true);
+  };
 
   // Read-only: the demo never writes the visitor's stored portfolio.
   const sample = useMemo<DemoPortfolio>(() => pickPortfolio(null), []);
@@ -235,13 +248,16 @@ export default function DemoApp() {
             reached={openChapters}
             onGo={go}
           />
-          <a
-            href="/#overview"
-            className="shrink-0 text-sm font-medium underline underline-offset-4"
-            title="Your saved portfolio, every tool, nothing stored on our servers"
-          >
-            Full app
-          </a>
+          <div className="flex shrink-0 items-center gap-3">
+            <MakerTriggerButton onClick={() => openContact('question')} variant="demo" />
+            <a
+              href="/#overview"
+              className="shrink-0 text-sm font-medium underline underline-offset-4 whitespace-nowrap"
+              title="Your saved portfolio, every tool, nothing stored on our servers"
+            >
+              Full app
+            </a>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-[1120px] px-5 pb-28 py-8">
@@ -306,7 +322,21 @@ export default function DemoApp() {
             onEditConditions={() => go('see')}
           />
         )}
+
+        <div className="mt-24 pt-8 border-t border-ink/10">
+          <MakerDeskStrip
+            onOpenContact={(topic) => openContact(topic ?? 'question')}
+            contextLabel={`vestorawealths.app/demo (${state.chapter})`}
+          />
+        </div>
       </main>
+
+      <ContactMakerModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        initialTopic={contactTopic}
+        contextLabel={`vestorawealths.app/demo (${state.chapter})`}
+      />
 
       {/* One way in, from every chapter. Stays mounted while the panel is open so focus can return here. */}
       <div className="fixed bottom-4 left-4 z-40 max-sm:right-4">
